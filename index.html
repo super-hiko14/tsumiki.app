@@ -1950,14 +1950,15 @@
         /* ===== タイマー表示 ===== */
         .timer-phase {
             min-height: 1.4em;
-            margin-top: 28px;
+            margin-top: 20px;
             font-size: 0.9rem;
             opacity: 0.7;
             font-variant-numeric: tabular-nums;
         }
 
+        /* 中身が空のとき(通常モードで計測していないとき)は場所を取らない */
         .timer-phase:empty {
-            visibility: hidden;
+            display: none;
         }
 
         .timer-phase.is-break {
@@ -1969,8 +1970,20 @@
             color: var(--primary-color-dark);
         }
 
+        /* 画面幅に合わせて大きく表示する(上限は従来どおり 4rem、狭い画面でも小さくなりすぎない) */
         #timerPage .timer {
-            margin: 4px 0 26px;
+            font-size: clamp(2.8rem, 15vw, 4rem);
+            line-height: 1.15;
+            margin: 24px 0 22px;
+        }
+
+        /* フォーカスモードの「25:00」は桁が少ないぶん、もう少し大きくできる */
+        #timerPage.focus-on .timer {
+            font-size: clamp(3.4rem, 21vw, 4.4rem);
+        }
+
+        #timerPage .timer-phase:not(:empty) + .timer {
+            margin-top: 2px;
         }
 
         .timer-display-sub {
@@ -2389,11 +2402,13 @@
             transform: scale(0.92);
         }
 
+        /* 今の音量までを色で塗る(--vol は JS で更新) */
         .volume-slider {
-            width: 80px;
+            --vol: 100%;
+            width: 110px;
             height: 4px;
             border-radius: 24px;
-            background: rgba(0, 0, 0, 0.08);
+            background: linear-gradient(to right, var(--primary-color) var(--vol), rgba(0, 0, 0, 0.08) var(--vol));
             outline: none;
             -webkit-appearance: none;
             appearance: none;
@@ -2401,7 +2416,26 @@
         }
 
         .dark .volume-slider {
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(to right, var(--primary-color-dark) var(--vol), rgba(255, 255, 255, 0.1) var(--vol));
+        }
+
+        .volume-slider:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 6px;
+        }
+
+        .volume-value {
+            min-width: 3.2em;
+            font-size: 0.75rem;
+            opacity: 0.6;
+            font-variant-numeric: tabular-nums;
+            text-align: left;
+        }
+
+        @media (max-width: 420px) {
+            .volume-slider {
+                width: 84px;
+            }
         }
 
         .volume-slider::-webkit-slider-thumb {
@@ -2497,7 +2531,37 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 8px;
-            margin: 0 4px 10px;
+            margin: 0 0 10px;
+            padding: 10px 12px;
+            border-radius: 24px;
+            background: var(--panel-light);
+            animation: panelEnter 0.2s ease-out;
+        }
+
+        .dark .playlist-batch-actions {
+            background: var(--panel-dark);
+        }
+
+        .playlist-batch-actions .playlist-selected-count {
+            margin-right: auto;
+        }
+
+        .playlist-batch-actions button.secondary {
+            background: var(--bg-light);
+        }
+
+        .dark .playlist-batch-actions button.secondary {
+            background: var(--bg-dark);
+        }
+
+        .playlist-batch-actions button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        /* 選択モードでは行を押すだけで選べる */
+        .playlist-item.select-mode {
+            cursor: pointer;
         }
 
         .playlist-batch-actions.hidden {
@@ -10735,11 +10799,12 @@
 
                     <div class="player-sub-controls">
                         <div class="volume-control-group">
-                            <button class="control-btn" id="volumeBtn" aria-label="音量">
+                            <button class="control-btn" id="volumeBtn" aria-label="ミュート" title="ミュート">
                                 <img id="volumeBtnImg" src="volume.webp" alt="音量" data-i18n-alt="volume">
                             </button>
                             <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1"
-                                class="volume-slider">
+                                class="volume-slider" aria-label="音量" data-i18n-aria="volume">
+                            <span class="volume-value" id="volumeValue" aria-hidden="true">100%</span>
                         </div>
                         <div class="playlist-controls">
                             <button class="control-btn" onclick="toggleLoop()" id="loopBtn" aria-label="ループ"
@@ -10772,9 +10837,8 @@
                     <div class="playlist-warning hidden" id="playlistWarning" role="status" aria-live="polite"></div>
                     <div class="playlist-batch-actions hidden" id="playlistBatchActions">
                         <span class="playlist-selected-count" id="playlistSelectedCount">0</span>
-                        <button class="secondary" onclick="toggleSelectAllPlaylistItems()"
-                            data-i18n="selectAll">すべて選択</button>
-                        <button class="delete-btn" onclick="deleteSelectedMusic()"
+                        <button class="secondary" id="playlistSelectAllBtn" onclick="toggleSelectAllPlaylistItems()">すべて選択</button>
+                        <button class="delete-btn" id="playlistDeleteSelectedBtn" onclick="deleteSelectedMusic()"
                             data-i18n="deleteSelectedMusic">選択を削除</button>
                     </div>
                     <div class="playlist" id="playlist"></div>
@@ -11862,6 +11926,12 @@
                     deleteSelected: '選択を削除',
                     deleteSelectedMusic: '選択を削除',
                     itemsSelected: '件選択',
+                    playlistSelectedCount: '{n}曲を選択中',
+                    playlistSelectDone: '完了',
+                    playlistDeselectAll: '選択解除',
+                    deleteSelectedMusicConfirm: '選択した{n}曲を削除しますか?',
+                    volumeMute: 'ミュート',
+                    volumeUnmute: 'ミュート解除',
                     moveGroup: 'グループ移動',
                     moveCount: '件選択中',
                     moveDestination: '移動先を選択',
@@ -12624,6 +12694,12 @@
                     deleteSelected: 'Delete Selected',
                     deleteSelectedMusic: 'Delete Selected',
                     itemsSelected: ' selected',
+                    playlistSelectedCount: '{n} selected',
+                    playlistSelectDone: 'Done',
+                    playlistDeselectAll: 'Deselect all',
+                    deleteSelectedMusicConfirm: 'Delete {n} selected tracks?',
+                    volumeMute: 'Mute',
+                    volumeUnmute: 'Unmute',
                     moveGroup: 'Move to Group',
                     moveCount: 'selected',
                     moveDestination: 'Select destination',
@@ -13350,6 +13426,9 @@
                 refreshTodoAddOptions();
                 renderSettingsTabs();
                 updateMenuModeSettingsUI();
+                updatePlaylistSelectionUI();
+                const audioForVolume = document.getElementById('audioPlayer');
+                if (audioForVolume) updateVolumeUI(audioForVolume.volume);
                 renderGroupManagement();
                 updateTimer();
                 updateTimerAutoStopDisplays();
@@ -15813,11 +15892,10 @@
 
                     item.setAttribute('draggable', 'false');
 
-                    item.addEventListener('click', () => {
+                    item.addEventListener('click', (e) => {
                         const idx = parseInt(item.getAttribute('data-index'), 10);
                         if (playlistSelectMode) {
-                            const next = !selectedMusicItems.has(idx);
-                            togglePlaylistItemSelection(idx, next);
+                            togglePlaylistItemSelection(e, idx, !selectedMusicItems.has(idx));
                             return;
                         }
                         playMusic(idx);
@@ -15990,7 +16068,15 @@
                 if (!batch || !btn || !count) return;
                 batch.classList.toggle('hidden', !playlistSelectMode);
                 btn.classList.toggle('active', playlistSelectMode);
-                count.textContent = `${selectedMusicItems.size}${getText('itemsSelected')}`;
+                // 選択モード中は「完了」で抜けられることが分かるようにする
+                btn.textContent = getText(playlistSelectMode ? 'playlistSelectDone' : 'playlistSelectMode');
+                btn.style.display = musicFiles.length || playlistSelectMode ? '' : 'none';
+                const n = selectedMusicItems.size;
+                count.textContent = getText('playlistSelectedCount').replace('{n}', n);
+                const allBtn = document.getElementById('playlistSelectAllBtn');
+                if (allBtn) allBtn.textContent = getText(musicFiles.length && n === musicFiles.length ? 'playlistDeselectAll' : 'selectAll');
+                const delBtn = document.getElementById('playlistDeleteSelectedBtn');
+                if (delBtn) delBtn.disabled = n === 0;
             }
 
             function togglePlaylistSelectMode() {
@@ -16004,7 +16090,7 @@
             function togglePlaylistItemSelection(e, index, checked) {
                 if (e && e.stopPropagation) e.stopPropagation();
 
-                const visibleElements = Array.from(document.querySelectorAll('#playlistDiv .playlist-item'));
+                const visibleElements = Array.from(document.querySelectorAll('#playlist .playlist-item'));
                 const visibleIndices = visibleElements.map(el => {
                     const idx = el.getAttribute('data-index');
                     return idx !== null ? parseInt(idx, 10) : -1;
@@ -16046,8 +16132,14 @@
                 loadPlaylist();
             }
 
-            function deleteSelectedMusic() {
+            async function deleteSelectedMusic() {
                 if (!playlistSelectMode || selectedMusicItems.size === 0) return;
+                const confirmed = await customConfirm(
+                    getText('deleteSelectedMusicConfirm').replace('{n}', String(selectedMusicItems.size)),
+                    getText('deleteConfirmTitle'),
+                    'delete.webp'
+                );
+                if (!confirmed) return;
                 const sorted = Array.from(selectedMusicItems).sort((a, b) => b - a);
                 for (const idx of sorted) {
                     if (idx < 0 || idx >= musicFiles.length) continue;
@@ -16073,6 +16165,7 @@
                     musicFiles.splice(idx, 1);
                 }
                 selectedMusicItems.clear();
+                if (musicFiles.length === 0) playlistSelectMode = false;
                 savePlaylist();
                 loadPlaylist();
                 updateMusicPlayerModeUI();
@@ -16883,23 +16976,53 @@
                 });
             }
 
+            // アイコンを押すとミュート/解除(解除時はミュート前の音量に戻す)
             if (volumeBtn) {
                 volumeBtn.addEventListener('click', () => {
-                    if (volumeSlider.style.display === 'none') volumeSlider.style.display = 'block';
-                    else volumeSlider.style.display = 'none';
+                    if (audioEl.volume > 0) {
+                        saveData('music_volume_before_mute', String(audioEl.volume));
+                        setMusicVolume(0);
+                    } else {
+                        const before = parseFloat(getData('music_volume_before_mute'));
+                        setMusicVolume(Number.isFinite(before) && before > 0 ? before : 0.6);
+                    }
                 });
             }
             if (volumeSlider) {
                 volumeSlider.addEventListener('input', (e) => {
-                    audioEl.volume = parseFloat(e.target.value);
-                    saveData('music_volume', String(audioEl.volume));
-                    if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
-                        try { ytPlayer.setVolume(Math.round(audioEl.volume * 100)); } catch (err) { }
-                    }
-                    if (audioEl.volume === 0) volumeBtnImg.src = 'volume_mute.webp';
-                    else if (audioEl.volume < 0.5) volumeBtnImg.src = 'volume_low.webp';
-                    else volumeBtnImg.src = 'volume.webp';
+                    setMusicVolume(parseFloat(e.target.value));
                 });
+            }
+
+            // 音量の変更はすべてここを通す(音声/YouTube・アイコン・スライダー・%表示をまとめて更新)
+            function setMusicVolume(value) {
+                const v = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 1));
+                const audio = document.getElementById('audioPlayer');
+                if (audio) audio.volume = v;
+                saveData('music_volume', String(v));
+                if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.setVolume === 'function') {
+                    try { ytPlayer.setVolume(Math.round(v * 100)); } catch (err) { }
+                }
+                updateVolumeUI(v);
+            }
+
+            function updateVolumeUI(v) {
+                const slider = document.getElementById('volumeSlider');
+                const img = document.getElementById('volumeBtnImg');
+                const btn = document.getElementById('volumeBtn');
+                const valueEl = document.getElementById('volumeValue');
+                const pct = Math.round(v * 100);
+                if (slider) {
+                    slider.value = String(v);
+                    slider.style.setProperty('--vol', `${pct}%`);
+                }
+                if (img) img.src = v === 0 ? 'volume_mute.webp' : v < 0.5 ? 'volume_low.webp' : 'volume.webp';
+                if (btn) {
+                    const label = getText(v === 0 ? 'volumeUnmute' : 'volumeMute');
+                    btn.setAttribute('aria-label', label);
+                    btn.title = label;
+                }
+                if (valueEl) valueEl.textContent = `${pct}%`;
             }
 
             let currentTodoFilter = 'all';
@@ -21897,18 +22020,11 @@
                 const volumeSlider = document.getElementById('volumeSlider');
                 const volumeBtnImg = document.getElementById('volumeBtnImg');
                 if (audioEl) {
-                    const savedVolume = Math.max(0, Math.min(1, parseFloat(getData('music_volume') || '1') || 1));
+                    const savedVolumeRaw = parseFloat(getData('music_volume'));
+                    const savedVolume = Math.max(0, Math.min(1, Number.isFinite(savedVolumeRaw) ? savedVolumeRaw : 1));
                     audioEl.volume = savedVolume;
                     audioEl.loop = isLoop;
-                    if (volumeSlider) {
-                        volumeSlider.value = audioEl.volume;
-                        volumeSlider.style.display = 'none';
-                    }
-                    if (volumeBtnImg) {
-                        if (audioEl.volume === 0) volumeBtnImg.src = 'volume_mute.webp';
-                        else if (audioEl.volume < 0.5) volumeBtnImg.src = 'volume_low.webp';
-                        else volumeBtnImg.src = 'volume.webp';
-                    }
+                    updateVolumeUI(audioEl.volume);
                 }
                 await (async () => {
                     try {
