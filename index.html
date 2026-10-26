@@ -2438,6 +2438,45 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        /* 自動停止のプリセット: 4つの数字の欄(数字キーボードのまま入力できる) */
+        .auto-stop-presets-row {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .auto-stop-preset-boxes {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .auto-stop-preset-box {
+            width: 48px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            padding: 6px 4px;
+            font: inherit;
+            font-size: 0.9rem;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.06);
+            color: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .dark .auto-stop-preset-box {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .light .auto-stop-preset-box:focus {
+            border-color: var(--primary-color);
+        }
+
+        .dark .auto-stop-preset-box:focus {
+            border-color: var(--primary-color-dark);
+        }
+
         /* セッション情報内の自動停止ログ */
         .auto-stop-log-line {
             opacity: 0.75;
@@ -4091,6 +4130,52 @@
             font-size: 1.25rem;
         }
 
+        /* about と Q&A: 幅をしぼり、見出しの右に × */
+        .about-dialog.about-dialog-narrow {
+            max-width: 520px;
+            padding: 18px 22px 22px;
+        }
+
+        .about-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .about-dialog .about-head h2 {
+            margin: 0;
+            text-align: left;
+            line-height: 1.4;
+            font-size: 1.05rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .about-close {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            box-shadow: none;
+            opacity: 0.7;
+            transition: background-color 0.15s ease, opacity 0.15s ease;
+        }
+
+        .about-close:hover {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.14);
+        }
+
         .about-content {
             line-height: 1.7;
             opacity: 0.95;
@@ -4568,18 +4653,18 @@
         }
 
         /* チュートリアル関連スタイル */
+        /* ぼかさずに少し暗くするだけ。下の画面は押せないようにする */
         .tutorial-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.55);
             z-index: 10000;
-            backdrop-filter: blur(3px);
-            pointer-events: none;
         }
 
         .tutorial-overlay.show {
             display: block;
+            animation: fadeIn 0.25s ease-out;
         }
 
         .tutorial-overlay.hidden {
@@ -4616,7 +4701,7 @@
             color: #1a1a1a;
             text-align: center;
             max-width: 600px;
-            padding: 60px 40px;
+            padding: 60px 24px;
             z-index: 10001;
             position: relative;
         }
@@ -4649,9 +4734,27 @@
         }
 
         .tutorial-welcome-buttons button {
-            padding: 12px 40px;
+            min-width: 140px;
+            padding: 13px 28px;
             font-size: 1rem;
-            border-radius: 24px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .tutorial-welcome h3 {
+                font-size: 1.6rem;
+            }
+
+            .tutorial-welcome-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .tutorial-welcome-buttons button {
+                width: min(280px, 100%);
+            }
         }
 
         .tutorial-welcome-about-link {
@@ -4674,93 +4777,128 @@
 
         .tutorial-box {
             position: fixed;
-            background: var(--panel-light);
+            background: var(--bg-light);
             color: inherit;
             border-radius: 24px;
-            padding: 20px;
+            padding: 18px 20px 20px;
             z-index: 10002;
-            max-width: 400px;
+            max-width: 380px;
             width: calc(100vw - 40px);
-            animation: fadeIn 0.3s ease-out;
+            box-sizing: border-box;
+            animation: fadeIn 0.25s ease-out;
             pointer-events: auto;
         }
 
         .dark .tutorial-box {
-            background: var(--panel-dark);
+            background: var(--panel-dark-2);
+        }
+
+        /* 上の段: 進み具合の点・数・スキップ */
+        .tutorial-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .tutorial-dots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tutorial-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.3);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .light .tutorial-dots span.done,
+        .light .tutorial-dots span.now {
+            background: var(--primary-color);
+        }
+
+        .dark .tutorial-dots span.done,
+        .dark .tutorial-dots span.now {
+            background: var(--primary-color-dark);
+        }
+
+        .tutorial-dots span.now {
+            width: 18px;
+        }
+
+        .tutorial-count {
+            font-size: 0.75rem;
+            opacity: 0.55;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tutorial-box button.tutorial-skip {
+            margin-left: auto;
+            padding: 4px 6px;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .tutorial-box button.tutorial-skip:hover {
+            opacity: 1;
         }
 
         .tutorial-box h3 {
             font-size: 1.1rem;
-            margin-bottom: 12px;
-
+            font-weight: 400;
+            margin: 0 0 8px;
         }
 
         .tutorial-box p {
             font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 16px;
-            opacity: 0.9;
+            line-height: 1.7;
+            margin: 0 0 18px;
+            opacity: 0.85;
         }
 
-        .tutorial-step-info {
-            font-size: 0.8rem;
-            opacity: 0.6;
-            margin-bottom: 8px;
-        }
-
-        /* 進捗バー */
-        .tutorial-progress {
-            height: 4px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 14px;
-        }
-
-        .dark .tutorial-progress {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .tutorial-progress-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 999px;
-            background: var(--primary-color);
-            transition: width 0.35s ease;
-        }
-
-        .dark .tutorial-progress-fill {
-            background: var(--primary-color-dark);
-        }
-
-        /* クリック待ちステップのヒント */
-        .tutorial-click-hint {
-            display: none;
-            align-items: center;
-            font-size: 0.8rem;
-            opacity: 0.65;
-            min-width: 0;
+        .tutorial-box p a {
+            color: inherit;
         }
 
         .tutorial-buttons {
             display: flex;
             gap: 10px;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
-            flex-wrap: nowrap;
         }
 
         .tutorial-buttons button {
-            padding: 10px 20px;
+            padding: 10px 22px;
             font-size: 0.9rem;
-            border-radius: 24px;
+            border-radius: 999px;
             white-space: nowrap;
-            flex-shrink: 0;
+        }
+
+        /* 最後のカードは中央に。ボタンは横いっぱい */
+        .tutorial-box.is-final {
+            text-align: center;
+        }
+
+        .tutorial-box.is-final .tutorial-buttons button.primary {
+            flex: 1;
+        }
+
+        /* 固定配置の部品(右上のボタンなど)は位置を変えないよう、position は .tutorial-pos のときだけ付ける */
+        .tutorial-highlight.tutorial-pos {
+            position: relative;
         }
 
         .tutorial-highlight {
-            position: relative;
             z-index: 10001 !important;
+            pointer-events: none;
             border-radius: 24px !important;
             --tut-ring: var(--primary-color);
             animation: tutorialRingPulse 1.8s ease-in-out infinite;
@@ -4784,13 +4922,6 @@
             }
         }
 
-        .tutorial-click-area {
-            position: fixed;
-            z-index: 10001;
-            cursor: pointer;
-            border-radius: 24px;
-        }
-
         /* ハイライト対象が z-index 付き固定スタック(右上ボタン/固定/ボトムメニュー)の中にある場合、
            子の z-index だけではオーバーレイの上に出られないため、親ごと持ち上げる */
         .top-buttons:has(.tutorial-highlight),
@@ -4810,41 +4941,41 @@
         .tutorial-arrow-up {
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
-            border-bottom: 10px solid var(--panel-light);
+            border-bottom: 10px solid var(--bg-light);
         }
 
         .dark .tutorial-arrow-up {
-            border-bottom-color: var(--panel-dark);
+            border-bottom-color: var(--panel-dark-2);
         }
 
         .tutorial-arrow-down {
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
-            border-top: 10px solid var(--panel-light);
+            border-top: 10px solid var(--bg-light);
         }
 
         .dark .tutorial-arrow-down {
-            border-top-color: var(--panel-dark);
+            border-top-color: var(--panel-dark-2);
         }
 
         .tutorial-arrow-left {
             border-top: 10px solid transparent;
             border-bottom: 10px solid transparent;
-            border-right: 10px solid var(--panel-light);
+            border-right: 10px solid var(--bg-light);
         }
 
         .dark .tutorial-arrow-left {
-            border-right-color: var(--panel-dark);
+            border-right-color: var(--panel-dark-2);
         }
 
         .tutorial-arrow-right {
             border-top: 10px solid transparent;
             border-bottom: 10px solid transparent;
-            border-left: 10px solid var(--panel-light);
+            border-left: 10px solid var(--bg-light);
         }
 
         .dark .tutorial-arrow-right {
-            border-left-color: var(--panel-dark);
+            border-left-color: var(--panel-dark-2);
         }
 
         @media (max-width: 768px) {
@@ -5975,7 +6106,20 @@
         }
 
         .welcome-logo {
-            margin-bottom: 24px;
+            margin-bottom: 14px;
+        }
+
+        .welcome-tagline {
+            margin: 0 0 32px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.75;
+        }
+
+        .welcome-tagline span {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.75;
         }
 
         .welcome-lang-buttons {
@@ -5983,21 +6127,49 @@
             align-items: center;
             gap: 12px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .welcome-lang-text {
-            font-size: 1.1rem;
+        .welcome-lang-btn {
+            min-width: 140px;
+            padding: 13px 28px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            font-size: 1rem;
+            color: inherit;
             cursor: pointer;
-            opacity: 0.75;
-            transition: opacity 0.2s ease;
+            box-shadow: none;
+            transition: border-color 0.2s ease, transform 0.15s ease;
         }
 
-        .welcome-lang-text:hover {
-            opacity: 1;
+        .light .welcome-lang-btn {
+            background: var(--panel-light);
         }
 
-        .welcome-lang-sep {
-            opacity: 0.35;
+        .dark .welcome-lang-btn {
+            background: var(--panel-dark);
+        }
+
+        .light .welcome-lang-btn:hover,
+        .light .welcome-lang-btn:focus-visible {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .dark .welcome-lang-btn:hover,
+        .dark .welcome-lang-btn:focus-visible {
+            border-color: var(--primary-color-dark);
+            outline: none;
+        }
+
+        .welcome-lang-btn:active {
+            transform: scale(0.97);
+        }
+
+        .welcome-lang-note {
+            margin: 22px 0 0;
+            font-size: 0.75rem;
+            opacity: 0.5;
         }
 
         .todo-period {
@@ -8295,6 +8467,84 @@
             font-size: 0.85rem;
         }
 
+        /* 真ん中の数字は押すとそのまま入力できる */
+        .focus-stepper .stepper-value {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: text;
+        }
+
+        .focus-stepper .stepper-input {
+            width: 3ch;
+            min-width: 1.4ch;
+            padding: 2px 4px;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            outline: none;
+            transition: background-color 0.15s ease;
+        }
+
+        @supports (field-sizing: content) {
+            .focus-stepper .stepper-input {
+                field-sizing: content;
+                width: auto;
+            }
+        }
+
+        .focus-stepper .stepper-input:focus {
+            background: rgba(128, 128, 128, 0.16);
+        }
+
+        /* よく使う 集中/休憩 の組み合わせ */
+        .focus-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .focus-preset {
+            padding: 7px 14px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            color: inherit;
+            cursor: pointer;
+            box-shadow: none;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .focus-preset span {
+            margin: 0 2px;
+            opacity: 0.5;
+        }
+
+        .light .focus-preset {
+            background: var(--panel-light);
+        }
+
+        .dark .focus-preset {
+            background: var(--panel-dark);
+        }
+
+        .light .focus-preset:hover,
+        .light .focus-preset.active {
+            border-color: var(--primary-color);
+        }
+
+        .dark .focus-preset:hover,
+        .dark .focus-preset.active {
+            border-color: var(--primary-color-dark);
+        }
+
         /* ── 積み木ページ ── */
         .tsumiki-overlay {
             position: fixed;
@@ -10283,6 +10533,170 @@
             line-height: 1.7;
         }
 
+        /* about: アイコン付きの機能一覧 */
+        .about-feat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0 auto 18px;
+            text-align: left;
+        }
+
+        .about-feat-list .about-feat {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px 12px 12px;
+        }
+
+        .about-feat-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+        }
+
+        .light .about-feat-icon {
+            color: var(--primary-color);
+            background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+        }
+
+        .dark .about-feat-icon {
+            color: var(--primary-color-dark);
+            background: color-mix(in srgb, var(--primary-color-dark) 20%, transparent);
+        }
+
+        .about-feat-list .about-feat-name {
+            margin-bottom: 1px;
+        }
+
+        .about-links {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .about-link-btn {
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            font: inherit;
+            font-size: 0.88rem;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .light .about-link-btn {
+            background: var(--bg-light);
+        }
+
+        .dark .about-link-btn {
+            background: var(--bg-dark);
+        }
+
+        .light .about-link-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .dark .about-link-btn:hover {
+            border-color: var(--primary-color-dark);
+        }
+
+        /* Q&A: 質問を押すと答えが開く */
+        .qa-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .qa-item {
+            border-radius: 24px;
+        }
+
+        .light .qa-item {
+            background: var(--bg-light);
+        }
+
+        .dark .qa-item {
+            background: var(--bg-dark);
+        }
+
+        .qa-item summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px 13px 12px;
+            list-style: none;
+            cursor: pointer;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .qa-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .qa-item summary::before {
+            content: 'Q';
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+
+        .light .qa-item summary::before {
+            background: var(--primary-color);
+        }
+
+        .dark .qa-item summary::before {
+            background: var(--primary-color-dark);
+        }
+
+        .qa-item summary::after {
+            content: '';
+            width: 7px;
+            height: 7px;
+            flex-shrink: 0;
+            margin-left: auto;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: translateY(-2px) rotate(45deg);
+            opacity: 0.45;
+            transition: transform 0.2s ease;
+        }
+
+        .qa-item[open] summary::after {
+            transform: translateY(2px) rotate(-135deg);
+        }
+
+        .qa-item p {
+            margin: 0;
+            padding: 0 20px 16px 52px;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            opacity: 0.85;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .qa-footnote {
+            margin: 12px 0 0;
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0.55;
+        }
+
         /* シンプルabout: 機能グリッド */
         .about-feat-grid {
             display: grid;
@@ -11415,11 +11829,12 @@
         <div class="language-selector" id="languageSelector">
             <img class="tsumiki-logo welcome-logo" src="tsumiki_logo.svg" data-light-src="tsumiki_logo.svg"
                 data-dark-src="tsumiki_logo_akarui.svg" alt="ツミキapp">
-            <div class="welcome-lang-buttons">
-                <span class="welcome-lang-text" onclick="setLanguage('ja')">日本語</span>
-                <span class="welcome-lang-sep">|</span>
-                <span class="welcome-lang-text" onclick="setLanguage('en')">English</span>
+            <p class="welcome-tagline">勉強時間を、積み上げよう。<span>Stack up your study time.</span></p>
+            <div class="welcome-lang-buttons" role="group" aria-label="言語 / Language">
+                <button type="button" class="welcome-lang-btn" onclick="setLanguage('ja')" lang="ja">日本語</button>
+                <button type="button" class="welcome-lang-btn" onclick="setLanguage('en')" lang="en">English</button>
             </div>
+            <p class="welcome-lang-note">あとから設定で変えられます · You can change this later</p>
         </div>
     </div>
 
@@ -11535,22 +11950,21 @@
                 data-i18n="aboutButton">このサイトについて</button>
         </div>
     </div>
-    <div class="tutorial-box" id="tutorialBox" style="display: none;">
-        <div class="tutorial-step-info" id="tutorialStepInfo"></div>
-        <div class="tutorial-progress">
-            <div class="tutorial-progress-fill" id="tutorialProgressFill"></div>
+    <div class="tutorial-box" id="tutorialBox" style="display: none;" role="dialog" aria-modal="true"
+        aria-labelledby="tutorialTitle" aria-describedby="tutorialMessage">
+        <div class="tutorial-head">
+            <div class="tutorial-dots" id="tutorialDots" aria-hidden="true"></div>
+            <span class="tutorial-count" id="tutorialStepInfo"></span>
+            <button type="button" class="tutorial-skip" id="tutorialSkipBtn" onclick="skipTutorial()"
+                data-i18n="skipButton">スキップ</button>
         </div>
-        <h3 id="tutorialTitle" data-i18n="tutorialPlaceholderTitle">タイトル</h3>
-        <p id="tutorialMessage" data-i18n="tutorialPlaceholderMessage">メッセージ</p>
+        <h3 id="tutorialTitle"></h3>
+        <p id="tutorialMessage"></p>
         <div class="tutorial-buttons">
-            <button class="secondary" id="tutorialSkipBtn" onclick="skipTutorial()" data-i18n="skipButton">スキップ</button>
-            <span class="tutorial-click-hint" id="tutorialClickHint" data-i18n="tutorialClickHint">光っている部分をクリック</span>
-            <div style="display: flex; gap: 10px;">
-                <button class="secondary" id="tutorialPrevBtn" onclick="prevTutorialStep()"
-                    data-i18n="tutorialPrev">戻る</button>
-                <button class="primary" id="tutorialNextBtn" onclick="nextTutorialStep()"
-                    data-i18n="tutorialNext">次へ</button>
-            </div>
+            <button type="button" class="secondary" id="tutorialPrevBtn" onclick="prevTutorialStep()"
+                data-i18n="backButton">戻る</button>
+            <button type="button" class="primary" id="tutorialNextBtn" onclick="nextTutorialStep()"
+                data-i18n="nextButton">次へ</button>
         </div>
     </div>
     <div class="tutorial-arrow" id="tutorialArrow"></div>
@@ -11609,25 +12023,27 @@
 
     <!-- About / Q&A / ライセンス モーダル(常にレンダリングされるよう設定ページの外に配置) -->
     <div class="about-overlay" id="aboutOverlay" aria-hidden="true">
-        <div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-            <h2 id="aboutTitle" data-i18n="aboutTitle">このサイトについて</h2>
-            <div class="about-content about-pager-content" id="aboutContent">
-                <!-- renderAboutPage() が描画 -->
+        <div class="about-dialog about-dialog-narrow" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+            <div class="about-head">
+                <h2 id="aboutTitle" data-i18n="aboutTitle">このサイトについて</h2>
+                <button type="button" class="about-close" id="aboutCloseBtn" aria-label="閉じる"
+                    data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
-            <div class="about-actions">
-                <button class="primary" id="aboutOkBtn" data-i18n="closeButton">閉じる</button>
+            <div class="about-content" id="aboutContent">
+                <!-- renderAboutPage() が描画 -->
             </div>
         </div>
     </div>
 
     <div class="about-overlay" id="qaOverlay" aria-hidden="true">
-        <div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
-            <h2 id="qaTitle" data-i18n="qaTitle">よくある質問(Q&A)</h2>
+        <div class="about-dialog about-dialog-narrow" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+            <div class="about-head">
+                <h2 id="qaTitle" data-i18n="qaTitle">よくある質問(Q&A)</h2>
+                <button type="button" class="about-close" id="qaCloseBtn" aria-label="閉じる"
+                    data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
             <div id="qaContent" class="about-content" data-i18n-html="qaContent">
                 <!-- Content will be replaced by JS -->
-            </div>
-            <div class="about-actions">
-                <button class="primary" id="qaOkBtn" data-i18n="closeButton">閉じる</button>
             </div>
         </div>
     </div>
@@ -12414,22 +12830,24 @@
                     <div style="margin-bottom: 15px;">
                         <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 8px;"
                             data-i18n="focusDuration">集中時間</label>
-                        <!-- 20〜40分/1分刻みのステッパー(長押しで連続変更) -->
+                        <!-- 5〜180分。±(長押しで連続)か、数字を押して直接入力 -->
                         <div class="focus-stepper" id="focusDurationStepper" data-key="focus_duration">
                             <button type="button" class="stepper-btn" data-step="-1" aria-label="集中時間を1分減らす"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
-                            <span class="stepper-value">25分</span>
+                            <label class="stepper-value"></label>
                             <button type="button" class="stepper-btn" data-step="1" aria-label="集中時間を1分増やす"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
                         </div>
                     </div>
                     <div>
                         <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 8px;"
                             data-i18n="breakDuration">休憩時間</label>
-                        <!-- 1〜10分/1分刻みのステッパー(長押しで連続変更) -->
+                        <!-- 1〜60分。±(長押しで連続)か、数字を押して直接入力 -->
                         <div class="focus-stepper" id="breakDurationStepper" data-key="break_duration">
                             <button type="button" class="stepper-btn" data-step="-1" aria-label="休憩時間を1分減らす"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
-                            <span class="stepper-value">5分</span>
+                            <label class="stepper-value"></label>
                             <button type="button" class="stepper-btn" data-step="1" aria-label="休憩時間を1分増やす"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
                         </div>
+                        <div class="focus-presets" id="focusPresets" role="group" aria-label="よく使う組み合わせ"
+                            data-i18n-aria="focusPresetsLabel"></div>
                     </div>
                 </div>
             </div>
@@ -12472,10 +12890,14 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
-                <div class="toggle-item">
+                <div class="toggle-item auto-stop-presets-row">
                     <span data-i18n="autoStopPresetsLabel">自動停止のプリセット(分)</span>
-                    <input type="text" id="autoStopPresetsInput" class="auto-stop-presets-input" inputmode="numeric"
-                        placeholder="5,10" onchange="updateAutoStopPresetsFromInput()">
+                    <div class="auto-stop-preset-boxes" id="autoStopPresetBoxes">
+                        <input type="text" class="auto-stop-preset-box" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="1" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 3)" onchange="updateAutoStopPresetsFromInput()">
+                        <input type="text" class="auto-stop-preset-box" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="2" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 3)" onchange="updateAutoStopPresetsFromInput()">
+                        <input type="text" class="auto-stop-preset-box" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="3" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 3)" onchange="updateAutoStopPresetsFromInput()">
+                        <input type="text" class="auto-stop-preset-box" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="4" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 3)" onchange="updateAutoStopPresetsFromInput()">
+                    </div>
                 </div>
                 <div class="setting-note" data-i18n="autoStopPresetsNote">カンマ区切りで最大4件(例: 5,10,30)</div>
             </div>
@@ -13269,7 +13691,8 @@
                     autoStopStopMusic: 'タイマー自動停止時に音楽も停止',
                     autoStopFadeout: '音楽の自動停止時にフェードアウト',
                     autoStopPresetsLabel: '自動停止のプリセット(分)',
-                    autoStopPresetsNote: 'カンマ区切りで最大4件(例: 5,10,30)',
+                    focusPresetsLabel: 'よく使う組み合わせ',
+                    autoStopPresetsNote: '最大4つまで。使わない欄は空のままで大丈夫です',
                     autoStopLogPaused: '自動停止により一時停止しました',
                     autoStopLogEnded: '自動停止によりセッションを終了しました',
                     autoStopNotifyTimer: 'タイマーを自動停止しました',
@@ -13312,8 +13735,6 @@
                     noMultiDates: '未選択',
                     clearButton: 'クリア',
                     doneButton: '完了',
-                    tutorialPlaceholderTitle: 'タイトル',
-                    tutorialPlaceholderMessage: 'メッセージ',
                     playPause: '再生 / 一時停止',
                     guideAlt: 'ガイド',
                     themeToggleAlt: 'テーマ切替',
@@ -13485,17 +13906,23 @@
                     confirmClear: 'すべての履歴を削除してもよろしいですか?',
 
                     // チュートリアル
-                    tutorialWelcome: '使い方を説明しますか?',
-                    tutorialWelcomeMessage: '初めての方向けに、このサイトの使い方を順番に説明します。',
-                    tutorialClose: 'いいえ',
-                    tutorialYes: 'はい',
-                    tutorialSkip: 'スキップ',
-                    tutorialPrev: '戻る',
-                    tutorialNext: '次へ',
-                    tutorialFinish: '終了',
-                    tutorialStep: 'ステップ',
-                    tutorialComplete: 'チュートリアル完了!',
-                    tutorialCompleteMessage: 'お疲れ様でした! これで基本的な使い方の説明は終了です。また分からなくなったら、設定画面の「使い方ガイドを再表示」からいつでも確認できます。もっと詳しく知りたかったらホームページを覗いてみてください! <a href="https://about.tsumiki.app">about.tsumiki.app</a>',
+                    tutorialWelcome: 'ツミキappへようこそ',
+                    tutorialWelcomeMessage: '主な使い方を、6つのステップでかんたんに紹介します。',
+                    tutorialClose: 'あとで',
+                    tutorialYes: '使い方を見る',
+                    tourStartTitle: '勉強をはじめる',
+                    tourStartMessage: 'このボタンを押すと、時間の計測がはじまります。一時停止もでき、終わったら「終了」を押すと記録が保存されます。',
+                    tourFocusTitle: '通常とフォーカス',
+                    tourFocusMessage: '「フォーカス」にすると、集中と休憩をくり返すように時間を区切って勉強できます(ポモドーロ)。',
+                    tourGroupTitle: 'グループ',
+                    tourGroupMessage: '「数学」「英語」のようにグループを選んでおくと、あとで科目ごとの勉強時間が見られます。',
+                    tourMenuTitle: 'ページの切り替え',
+                    tourMenuMessage: '統計では合計時間や積み木、リストでは過去の記録が見られます。音楽やToDoは、設定でオンにするとここに並びます。',
+                    tourTopTitle: '表示と設定',
+                    tourTopMessage: 'ライト/ダークの切り替えと、設定はここから。設定では、使う機能やテーマカラーを変えられます。',
+                    tourDoneTitle: '準備ができました',
+                    tourDoneMessage: 'さっそく勉強をはじめましょう。この説明は、設定の「ヘルプ」からいつでも見られます。<br>くわしい使い方は <a href="https://about.tsumiki.app" target="_blank" rel="noopener">about.tsumiki.app</a> へ。',
+                    tourDoneButton: 'はじめる',
                     // アクセシビリティ用ラベル
                     dragHandle: '並べ替えハンドル',
                     playlistManagerTitle: 'プレイリスト管理',
@@ -13504,47 +13931,6 @@
                     playlistNamePlaceholder: 'プレイリスト名を入力',
 
                     // チュートリアル
-                    tutorialStartTitle: 'ストップウォッチの開始(クリック)',
-                    tutorialStartMessage: 'この「勉強開始」ボタンをクリックすると、タイマーがスタートします。',
-                    tutorialTimerStartedTitle: 'タイマーがスタートしました',
-                    tutorialTimerStartedMessage: '今はチュートリアルですが、実際の勉強では、このまま集中して作業を続けましょう。',
-                    tutorialPauseTitle: '一時停止',
-                    tutorialPauseMessage: '休憩したい時は、この「一時停止」ボタンをクリックして時間を止めることができます。試してみましょう。',
-                    tutorialPausedTitle: '一時停止中',
-                    tutorialPausedMessage: 'タイマーが一時停止しました。もう一度ボタンを押すと再開できます。',
-                    tutorialEndTitle: '記録の終了',
-                    tutorialEndMessage: '勉強が完全に終わったら「終了」ボタンを押します。これで学習時間が自動的に記録されます。クリックしてみましょう。',
-                    tutorialGroupTitle: 'グループ分け',
-                    tutorialGroupMessage: 'グループ名を入力すると、後で科目別や分野別に記録を分類できます。例えば「数学」や「英語」など。',
-                    tutorialStatsTitle: '統計の確認',
-                    tutorialStatsMessage: 'ここをクリックして統計画面に移動してみましょう。累計の勉強時間、連続日数、グループ別の集計などが確認できます。',
-                    tutorialHistoryTitle: '履歴の確認',
-                    tutorialHistoryMessage: 'ここをクリックしてリスト画面に移動してみましょう。過去の学習記録を一覧で見ることができます。検索、ソート、グループ移動などの機能があります。',
-                    tutorialStatsSummaryTitle: '統計の概要',
-                    tutorialStatsSummaryMessage: 'ここでは、今日/今週/今月の累計勉強時間や、1日の平均勉強時間を確認できます。',
-                    tutorialStatsGraphTitle: '勉強時間のグラフ',
-                    tutorialStatsGraphMessage: '過去1週間の勉強時間の推移をグラフで視覚的に確認できます。',
-                    tutorialListFilterTitle: '記録の絞り込み',
-                    tutorialListFilterMessage: 'グループで絞り込んだり、特定の日時を検索したりして、過去の記録をすぐに見つけることができます。',
-                    tutorialListItemTitle: '記録の管理',
-                    tutorialListItemMessage: 'それぞれの記録を個別に削除したり、後から別のグループに移動したりすることができます。',
-                    tutorialDarkModeTitle: 'ダークモード',
-                    tutorialDarkModeMessage: 'このボタンをクリックするとライト / ダークモードを切り替えられます。目に優しい表示で集中できます。試しに切り替えてみましょう。',
-                    tutorialSettingsTitle: '設定画面',
-                    tutorialSettingsMessage: 'ここから設定画面を開けます。テーマカラーの変更、音楽プレイヤーや ToDo リストの表示切替、データのバックアップなどができます。クリックして確認してみましょう!',
-                    tutorialDisplaySettingsTitle: '表示設定',
-                    tutorialDisplaySettingsMessage: '「使う機能」で音楽プレイヤーや ToDo リストの表示 / 非表示を切り替えられます。ほかの設定は上のカテゴリから選べます。',
-                    tutorialThemeColorTitle: 'テーマカラー',
-                    tutorialThemeColorMessage: 'お好みのテーマカラーを選択できます。ブルー、グリーン、パープル、オレンジ、ピンク、ティールの6色から選べます。',
-                    tutorialGraphDisplayTitle: 'グラフ表示',
-                    tutorialGraphDisplayMessage: '勉強時間のグラフの種類や表示期間、表示場所をカスタマイズできます。',
-                    tutorialDataManagementTitle: 'データ管理',
-                    tutorialDataManagementMessage: 'データのエクスポート / インポート機能です。バックアップを取ったり、他のデバイスにデータを移行できます。',
-                    tutorialCompletedTitle: 'チュートリアル完了!',
-                    tutorialCompletedMessage: 'お疲れ様でした! これで基本的な使い方の説明は終了です。また分からなくなったら、設定画面の「使い方ガイドを再表示」からいつでも確認できます。',
-                    tutorialEditorModeTitle: 'エディターモード',
-                    tutorialEditorModeMessage: '「開始」を押すと、画面上の各要素をクリックして表示 / 非表示や細かい設定を直接変更できます。開始しなくても、要素を右クリック(スマホでは長押し)すればいつでもクイック設定を開けます。',
-                    tutorialClickHint: '光っている部分をクリック',
                     skipButton: 'スキップ',
                     step: 'ステップ',
 
@@ -13604,30 +13990,22 @@
                     aboutFeatTodo: 'ToDoとカレンダー',
                     aboutDemoRecorded: '記録しました',
                     aboutDemoDarkToggle: 'ライト / ダーク切替',
+                    aboutSiteLink: 'ホームページ',
                     aboutCreditHtml: 'このサイトは<a href="https://kokyujene.super-hiko14.com/members/super-hiko14/">Super Hiko14</a>が開発しました。<br>※ 一部 AI が使用されています。',
                     aboutTodoSample1: '数学の課題を終わらせる',
                     aboutTodoSample2: '英単語 50個',
                     aboutTodoSample3: 'ノートの見直し',
-                    qaContent: `<div style="text-align: left;">
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. ツミキappの記録等の保存方法は?</h3>
-                            <p style="margin-left: 15px;">A. すべてのデータはブラウザのローカルストレージに保存されます。サーバーには一切送信されません。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. 他のデバイスへデータを移行したい、バックアップを取りたい。</h3>
-                            <p style="margin-left: 15px;">A. エクスポートから JSON ファイルをダウンロードできます。インポートで他のデバイスへの移行やバックアップとして保存できます。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. 音楽プレイヤーで再生できるファイル形式は?</h3>
-                            <p style="margin-left: 15px;">A. mp3, wav, flac, m4a, aac, ogg, webm などの一般的な音楽ファイルに対応しています。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. タイマーを一時停止したままサイトを閉じてしまった場合は?</h3>
-                            <p style="margin-left: 15px;">A. 大丈夫です。サイトを閉じてもタイマーは作動し続けます。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. プレイヤーにYouTube動画を追加したい</h3>
-                            <p style="margin-left: 15px;">A. デフォルトだと設定でOFFになってるのでONにすると動画/音楽追加のメニューにYoutubeの項目が追加されます。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. 今後も機能を追加する予定は?</h3>
-                            <p style="margin-left: 15px;">A. 決まってはいません。ただし、最低限の機能のみ使いたい方もいると思うので、追加する場合はその機能を設定の ON/OFF などで表示を切り替えられるようにする予定です。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. 収益化や広告導入のつもりはある?</h3>
-                            <p style="margin-left: 15px;">A. な い で す ( 断 言 )</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. アプリをリリースする予定は?</h3>
-                            <p style="margin-left: 15px;">A. 逆にリリースしたいです...。技術的にまだ足りないので難しいですね。</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. にゃにゃにゃにゃぁ?(Q&A は増える?)</h3>
-                            <p style="margin-left: 15px;">A. にゃにゃにゃにゃぁ。(Q&A は今後多分増えます。)</p>
-                            <h3 style="font-size: 0.9rem; margin-top: 20px; margin-bottom: 10px;">こんなもんですかね...</h3>
+                    qaContent: `<div class="qa-list">
+                            <details class="qa-item"><summary>ツミキappの記録などはどこに保存されますか?</summary><p>すべてのデータはブラウザのローカルストレージに保存されます。サーバーには一切送信されません。</p></details>
+                            <details class="qa-item"><summary>他のデバイスへデータを移行したい、バックアップを取りたい。</summary><p>エクスポートから JSON ファイルをダウンロードできます。インポートで他のデバイスへの移行やバックアップとして保存できます。</p></details>
+                            <details class="qa-item"><summary>音楽プレイヤーで再生できるファイル形式は?</summary><p>mp3, wav, flac, m4a, aac, ogg, webm などの一般的な音楽ファイルに対応しています。</p></details>
+                            <details class="qa-item"><summary>タイマーを一時停止したままサイトを閉じてしまった場合は?</summary><p>大丈夫です。サイトを閉じてもタイマーは作動し続けます。</p></details>
+                            <details class="qa-item"><summary>プレイヤーにYouTube動画を追加したい</summary><p>デフォルトだと設定でOFFになってるので、ONにすると動画/音楽追加のメニューにYouTubeの項目が追加されます。</p></details>
+                            <details class="qa-item"><summary>今後も機能を追加する予定は?</summary><p>決まってはいません。ただし、最低限の機能のみ使いたい方もいると思うので、追加する場合はその機能を設定の ON/OFF などで表示を切り替えられるようにする予定です。</p></details>
+                            <details class="qa-item"><summary>収益化や広告導入のつもりはある?</summary><p>な い で す ( 断 言 )</p></details>
+                            <details class="qa-item"><summary>アプリをリリースする予定は?</summary><p>逆にリリースしたいです...。技術的にまだ足りないので難しいですね。</p></details>
+                            <details class="qa-item"><summary>にゃにゃにゃにゃぁ?(Q&A は増える?)</summary><p>にゃにゃにゃにゃぁ。(Q&A は今後多分増えます。)</p></details>
+                            <p class="qa-footnote">こんなもんですかね...</p>
                         </div>`,
 
                     // 日付形式
@@ -13844,13 +14222,6 @@
 
 
                     // チュートリアルステップ
-                    tutorialStep1Title: 'メインメニュー',
-                    tutorialStep1Desc: 'ここから各機能にアクセスできます。タイマー、統計、履歴リストなどを切り替えられます。',
-                    tutorialStep2Title: 'タイマー',
-                    tutorialStep2Desc: 'このタイマーで勉強時間を計測します。開始ボタンを押すと計測が始まります。',
-                    tutorialStep3Title: '勉強開始',
-                    tutorialStep3Desc: 'このボタンを押すと勉強時間の計測が開始されます。',
-                    tutorialStep4Title: 'グループ名',
 
                     // Focus Mode
                     focusMode: 'フォーカスモード',
@@ -13865,16 +14236,6 @@
                     showFocusModeToggle: 'フォーカスモード切替を表示',
                     focusDuration: '集中時間',
                     breakDuration: '休憩時間',
-                    tutorialFocusModeMessage: '集中時間と休憩時間を交互に切り替えるフォーカスモード(ポモドーロテクニック)を利用できます。',
-                    tutorialStep4Desc: 'ここにグループ名を入力すると、後で統計やリストで分類できます(任意)。',
-                    tutorialStep5Title: '統計',
-                    tutorialStep5Desc: '統計画面では、今日/今週/今月の勉強時間や、グループごとの統計を確認できます。',
-                    tutorialStep6Title: '履歴リスト',
-                    tutorialStep6Desc: 'これまでの学習履歴を一覧で確認できます。検索やソート、グループでの絞り込みも可能です。',
-                    tutorialStep7Title: '設定',
-                    tutorialStep7Desc: 'ここでテーマの変更、音楽プレイヤーや ToDo リストの有効化、データのエクスポート / インポートができます。',
-                    tutorialStep8Title: 'テーマ切り替え',
-                    tutorialStep8Desc: 'このボタンでダークモードとライトモードを切り替えられます。',
                     toggleLightMode: 'ライトモードに切り替え',
                     toggleDarkMode: 'ダークモードに切り替え',
 
@@ -14105,7 +14466,8 @@
                     autoStopStopMusic: 'Also stop music on timer auto-stop',
                     autoStopFadeout: 'Fade out before music auto-stops',
                     autoStopPresetsLabel: 'Auto-stop presets (min)',
-                    autoStopPresetsNote: 'Comma separated, up to 4 (e.g. 5,10,30)',
+                    focusPresetsLabel: 'Common combinations',
+                    autoStopPresetsNote: 'Up to 4. Leave any box you don\'t need empty.',
                     autoStopLogPaused: 'Paused by auto-stop',
                     autoStopLogEnded: 'Session ended by auto-stop',
                     autoStopNotifyTimer: 'Timer auto-stopped',
@@ -14288,17 +14650,23 @@
                     confirmClear: 'Are you sure you want to clear all history?',
 
                     // Tutorial
-                    tutorialWelcome: 'Would you like a tutorial?',
-                    tutorialWelcomeMessage: "For first-time users, we'll guide you through how to use this site step by step.",
-                    tutorialClose: 'No',
-                    tutorialYes: 'Yes',
-                    tutorialSkip: 'Skip',
-                    tutorialPrev: 'Back',
-                    tutorialNext: 'Next',
-                    tutorialFinish: 'Finish',
-                    tutorialStep: 'Step',
-                    tutorialComplete: 'Tutorial Complete!',
-                    tutorialCompleteMessage: "Great job! You've completed the basic tutorial. If you need help again, you can access the guide anytime from \"Show User Guide\" in the settings. If you'd like to learn more, please check out our website! <a href=\"https://about.tsumiki.app\">about.tsumiki.app</a>",
+                    tutorialWelcome: 'Welcome to Tsumiki app',
+                    tutorialWelcomeMessage: "Here's a quick look at the basics in 6 short steps.",
+                    tutorialClose: 'Later',
+                    tutorialYes: 'Show me',
+                    tourStartTitle: 'Start studying',
+                    tourStartMessage: 'Press this button to start the timer. You can pause anytime, and when you press "End" your session is saved.',
+                    tourFocusTitle: 'Normal and Focus',
+                    tourFocusMessage: 'Switch to "Focus" to split your time into focus and break periods (Pomodoro).',
+                    tourGroupTitle: 'Groups',
+                    tourGroupMessage: 'Pick a group like "Math" or "English" to see your study time for each subject later.',
+                    tourMenuTitle: 'Pages',
+                    tourMenuMessage: 'Stats shows your totals and blocks, and List shows past sessions. Turn on Music or ToDo in Settings to add them here.',
+                    tourTopTitle: 'Theme and settings',
+                    tourTopMessage: 'Switch between light and dark, and open Settings here. In Settings you can choose features and the theme color.',
+                    tourDoneTitle: "You're all set",
+                    tourDoneMessage: 'Time to start studying. You can see this guide again anytime from Help in Settings.<br>Learn more at <a href="https://about.tsumiki.app" target="_blank" rel="noopener">about.tsumiki.app</a>.',
+                    tourDoneButton: "Let's go",
                     // Accessibility labels
                     dragHandle: 'Drag handle',
                     playlistManagerTitle: 'Playlist manager',
@@ -14430,8 +14798,6 @@
                     menu: 'Menu',
                     startOptional: 'Start date (optional)',
                     endOptional: 'End date (optional)',
-                    tutorialPlaceholderTitle: 'Title',
-                    tutorialPlaceholderMessage: 'Message',
                     playPause: 'Play/Pause',
 
                     // Stats Page - Additional
@@ -14560,13 +14926,6 @@
 
 
                     // Tutorial Steps
-                    tutorialStep1Title: 'Main Menu',
-                    tutorialStep1Desc: 'Access all features from here. Switch between Timer, Stats, History list, and more.',
-                    tutorialStep2Title: 'Timer',
-                    tutorialStep2Desc: 'This timer tracks your study time. Press the start button to begin measuring.',
-                    tutorialStep3Title: 'Start Studying',
-                    tutorialStep3Desc: 'Click this button to start tracking your study time.',
-                    tutorialStep4Title: 'Group Name',
 
                     // Focus Mode
                     focusMode: 'Focus Mode',
@@ -14581,59 +14940,8 @@
                     showFocusModeToggle: 'Show Focus Mode Toggle',
                     focusDuration: 'Focus Duration',
                     breakDuration: 'Break Duration',
-                    tutorialFocusModeMessage: 'You can use Focus Mode (Pomodoro technique) to alternate between focus and break times.',
-                    tutorialStep4Desc: 'Enter a group name here to categorize your sessions in stats and lists (optional).',
-                    tutorialStep5Title: 'Statistics',
-                    tutorialStep5Desc: 'View study time for today, this week, this month, and statistics by group.',
-                    tutorialStep6Title: 'History List',
-                    tutorialStep6Desc: 'View all your past study sessions. Search, sort, and filter by group.',
-                    tutorialStep7Title: 'Settings',
-                    tutorialStep7Desc: 'Change themes, enable music player and todo list, export/import data.',
-                    tutorialStep8Title: 'Theme Toggle',
-                    tutorialStep8Desc: 'Switch between dark mode and light mode with this button.',
 
                     // Tutorial
-                    tutorialStartTitle: 'Start Stopwatch',
-                    tutorialStartMessage: 'Click here to start the timer.',
-                    tutorialTimerStartedTitle: 'Timer Started',
-                    tutorialTimerStartedMessage: 'In actual study, focus on your work from here.',
-                    tutorialPauseTitle: 'Pause',
-                    tutorialPauseMessage: 'Click the "Pause" button to take a break.',
-                    tutorialPausedTitle: 'Paused',
-                    tutorialPausedMessage: 'Timer is paused. Click again to resume.',
-                    tutorialEndTitle: 'Finish Recording',
-                    tutorialEndMessage: 'Click "End" when you are done. Your time will be recorded.',
-                    tutorialGroupTitle: 'Grouping',
-                    tutorialGroupMessage: 'Enter a group name to categorize your study sessions (e.g., Math, English).',
-                    tutorialStatsTitle: 'Check Statistics',
-                    tutorialStatsMessage: 'Click here to see total time, consecutive days, and group stats.',
-                    tutorialHistoryTitle: 'Check History',
-                    tutorialHistoryMessage: 'Click here to view past study records. Search, sort, and edit.',
-                    tutorialStatsSummaryTitle: 'Stats Summary',
-                    tutorialStatsSummaryMessage: "Here you can see your total study time for today, this week, this month, and your daily average.",
-                    tutorialStatsGraphTitle: 'Activity Graph',
-                    tutorialStatsGraphMessage: 'Visualize your study progress over the past week with this graph.',
-                    tutorialListFilterTitle: 'Filtering Records',
-                    tutorialListFilterMessage: 'Filter by group or search for specific dates to find exactly what you are looking for.',
-                    tutorialListItemTitle: 'Managing Records',
-                    tutorialListItemMessage: 'You can delete individual records or move them to a different group later.',
-                    tutorialDarkModeTitle: 'Dark Mode',
-                    tutorialDarkModeMessage: 'Toggle light/dark mode for a more comfortable viewing experience.',
-                    tutorialSettingsTitle: 'Settings',
-                    tutorialSettingsMessage: 'Open settings for themes, data backup, and feature toggles. Click to check it out!',
-                    tutorialDisplaySettingsTitle: 'Display Settings',
-                    tutorialDisplaySettingsMessage: 'Turn features like Music Player or ToDo List on/off under “Features”. Pick a category above for other settings.',
-                    tutorialThemeColorTitle: 'Theme Color',
-                    tutorialThemeColorMessage: 'Choose your favorite theme color from 6 options.',
-                    tutorialGraphDisplayTitle: 'Graph Settings',
-                    tutorialGraphDisplayMessage: 'Customize graph type, display period, and location.',
-                    tutorialDataManagementTitle: 'Data Management',
-                    tutorialDataManagementMessage: 'Export/Import data for backup or device migration.',
-                    tutorialCompletedTitle: 'Tutorial Completed!',
-                    tutorialCompletedMessage: "That's it! You can review this guide anytime from Settings.",
-                    tutorialEditorModeTitle: 'Editor Mode',
-                    tutorialEditorModeMessage: 'Press "Start" to click any element on the screen and directly change its visibility and settings. Even without starting it, you can right-click (long-press on mobile) an element to open its quick settings anytime.',
-                    tutorialClickHint: 'Click the glowing area',
                     skipButton: 'Skip',
                     step: 'Step',
 
@@ -14675,30 +14983,22 @@
                     aboutFeatTodo: 'ToDos & calendar',
                     aboutDemoRecorded: 'Recorded',
                     aboutDemoDarkToggle: 'Light / Dark',
+                    aboutSiteLink: 'Website',
                     aboutCreditHtml: 'Developed by <a href="https://kokyujene.super-hiko14.com/members/super-hiko14/">Super Hiko14</a>.<br>* AI is used in some parts.',
                     aboutTodoSample1: 'Finish the math homework',
                     aboutTodoSample2: '50 vocabulary words',
                     aboutTodoSample3: 'Review notes',
-                    qaContent: `<div style="text-align: left;">
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. Where is data saved?</h3>
-                            <p style="margin-left: 15px;">A. All data is saved in your browser's local storage. Nothing is sent to any server.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. I want to migrate or back up my data.</h3>
-                            <p style="margin-left: 15px;">A. You can download a JSON file from Export. Use Import to restore or migrate to another device.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. What music file formats are supported?</h3>
-                            <p style="margin-left: 15px;">A. Supports mp3, wav, flac, m4a, aac, ogg, webm, and more.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. What if I close the site while the timer is paused?</h3>
-                            <p style="margin-left: 15px;">A. No worries. The timer continues running even if the site is closed.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. I want to add YouTube videos to the player</h3>
-                            <p style="margin-left: 15px;">A. By default, this feature is turned off in the settings, so if you turn it on, a YouTube option will be added to the menu for adding videos and music.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. Any plans to add more features?</h3>
-                            <p style="margin-left: 15px;">A. Undecided. If added, they will be togglable in settings.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. Monetization/Ads?</h3>
-                            <p style="margin-left: 15px;">A. N O (Assertive)</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. App release?</h3>
-                            <p style="margin-left: 15px;">A. I'd love to... but not technically capable yet.</p>
-                            <h3 style="font-size: 1.1rem; margin-top: 20px; margin-bottom: 10px;">Q. Meow meow? (More Q&A?)</h3>
-                            <p style="margin-left: 15px;">A. Meow meow. (More Q&A maybe later.)</p>
-                            <h3 style="font-size: 0.9rem; margin-top: 20px; margin-bottom: 10px;">That's about it...</h3>
+                    qaContent: `<div class="qa-list">
+                            <details class="qa-item"><summary>Where is data saved?</summary><p>All data is saved in your browser's local storage. Nothing is sent to any server.</p></details>
+                            <details class="qa-item"><summary>I want to migrate or back up my data.</summary><p>You can download a JSON file from Export. Use Import to restore or migrate to another device.</p></details>
+                            <details class="qa-item"><summary>What music file formats are supported?</summary><p>Supports mp3, wav, flac, m4a, aac, ogg, webm, and more.</p></details>
+                            <details class="qa-item"><summary>What if I close the site while the timer is paused?</summary><p>No worries. The timer continues running even if the site is closed.</p></details>
+                            <details class="qa-item"><summary>I want to add YouTube videos to the player</summary><p>By default, this feature is turned off in the settings, so if you turn it on, a YouTube option will be added to the menu for adding videos and music.</p></details>
+                            <details class="qa-item"><summary>Any plans to add more features?</summary><p>Undecided. If added, they will be togglable in settings.</p></details>
+                            <details class="qa-item"><summary>Monetization/Ads?</summary><p>N O (Assertive)</p></details>
+                            <details class="qa-item"><summary>App release?</summary><p>I'd love to... but not technically capable yet.</p></details>
+                            <details class="qa-item"><summary>Meow meow? (More Q&amp;A?)</summary><p>Meow meow. (More Q&amp;A maybe later.)</p></details>
+                            <p class="qa-footnote">That's about it...</p>
                         </div>`,
 
                     clearHistoryConfirm: 'Are you sure you want to delete all study history?',
@@ -14968,8 +15268,6 @@
                 document.body.classList.add('no-scroll');
                 aboutPageIndex = 0;
                 renderAboutPage(0);
-                const ok = document.getElementById('aboutOkBtn');
-                try { ok && ok.focus(); } catch (e) { }
             }
 
             function hideAboutModal() {
@@ -14999,19 +15297,24 @@
                 const content = document.getElementById('aboutContent');
                 if (!content) return;
                 const isDark = document.body.classList.contains('dark');
+                const icon = (d) => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
                 const feats = [
-                    ['menuTimer', 'aboutFeatTimer'],
-                    ['menuStats', 'aboutFeatStats'],
-                    ['menuList', 'aboutFeatList'],
-                    ['menuMusic', 'aboutFeatMusic'],
-                    ['menuTodo', 'aboutFeatTodo']
+                    ['menuTimer', 'aboutFeatTimer', '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5"/><path d="M9.5 3h5"/>'],
+                    ['menuStats', 'aboutFeatStats', '<path d="M5.5 19.5v-5M12 19.5V9M18.5 19.5v-12"/>'],
+                    ['menuList', 'aboutFeatList', '<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17.5" r="1"/>'],
+                    ['menuMusic', 'aboutFeatMusic', '<path d="M9 18V5.5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16.5" r="2.5"/>'],
+                    ['menuTodo', 'aboutFeatTodo', '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.5 2.5 5-5.2"/>']
                 ].map(function (f) {
-                    return '<div class="about-feat"><div class="about-feat-name">' + getText(f[0]) + '</div><div class="about-feat-desc">' + getText(f[1]) + '</div></div>';
+                    return '<div class="about-feat"><span class="about-feat-icon">' + icon(f[2]) + '</span><div><div class="about-feat-name">' + getText(f[0]) + '</div><div class="about-feat-desc">' + getText(f[1]) + '</div></div></div>';
                 }).join('');
                 content.innerHTML = '<div class="about-page">' +
                     '<div class="about-hero-logo"><img class="tsumiki-logo tsumiki-logo-about" src="' + (isDark ? 'tsumiki_logo_akarui.svg' : 'tsumiki_logo.svg') + '" alt="Tsumiki app"></div>' +
                     '<div class="about-page-desc">' + getText('aboutPgWhatDesc') + '</div>' +
-                    '<div class="about-feat-grid">' + feats + '</div>' +
+                    '<div class="about-feat-list">' + feats + '</div>' +
+                    '<div class="about-links">' +
+                    '<button type="button" class="about-link-btn" onclick="hideAboutModal(); showQAModal();">' + getText('qaButton') + '</button>' +
+                    '<a class="about-link-btn" href="https://about.tsumiki.app" target="_blank" rel="noopener">' + getText('aboutSiteLink') + '</a>' +
+                    '</div>' +
                     '<div class="about-hero-credit">' + getText('aboutCreditHtml') + '</div>' +
                     '</div>';
                 content.scrollTop = 0;
@@ -15025,8 +15328,10 @@
                 overlay.classList.add('show');
                 overlay.setAttribute('aria-hidden', 'false');
                 document.body.classList.add('no-scroll');
-                const ok = document.getElementById('qaOkBtn');
-                try { ok && ok.focus(); } catch (e) { }
+                // 開くたびに全部とじた状態から
+                overlay.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+                const content = document.getElementById('qaContent');
+                if (content) content.scrollTop = 0;
             }
 
             function hideQAModal() {
@@ -15523,14 +15828,9 @@
                 { key: 'other', labelKey: 'settingsTabOther', icon: '<circle cx="6" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.3" fill="currentColor" stroke="none"/>' }
             ];
 
-            let currentSettingsTab = (function () {
-                try {
-                    const saved = localStorage.getItem('settings_tab');
-                    return SETTINGS_TABS.some(t => t.key === saved) ? saved : 'general';
-                } catch (e) {
-                    return 'general';
-                }
-            })();
+            // 開いていたタブは覚えない(再読み込みしたら「基本」から)。以前保存していた値は片づける
+            let currentSettingsTab = 'general';
+            try { localStorage.removeItem('settings_tab'); } catch (e) { }
 
             function renderSettingsTabs() {
                 const container = document.getElementById('settingsTabs');
@@ -15547,7 +15847,6 @@
             function switchSettingsTab(key) {
                 if (!SETTINGS_TABS.some(t => t.key === key)) return;
                 currentSettingsTab = key;
-                try { localStorage.setItem('settings_tab', key); } catch (e) { }
                 renderSettingsTabs();
             }
 
@@ -15874,8 +16173,9 @@
             let focusState = 'focus'; // 'focus' または 'break' — サウンド再生のための状態遷移検知に使用
             let focusAnchorMs = 0; // セッション内でフォーカスモードを有効にした時点の経過時間(サイクルはここから開始)
             let focusBreakAccumMs = 0; // セッション途中でフォーカスをOFFにした際に確定した休憩時間の累計
-            const FOCUS_DURATION_RANGE = { min: 20, max: 40, def: 25 }; // 集中時間(分)
-            const BREAK_DURATION_RANGE = { min: 1, max: 10, def: 5 }; // 休憩時間(分)
+            const FOCUS_DURATION_RANGE = { min: 5, max: 180, def: 25 }; // 集中時間(分)
+            const BREAK_DURATION_RANGE = { min: 1, max: 60, def: 5 }; // 休憩時間(分)
+            const FOCUS_PRESETS = [[25, 5], [50, 10], [90, 15]]; // よく使う 集中/休憩 の組み合わせ
 
             function shouldBlockShortcuts() {
                 if (document.body.classList.contains('no-scroll')) return true;
@@ -16292,8 +16592,32 @@
 
             // ステッパーの±ボタンから1分単位で変更
             function stepFocusSetting(key, delta) {
+                setFocusSetting(key, getFocusSettingValue(key) + delta);
+            }
+
+            // 数字を直接入力したとき。空や数字以外なら元の値に戻す
+            function setFocusSettingFromInput(key, input) {
+                const n = parseInt(input.value, 10);
+                if (!Number.isFinite(n)) {
+                    updateFocusStepperUI();
+                    return;
+                }
+                setFocusSetting(key, n);
+                updateFocusStepperUI();
+            }
+
+            function applyFocusPreset(focusMin, breakMin) {
+                setFocusSetting('focus_duration', focusMin);
+                setFocusSetting('break_duration', breakMin);
+            }
+
+            function setFocusSetting(key, value) {
                 const range = getFocusSettingRange(key);
-                const next = Math.min(range.max, Math.max(range.min, getFocusSettingValue(key) + delta));
+                const next = Math.min(range.max, Math.max(range.min, Math.round(value)));
+                if (next === getFocusSettingValue(key) && getData(key) !== null) {
+                    updateFocusStepperUI();
+                    return;
+                }
 
                 // セッション作動中に時間設定を変えると、過去のサイクルまで新しい設定で再計算されて
                 // 総勉強時間が跳ねる(例: 25分→5分に変えると過去の集中時間の半分が休憩扱いになる)。
@@ -16312,7 +16636,16 @@
                 updateFocusSegmentUI();
             }
 
-            // 設定画面のステッパー表示(値/単位/端での無効化)を保存値に同期
+            // ステッパーの真ん中: 押すとそのまま数字を打てる入力欄
+            function focusStepperValueHtml(key) {
+                const label = getText(key === 'break_duration' ? 'breakDuration' : 'focusDuration');
+                return `<input type="text" class="stepper-input" inputmode="numeric" maxlength="3" autocomplete="off" value="${getFocusSettingValue(key)}" aria-label="${label}"`
+                    + ` onfocus="this.select()" oninput="this.value = this.value.replace(/\\D/g, '').slice(0, 3)"`
+                    + ` onchange="setFocusSettingFromInput('${key}', this)" onkeydown="if (event.key === 'Enter') { event.preventDefault(); this.blur(); }">`
+                    + `<span class="stepper-unit">${getText('musicResumeWindowMinutes')}</span>`;
+            }
+
+            // ステッパー(設定画面とエディターのミニメニュー)の表示を保存値に同期
             function updateFocusStepperUI() {
                 const unit = getText('musicResumeWindowMinutes');
                 document.querySelectorAll('.focus-stepper[data-key]').forEach(wrap => {
@@ -16320,12 +16653,34 @@
                     const range = getFocusSettingRange(key);
                     const val = getFocusSettingValue(key);
                     const valueEl = wrap.querySelector('.stepper-value');
-                    if (valueEl) valueEl.textContent = val + unit;
+                    if (valueEl) {
+                        const input = valueEl.querySelector('.stepper-input');
+                        if (!input) {
+                            valueEl.innerHTML = focusStepperValueHtml(key);
+                        } else {
+                            if (document.activeElement !== input) input.value = String(val);
+                            const unitEl = valueEl.querySelector('.stepper-unit');
+                            if (unitEl) unitEl.textContent = unit;
+                        }
+                    }
                     wrap.querySelectorAll('.stepper-btn').forEach(btn => {
                         const delta = parseInt(btn.dataset.step, 10);
                         btn.disabled = (delta < 0 && val <= range.min) || (delta > 0 && val >= range.max);
                     });
                 });
+                renderFocusPresets();
+            }
+
+            function renderFocusPresets() {
+                const box = document.getElementById('focusPresets');
+                if (!box) return;
+                const f = getFocusSettingValue('focus_duration');
+                const b = getFocusSettingValue('break_duration');
+                const unit = getText('musicResumeWindowMinutes');
+                box.innerHTML = FOCUS_PRESETS.map(([pf, pb]) => {
+                    const on = pf === f && pb === b;
+                    return `<button type="button" class="focus-preset${on ? ' active' : ''}" aria-pressed="${on}" onclick="applyFocusPreset(${pf}, ${pb})">${pf}<span>/</span>${pb}${unit}</button>`;
+                }).join('');
             }
 
             // 設定画面ステッパーのクリック+長押し連続変更を設定(初期化時に一度だけ呼ぶ)
@@ -22031,178 +22386,17 @@
                 event.target.value = '';
             }
 
-            // チュートリアル関連
+            // チュートリアル: 主な部品を順に光らせて見せるだけのツアー。
+            // 押させて操作させることはしない(本物の記録や設定が変わらないように)
             let currentTutorialStep = 0;
             let tutorialTimer = null;
             const tutorialSteps = [
-                {
-                    titleKey: 'tutorialStartTitle',
-                    messageKey: 'tutorialStartMessage',
-                    target: '#startBtn',
-                    position: 'top',
-                    action: 'click',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialTimerStartedTitle',
-                    messageKey: 'tutorialTimerStartedMessage',
-                    target: '#timer',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialPauseTitle',
-                    messageKey: 'tutorialPauseMessage',
-                    target: '#pauseBtn',
-                    position: 'top',
-                    action: 'click',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialPausedTitle',
-                    messageKey: 'tutorialPausedMessage',
-                    target: '#pauseBtn',
-                    position: 'top',
-                    action: 'view',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialEndTitle',
-                    messageKey: 'tutorialEndMessage',
-                    target: '#endBtn',
-                    position: 'top',
-                    action: 'click',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'focusMode',
-                    messageKey: 'tutorialFocusModeMessage',
-                    target: '#focusModeToggleContainer',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialGroupTitle',
-                    messageKey: 'tutorialGroupMessage',
-                    target: '#groupInput',
-                    position: 'top',
-                    action: 'view',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialStatsTitle',
-                    messageKey: 'tutorialStatsMessage',
-                    target: '.menu button[data-page="stats"]',
-                    position: 'bottom',
-                    action: 'click',
-                    page: 'timer'
-                },
-                {
-                    titleKey: 'tutorialStatsSummaryTitle',
-                    messageKey: 'tutorialStatsSummaryMessage',
-                    target: '#statsContainer',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'stats'
-                },
-                {
-                    titleKey: 'tutorialStatsGraphTitle',
-                    messageKey: 'tutorialStatsGraphMessage',
-                    target: '#statsGraphContainer',
-                    position: 'top',
-                    action: 'view',
-                    page: 'stats'
-                },
-                {
-                    titleKey: 'tutorialHistoryTitle',
-                    messageKey: 'tutorialHistoryMessage',
-                    target: '.menu button[data-page="list"]',
-                    position: 'bottom',
-                    action: 'click',
-                    page: 'stats'
-                },
-                {
-                    titleKey: 'tutorialListFilterTitle',
-                    messageKey: 'tutorialListFilterMessage',
-                    target: '.list-toolbar',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'list'
-                },
-                {
-                    titleKey: 'tutorialListItemTitle',
-                    messageKey: 'tutorialListItemMessage',
-                    target: '#historyList',
-                    position: 'top',
-                    action: 'view',
-                    page: 'list'
-                },
-                {
-                    titleKey: 'tutorialDarkModeTitle',
-                    messageKey: 'tutorialDarkModeMessage',
-                    target: '.theme-toggle',
-                    position: 'left',
-                    action: 'click',
-                    page: 'list'
-                },
-                {
-                    titleKey: 'tutorialSettingsTitle',
-                    messageKey: 'tutorialSettingsMessage',
-                    target: '.settings-btn',
-                    position: 'left',
-                    action: 'click',
-                    page: 'list'
-                },
-                {
-                    titleKey: 'tutorialDisplaySettingsTitle',
-                    messageKey: 'tutorialDisplaySettingsMessage',
-                    target: '#displaySettingsSection',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'settings'
-                },
-                {
-                    titleKey: 'tutorialThemeColorTitle',
-                    messageKey: 'tutorialThemeColorMessage',
-                    target: '.theme-selector',
-                    position: 'top',
-                    action: 'view',
-                    page: 'settings'
-                },
-                {
-                    titleKey: 'tutorialGraphDisplayTitle',
-                    messageKey: 'tutorialGraphDisplayMessage',
-                    target: '#graphSettingsSection',
-                    position: 'top',
-                    action: 'view',
-                    page: 'settings'
-                },
-                {
-                    titleKey: 'tutorialDataManagementTitle',
-                    messageKey: 'tutorialDataManagementMessage',
-                    target: '#dataManagementSection',
-                    position: 'top',
-                    action: 'view',
-                    page: 'settings'
-                },
-                {
-                    titleKey: 'tutorialEditorModeTitle',
-                    messageKey: 'tutorialEditorModeMessage',
-                    target: '.editor-mode-toggle-section',
-                    position: 'bottom',
-                    action: 'view',
-                    page: 'settings'
-                },
-                {
-                    titleKey: 'tutorialCompletedTitle',
-                    messageKey: 'tutorialCompletedMessage',
-                    target: null,
-                    position: 'center',
-                    action: 'finish',
-                    page: 'settings'
-                }
+                { titleKey: 'tourStartTitle', messageKey: 'tourStartMessage', target: '#startBtn', position: 'top', page: 'timer' },
+                { titleKey: 'tourFocusTitle', messageKey: 'tourFocusMessage', target: '#focusModeToggleContainer', position: 'bottom', page: 'timer' },
+                { titleKey: 'tourGroupTitle', messageKey: 'tourGroupMessage', target: '#timerGroupInputWrapper', position: 'top', page: 'timer' },
+                { titleKey: 'tourMenuTitle', messageKey: 'tourMenuMessage', target: '#mainMenu', position: 'bottom', page: 'timer' },
+                { titleKey: 'tourTopTitle', messageKey: 'tourTopMessage', target: '.top-buttons', position: 'left', page: 'timer' },
+                { titleKey: 'tourDoneTitle', messageKey: 'tourDoneMessage', target: null, position: 'center', page: 'timer', final: true }
             ];
 
             function showTutorialWelcome() {
@@ -22269,290 +22463,165 @@
                 currentTutorialStep = 0;
                 showPage('timer');
                 if (tutorialTimer) clearTimeout(tutorialTimer);
-                tutorialTimer = setTimeout(() => {
-                    showTutorialStep();
-                }, 500);
+                tutorialTimer = setTimeout(showTutorialStep, 400);
             }
 
-            function skipTutorial() {
+            function finishTutorial() {
                 hideTutorialStep();
                 saveData('tutorial_completed', 'true');
             }
 
-            function nextTutorialStep() {
-                const step = tutorialSteps[currentTutorialStep];
+            function skipTutorial() {
+                finishTutorial();
+            }
 
-                if (step.action === 'click') {
+            // 対象が今の画面に見えているか(機能をオフにしている部品は飛ばす)
+            function isTutorialTargetShown(step) {
+                if (!step.target) return true;
+                const el = document.querySelector(step.target);
+                if (!el || el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 0 && r.height > 0;
+            }
+
+            function moveTutorialStep(delta) {
+                let i = currentTutorialStep + delta;
+                while (i > 0 && i < tutorialSteps.length - 1 && !isTutorialTargetShown(tutorialSteps[i])) i += delta;
+                if (i < 0) return;
+                if (i >= tutorialSteps.length) {
+                    finishTutorial();
                     return;
                 }
+                currentTutorialStep = i;
+                showTutorialStep();
+            }
 
-                if (currentTutorialStep < tutorialSteps.length - 1) {
-                    currentTutorialStep++;
-                    showTutorialStep();
-                } else {
-                    hideTutorialStep();
-                    saveData('tutorial_completed', 'true');
-                }
+            function nextTutorialStep() {
+                moveTutorialStep(1);
             }
 
             function prevTutorialStep() {
-                if (currentTutorialStep > 0) {
-                    currentTutorialStep--;
-                    // 戻る時は必要なページに戻る
-                    const prevStep = tutorialSteps[currentTutorialStep];
-                    if (prevStep.page) {
-                        showPage(prevStep.page);
-                    }
-                    if (tutorialTimer) clearTimeout(tutorialTimer);
-                    tutorialTimer = setTimeout(() => {
-                        showTutorialStep();
-                    }, 500);
-                }
+                moveTutorialStep(-1);
             }
 
             function showTutorialStep() {
                 const step = tutorialSteps[currentTutorialStep];
+                const pages = { timer: 'timerPage', stats: 'statsPage', list: 'listPage', music: 'musicPage', todo: 'todoPage', settings: 'settingsPage' };
+                const activePage = document.querySelector('.page.active');
+                if (step.page && activePage && activePage.id !== pages[step.page]) {
+                    showPage(step.page);
+                    if (tutorialTimer) clearTimeout(tutorialTimer);
+                    tutorialTimer = setTimeout(showTutorialStep, 400);
+                    return;
+                }
+                if (!isTutorialTargetShown(step)) {
+                    // 最初のステップの部品が隠れているときなどは、見えるものまで進める
+                    moveTutorialStep(1);
+                    return;
+                }
+
                 const overlay = document.getElementById('tutorialOverlay');
                 const box = document.getElementById('tutorialBox');
                 const arrow = document.getElementById('tutorialArrow');
+                const total = tutorialSteps.length;
+                overlay.classList.add('show');
+                box.style.display = 'block';
+                box.classList.toggle('is-final', !!step.final);
+                // 押したボタンのフォーカス枠が次のステップに残らないようにする
+                if (box.contains(document.activeElement)) document.activeElement.blur();
 
-                // ページ切替が必要な場合
-                if (step.page) {
-                    const pages = { 'timer': 'timerPage', 'stats': 'statsPage', 'list': 'listPage', 'music': 'musicPage', 'todo': 'todoPage', 'settings': 'settingsPage' };
-                    const currentActivePage = document.querySelector('.page.active');
-                    const targetPageId = pages[step.page];
+                document.getElementById('tutorialDots').innerHTML = tutorialSteps
+                    .map((_, i) => `<span class="${i < currentTutorialStep ? 'done' : i === currentTutorialStep ? 'now' : ''}"></span>`).join('');
+                document.getElementById('tutorialStepInfo').textContent = `${currentTutorialStep + 1}/${total}`;
+                document.getElementById('tutorialSkipBtn').style.display = step.final ? 'none' : '';
+                document.getElementById('tutorialTitle').textContent = getText(step.titleKey);
+                // 最後のカードは案内ページへのリンクを含むので HTML として入れる(翻訳は固定の文面)
+                document.getElementById('tutorialMessage').innerHTML = getText(step.messageKey);
 
-                    if (currentActivePage && currentActivePage.id !== targetPageId) {
-                        showPage(step.page);
-                        // ページ切替後に少し待つ
-                        if (tutorialTimer) clearTimeout(tutorialTimer);
-                        tutorialTimer = setTimeout(() => {
-                            continueShowingStep();
-                        }, 500);
-                        return;
-                    }
+                const prevBtn = document.getElementById('tutorialPrevBtn');
+                const nextBtn = document.getElementById('tutorialNextBtn');
+                prevBtn.style.display = currentTutorialStep === 0 ? 'none' : '';
+                prevBtn.textContent = getText('backButton');
+                nextBtn.textContent = getText(step.final ? 'tourDoneButton' : 'nextButton');
+
+                document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight', 'tutorial-pos'));
+
+                // ステップが変わるたびにふわっと出し直す
+                box.style.animation = 'none';
+                void box.offsetWidth;
+                box.style.animation = '';
+
+                if (step.final || !step.target) {
+                    arrow.style.display = 'none';
+                    box.style.left = '50%';
+                    box.style.top = '50%';
+                    box.style.bottom = 'auto';
+                    box.style.transform = 'translate(-50%, -50%)';
+                    return;
                 }
 
-                continueShowingStep();
-
-                function continueShowingStep() {
-                    if (tutorialTimer) clearTimeout(tutorialTimer);
-
-                    // 完了画面の場合
-                    if (step.action === 'finish') {
-                        overlay.classList.add('show');
-                        box.style.display = 'block';
-                        arrow.style.display = 'none';
-
-                        document.getElementById('tutorialStepInfo').textContent = '';
-                        document.getElementById('tutorialProgressFill').style.width = '100%';
-                        document.getElementById('tutorialClickHint').style.display = 'none';
-                        document.getElementById('tutorialSkipBtn').style.display = 'none';
-                        document.getElementById('tutorialTitle').textContent = getText(step.titleKey);
-                        // 完了メッセージはホームページへのリンクを含むためHTMLとして描画
-                        document.getElementById('tutorialMessage').innerHTML = getText('tutorialCompleteMessage');
-
-                        const prevBtn = document.getElementById('tutorialPrevBtn');
-                        const nextBtn = document.getElementById('tutorialNextBtn');
-                        prevBtn.style.display = 'block';
-                        prevBtn.textContent = getText('backButton');
-                        prevBtn.onclick = prevTutorialStep;
-                        nextBtn.style.display = 'block';
-                        nextBtn.textContent = getText('finishButton');
-                        nextBtn.onclick = () => {
-                            hideTutorialStep();
-                            saveData('tutorial_completed', 'true');
-                        };
-
-                        // 画面中央に配置
-                        box.style.left = '50%';
-                        box.style.top = '50%';
-                        box.style.transform = 'translate(-50%, -50%)';
-                        box.style.bottom = 'auto';
-
-                        document.querySelectorAll('.tutorial-highlight').forEach(el => {
-                            el.classList.remove('tutorial-highlight');
-                        });
-
-                        const clickArea = document.getElementById('tutorialClickArea');
-                        if (clickArea) clickArea.remove();
-
-                        return;
-                    }
-
-                    const target = document.querySelector(step.target);
-                    if (target) revealSettingsElement(target);
-
-                    if (!target) {
-                        nextTutorialStep();
-                        return;
-                    }
-
-                    // ターゲットが表示されるまで待つ
-                    const targetVisible = target.offsetParent !== null;
-                    if (!targetVisible) {
-                        // タイマー起動中などで元々隠れている要素なら、延々と待たずに次へ
-                        if (target.classList.contains('hidden') || target.style.display === 'none') {
-                            nextTutorialStep();
-                            return;
-                        }
-
-                        if (tutorialTimer) clearTimeout(tutorialTimer);
-                        if (!step._retryCount) step._retryCount = 0;
-                        if (step._retryCount < 5) {
-                            step._retryCount++;
-                            tutorialTimer = setTimeout(() => {
-                                showTutorialStep();
-                            }, 300);
-                        } else {
-                            step._retryCount = 0;
-                            nextTutorialStep();
-                        }
-                        return;
-                    }
-                    step._retryCount = 0;
-
-                    // 対象が画面外(またはほぼ端)にある場合は中央へスクロールしてから位置計算する
-                    // (fixed要素はブラウザ側でスクロール不要と判定されるため実質no-op)
-                    const preRect = target.getBoundingClientRect();
-                    if (preRect.top < 70 || preRect.bottom > window.innerHeight - 70) {
-                        try { target.scrollIntoView({ block: 'center', behavior: 'instant' }); }
-                        catch (e) { target.scrollIntoView(); }
-                    }
-
-                    overlay.classList.add('show');
-                    box.style.display = 'block';
-
-                    document.getElementById('tutorialStepInfo').textContent = `${getText('step')} ${currentTutorialStep + 1}/${tutorialSteps.length}`;
-                    document.getElementById('tutorialProgressFill').style.width = `${Math.round(((currentTutorialStep + 1) / tutorialSteps.length) * 100)}%`;
-                    document.getElementById('tutorialSkipBtn').style.display = '';
-                    document.getElementById('tutorialTitle').textContent = getText(step.titleKey);
-                    document.getElementById('tutorialMessage').textContent = getText(step.messageKey);
-
-                    const prevBtn = document.getElementById('tutorialPrevBtn');
-                    const nextBtn = document.getElementById('tutorialNextBtn');
-                    prevBtn.style.display = currentTutorialStep === 0 ? 'none' : 'block';
-                    prevBtn.textContent = getText('backButton');
-                    prevBtn.onclick = prevTutorialStep;
-
-                    const clickHint = document.getElementById('tutorialClickHint');
-                    if (step.action === 'click') {
-                        nextBtn.style.display = 'none';
-                        clickHint.style.display = 'flex';
-                    } else {
-                        nextBtn.style.display = 'block';
-                        nextBtn.textContent = getText('nextButton');
-                        nextBtn.onclick = nextTutorialStep;
-                        clickHint.style.display = 'none';
-                    }
-
-                    document.querySelectorAll('.tutorial-highlight').forEach(el => {
-                        el.classList.remove('tutorial-highlight');
-                    });
-                    target.classList.add('tutorial-highlight');
-
-                    // クリック可能エリアを作成
-                    const existingClickArea = document.getElementById('tutorialClickArea');
-                    if (existingClickArea) existingClickArea.remove();
-
-                    if (step.action === 'click') {
-                        const clickArea = document.createElement('div');
-                        clickArea.id = 'tutorialClickArea';
-                        clickArea.className = 'tutorial-click-area';
-
-                        setTimeout(() => {
-                            const targetRect = target.getBoundingClientRect();
-                            clickArea.style.left = targetRect.left + 'px';
-                            clickArea.style.top = targetRect.top + 'px';
-                            clickArea.style.width = targetRect.width + 'px';
-                            clickArea.style.height = targetRect.height + 'px';
-                        }, 50);
-
-                        clickArea.onclick = () => {
-                            target.click();
-                            setTimeout(() => {
-                                if (currentTutorialStep < tutorialSteps.length - 1) {
-                                    currentTutorialStep++;
-                                    showTutorialStep();
-                                } else {
-                                    hideTutorialStep();
-                                    saveData('tutorial_completed', 'true');
-                                }
-                            }, 300);
-                        };
-                        document.body.appendChild(clickArea);
-                    }
-
-                    // 位置計算
-                    // ボックスの実高さを測ったうえで確定座標を直接計算する(後追いの画面外補正はしない)。
-                    // スペースが足りない側に置こうとした場合は自動で反対側へ反転し、矢印の向きも追従させる。
-                    setTimeout(() => {
-                        const targetRect = target.getBoundingClientRect();
-                        const vw = window.innerWidth;
-                        const vh = window.innerHeight;
-                        const boxWidth = Math.min(400, vw - 40);
-                        const boxPadding = 20;
-                        const gap = 20;
-                        const boxH = box.offsetHeight;
-
-                        // ステップ切替の位置ジャンプをフェードインで馴染ませる(opacityのみなので座標計算に影響しない)
-                        box.style.animation = 'none';
-                        void box.offsetWidth;
-                        box.style.animation = '';
-
-                        arrow.className = 'tutorial-arrow';
-                        box.style.transform = 'none';
-                        box.style.bottom = 'auto';
-
-                        function placeVertical(preferAbove) {
-                            const spaceAbove = targetRect.top - gap - boxPadding;
-                            const spaceBelow = vh - targetRect.bottom - gap - boxPadding;
-                            let above = preferAbove;
-                            if (above && spaceAbove < boxH && spaceBelow > spaceAbove) above = false;
-                            if (!above && spaceBelow < boxH && spaceAbove > spaceBelow) above = true;
-
-                            const left = Math.max(boxPadding, Math.min(vw - boxWidth - boxPadding, targetRect.left + targetRect.width / 2 - boxWidth / 2));
-                            let top = above ? targetRect.top - gap - boxH : targetRect.bottom + gap;
-                            top = Math.max(boxPadding, Math.min(vh - boxH - boxPadding, top));
-                            box.style.left = left + 'px';
-                            box.style.top = top + 'px';
-
-                            arrow.classList.add(above ? 'tutorial-arrow-down' : 'tutorial-arrow-up');
-                            arrow.style.left = (targetRect.left + targetRect.width / 2 - 10) + 'px';
-                            arrow.style.top = above ? (targetRect.top - 10) + 'px' : (targetRect.bottom + 10) + 'px';
-                            arrow.style.display = 'block';
-                        }
-
-                        function placeSide(side) {
-                            const top = Math.max(boxPadding, Math.min(vh - boxH - boxPadding, targetRect.top + targetRect.height / 2 - boxH / 2));
-                            box.style.top = top + 'px';
-                            if (side === 'left') {
-                                box.style.left = (targetRect.left - boxWidth - gap) + 'px';
-                                arrow.classList.add('tutorial-arrow-right');
-                                arrow.style.left = (targetRect.left - 10) + 'px';
-                            } else {
-                                box.style.left = (targetRect.right + gap) + 'px';
-                                arrow.classList.add('tutorial-arrow-left');
-                                arrow.style.left = (targetRect.right + 10) + 'px';
-                            }
-                            arrow.style.top = (targetRect.top + targetRect.height / 2 - 10) + 'px';
-                            arrow.style.display = 'block';
-                        }
-
-                        if ((step.position === 'left' || step.position === 'right') && vw > 768) {
-                            const fitsLeft = targetRect.left - boxWidth - gap >= boxPadding;
-                            const fitsRight = targetRect.right + boxWidth + gap <= vw - boxPadding;
-                            if (step.position === 'left' && fitsLeft) placeSide('left');
-                            else if (step.position === 'right' && fitsRight) placeSide('right');
-                            else if (fitsLeft) placeSide('left');
-                            else if (fitsRight) placeSide('right');
-                            else placeVertical(false); // 横に置けない場合は縦配置(自動反転あり)
-                        } else {
-                            // スマホでは左右配置は使いにくいので縦配置に統一
-                            placeVertical(step.position === 'top');
-                        }
-                    }, 150);
+                const target = document.querySelector(step.target);
+                if (typeof revealSettingsElement === 'function') revealSettingsElement(target);
+                const pre = target.getBoundingClientRect();
+                if (pre.top < 70 || pre.bottom > window.innerHeight - 70) {
+                    try { target.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch (e) { target.scrollIntoView(); }
                 }
+                target.classList.add('tutorial-highlight');
+                if (getComputedStyle(target).position === 'static') target.classList.add('tutorial-pos');
+
+                // カードの高さを測ってから位置を決める。入りきらない側は反対側へ回し、矢印も合わせる
+                box.style.visibility = 'hidden';
+                box.style.transform = 'none';
+                box.style.bottom = 'auto';
+                requestAnimationFrame(() => {
+                    const rect = target.getBoundingClientRect();
+                    const vw = window.innerWidth;
+                    const vh = window.innerHeight;
+                    const boxWidth = box.offsetWidth;
+                    const boxH = box.offsetHeight;
+                    const pad = 16;
+                    const gap = 18;
+                    arrow.className = 'tutorial-arrow';
+
+                    const placeVertical = (preferAbove) => {
+                        const spaceAbove = rect.top - gap - pad;
+                        const spaceBelow = vh - rect.bottom - gap - pad;
+                        let above = preferAbove;
+                        if (above && spaceAbove < boxH && spaceBelow > spaceAbove) above = false;
+                        if (!above && spaceBelow < boxH && spaceAbove > spaceBelow) above = true;
+                        const left = Math.max(pad, Math.min(vw - boxWidth - pad, rect.left + rect.width / 2 - boxWidth / 2));
+                        const top = Math.max(pad, Math.min(vh - boxH - pad, above ? rect.top - gap - boxH : rect.bottom + gap));
+                        box.style.left = left + 'px';
+                        box.style.top = top + 'px';
+                        arrow.classList.add(above ? 'tutorial-arrow-down' : 'tutorial-arrow-up');
+                        arrow.style.left = (rect.left + rect.width / 2 - 10) + 'px';
+                        arrow.style.top = (above ? rect.top - 12 : rect.bottom + 2) + 'px';
+                    };
+
+                    const placeSide = (side) => {
+                        const top = Math.max(pad, Math.min(vh - boxH - pad, rect.top + rect.height / 2 - boxH / 2));
+                        box.style.top = top + 'px';
+                        if (side === 'left') {
+                            box.style.left = (rect.left - boxWidth - gap) + 'px';
+                            arrow.classList.add('tutorial-arrow-right');
+                            arrow.style.left = (rect.left - 12) + 'px';
+                        } else {
+                            box.style.left = (rect.right + gap) + 'px';
+                            arrow.classList.add('tutorial-arrow-left');
+                            arrow.style.left = (rect.right + 2) + 'px';
+                        }
+                        arrow.style.top = (rect.top + rect.height / 2 - 10) + 'px';
+                    };
+
+                    const fitsLeft = rect.left - boxWidth - gap >= pad;
+                    const fitsRight = rect.right + boxWidth + gap <= vw - pad;
+                    if (step.position === 'left' && fitsLeft) placeSide('left');
+                    else if (step.position === 'right' && fitsRight) placeSide('right');
+                    else placeVertical(step.position === 'top');
+
+                    arrow.style.display = 'block';
+                    box.style.visibility = '';
+                });
             }
 
             function hideTutorialStep() {
@@ -22561,16 +22630,29 @@
                     tutorialTimer = null;
                 }
                 document.getElementById('tutorialOverlay').classList.remove('show');
-                document.getElementById('tutorialBox').style.display = 'none';
+                const box = document.getElementById('tutorialBox');
+                box.style.display = 'none';
+                box.classList.remove('is-final');
                 document.getElementById('tutorialArrow').style.display = 'none';
-                document.querySelectorAll('.tutorial-highlight').forEach(el => {
-                    el.classList.remove('tutorial-highlight');
-                });
-                const clickArea = document.getElementById('tutorialClickArea');
-                if (clickArea) clickArea.remove();
+                document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight', 'tutorial-pos'));
             }
 
-            document.getElementById('tutorialOverlay').addEventListener('click', skipTutorial);
+            // →/Enter で次へ、← で戻る、Esc でスキップ
+            document.addEventListener('keydown', function (e) {
+                const box = document.getElementById('tutorialBox');
+                if (!box || box.style.display === 'none') return;
+                if (e.key === 'ArrowRight' || (e.key === 'Enter' && e.target.tagName !== 'BUTTON')) { e.preventDefault(); nextTutorialStep(); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); prevTutorialStep(); }
+                else if (e.key === 'Escape') { e.preventDefault(); skipTutorial(); }
+            });
+
+            // 位置は表示したときのものなので、画面の大きさが変わったら置き直す
+            window.addEventListener('resize', function () {
+                const box = document.getElementById('tutorialBox');
+                if (!box || box.style.display === 'none') return;
+                clearTimeout(tutorialTimer);
+                tutorialTimer = setTimeout(showTutorialStep, 150);
+            });
 
             function showLicenseModal() {
                 const overlay = document.getElementById('licenseOverlay');
@@ -24434,9 +24516,9 @@
                         const unit = getText('musicResumeWindowMinutes');
                         const range = getFocusSettingRange(row.key);
                         const val = getFocusSettingValue(row.key);
-                        html += '<div class="focus-stepper" data-emm-stepper="' + i + '">';
+                        html += '<div class="focus-stepper" data-emm-stepper="' + i + '" data-key="' + row.key + '">';
                         html += '<button type="button" class="stepper-btn" data-step="-1"' + (val <= range.min ? ' disabled' : '') + ' onclick="editorMiniMenuStep(' + i + ', -1)">' + STEPPER_MINUS_SVG + '</button>';
-                        html += '<span class="stepper-value">' + val + unit + '</span>';
+                        html += '<label class="stepper-value">' + focusStepperValueHtml(row.key) + '</label>';
                         html += '<button type="button" class="stepper-btn" data-step="1"' + (val >= range.max ? ' disabled' : '') + ' onclick="editorMiniMenuStep(' + i + ', 1)">' + STEPPER_PLUS_SVG + '</button>';
                         html += '</div>';
                     }
@@ -24528,18 +24610,8 @@
                 if (!menu._config) return;
                 const row = menu._config.rows[index];
                 if (!row) return;
+                // ミニメニューのステッパーにも data-key があるので、表示は updateFocusStepperUI がそろえる
                 stepFocusSetting(row.key, delta);
-                // ミニメニュー内の表示も更新
-                const wrap = menu.querySelector('[data-emm-stepper="' + index + '"]');
-                if (!wrap) return;
-                const range = getFocusSettingRange(row.key);
-                const val = getFocusSettingValue(row.key);
-                const valueEl = wrap.querySelector('.stepper-value');
-                if (valueEl) valueEl.textContent = val + getText('musicResumeWindowMinutes');
-                wrap.querySelectorAll('.stepper-btn').forEach(btn => {
-                    const d = parseInt(btn.dataset.step, 10);
-                    btn.disabled = (d < 0 && val <= range.min) || (d > 0 && val >= range.max);
-                });
             }
 
             function editorMiniMenuButton(index) {
@@ -27945,16 +28017,24 @@
                 ['timer', 'music'].forEach(ctx => { if (autoStopPanelOpen[ctx]) renderAutoStopPanel(ctx); });
             }
 
+            // 4つの欄に入っている数字をプリセットにする(空の欄は使わない。全部空なら元のまま)
             function updateAutoStopPresetsFromInput() {
-                const input = document.getElementById('autoStopPresetsInput');
-                if (!input) return;
-                const list = input.value.split(',')
-                    .map(function (s) { return parseInt(s, 10); })
+                const boxes = document.querySelectorAll('#autoStopPresetBoxes .auto-stop-preset-box');
+                if (!boxes.length) return;
+                const list = Array.from(boxes)
+                    .map(function (el) { return parseInt(el.value, 10); })
                     .filter(function (n) { return Number.isFinite(n) && n > 0 && n <= 999; })
                     .slice(0, 4);
                 if (list.length) saveData('auto_stop_presets', list.join(','));
-                input.value = getAutoStopPresets().join(',');
+                fillAutoStopPresetBoxes();
                 renderAutoStopPresetItems();
+            }
+
+            function fillAutoStopPresetBoxes() {
+                const list = getAutoStopPresets();
+                document.querySelectorAll('#autoStopPresetBoxes .auto-stop-preset-box').forEach(function (el, i) {
+                    el.value = list[i] !== undefined ? String(list[i]) : '';
+                });
             }
 
             function syncAutoStopCustomInputs(minutes) {
@@ -28190,8 +28270,7 @@
                     setToggleActive('toggleAutoStopLog', isAutoStopLogEnabled());
                     setToggleActive('toggleAutoStopStopMusic', isAutoStopStopMusicEnabled());
                     setToggleActive('toggleAutoStopFadeout', isAutoStopFadeoutEnabled());
-                    const presetsInput = document.getElementById('autoStopPresetsInput');
-                    if (presetsInput) presetsInput.value = getAutoStopPresets().join(',');
+                    fillAutoStopPresetBoxes();
                     renderAutoStopPresetItems();
                     updateAutoStopActionUI();
                     const lastCustom = parseInt(getData('auto_stop_last_custom'), 10);
