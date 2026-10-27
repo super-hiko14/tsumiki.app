@@ -73,6 +73,8 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* スマホでタップした所に一瞬かかる灰色の四角を消す(押したときの反応はボタンごとに付けている) */
+            -webkit-tap-highlight-color: transparent;
             font-family: var(--font-en), var(--font-ja), system-ui, sans-serif;
             font-weight: 400;
         }
@@ -2330,6 +2332,85 @@
             margin: 8px 0 4px;
         }
 
+        /* ── コンパクト表示: アイコンだけの丸いボタン。専用の行は、パネルを開いたときだけ使う ── */
+        body.auto-stop-compact .auto-stop-control {
+            margin: 0;
+        }
+
+        body.auto-stop-compact .auto-stop-control:has(.auto-stop-panel) {
+            margin: 0 0 22px;
+        }
+
+        body.auto-stop-compact .music-info-header .auto-stop-control:has(.auto-stop-panel) {
+            margin: 8px 0 4px;
+        }
+
+        body.auto-stop-compact .auto-stop-pill {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            justify-content: center;
+            gap: 0;
+            background: transparent;
+            border-color: transparent;
+            opacity: 0.6;
+        }
+
+        body.auto-stop-compact .auto-stop-pill > span {
+            display: none;
+        }
+
+        body.auto-stop-compact .auto-stop-pill .auto-stop-pill-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        body.auto-stop-compact .auto-stop-pill:hover,
+        body.auto-stop-compact .auto-stop-pill[aria-expanded="true"] {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.12);
+        }
+
+        /* 予約中は色付きの丸 */
+        body.auto-stop-compact .auto-stop-pill.armed {
+            opacity: 1;
+            color: #fff;
+        }
+
+        body.light.auto-stop-compact .auto-stop-pill.armed {
+            background: var(--primary-color);
+        }
+
+        body.dark.auto-stop-compact .auto-stop-pill.armed {
+            background: var(--primary-color-dark);
+        }
+
+        /* タイマー: 時計の左下(右下の全画面ボタンと同じ高さ) */
+        body.auto-stop-compact .timer-wrapper > .auto-stop-pill {
+            left: 2px;
+            bottom: 6px;
+        }
+
+        /* 音楽: 曲名の右(曲名は長いと…で省略されるので、ボタンの分だけ空けておく) */
+        body.auto-stop-compact .music-info-header {
+            position: relative;
+        }
+
+        body.auto-stop-compact .music-info-header > .auto-stop-pill {
+            top: -8px;
+            right: -6px;
+        }
+
+        body.auto-stop-compact .music-info-header .music-title-display {
+            padding-right: 40px;
+        }
+
+        /* 自動停止ボタンを隠す設定は、移した先でも効かせる */
+        body.hide-auto-stop-menu-btn .auto-stop-pill {
+            display: none !important;
+        }
+
         /* ===== タイマー表示 ===== */
         .timer-phase {
             min-height: 1.4em;
@@ -2674,29 +2755,56 @@
             gap: 8px;
         }
 
-        .time-display {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            text-align: right;
-            letter-spacing: 0.3px;
+        /* 今の位置(左)と長さ(右) */
+        .time-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: -4px;
+            font-size: 0.75rem;
+            opacity: 0.65;
+            font-variant-numeric: tabular-nums;
         }
 
         .progress-wrapper {
             width: 100%;
         }
 
+        /* 押せる範囲は高さ28px。見た目の線(.progress-track)は中央の細い帯 */
         .progress-container {
+            --p: 0%;
             flex: 1;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 24px;
+            height: 28px;
+            display: flex;
+            align-items: center;
             position: relative;
             cursor: pointer;
-            overflow: hidden;
+            touch-action: none;
+            outline: none;
+            border-radius: 999px;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .dark .progress-container {
+        .progress-container.is-empty {
+            cursor: default;
+        }
+
+        .progress-track {
+            position: relative;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.08);
+            transition: height 0.15s ease;
+        }
+
+        .dark .progress-track {
             background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-container:not(.is-empty):hover .progress-track,
+        .progress-container.dragging .progress-track {
+            height: 8px;
         }
 
         .progress-bar {
@@ -2704,34 +2812,81 @@
             left: 0;
             top: 0;
             bottom: 0;
-            width: 0%;
+            width: var(--p);
             background: var(--primary-color);
-            border-radius: 24px;
-            transition: width 0.1s linear;
+            border-radius: 999px;
+            transition: width 0.25s linear;
+        }
+
+        .progress-container.dragging .progress-bar,
+        .progress-container.dragging .progress-handle {
+            transition: none;
         }
 
         .dark .progress-bar {
             background: var(--primary-color-dark);
         }
 
+        /* つまみ: いつも見えていて、触っている間は大きく */
         .progress-handle {
             position: absolute;
-            left: 0;
+            left: var(--p);
             top: 50%;
-            transform: translate(-50%, -50%);
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: #fff;
-            display: none;
-            cursor: grab;
-            transition: all 0.2s;
+            background: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--panel-light);
+            transform: translate(-50%, -50%);
+            transition: left 0.25s linear, transform 0.15s ease;
+            pointer-events: none;
         }
 
-        .progress-handle:active {
-            cursor: grabbing;
-            width: 16px;
-            height: 16px;
+        .dark .progress-handle {
+            background: var(--primary-color-dark);
+            box-shadow: 0 0 0 3px var(--panel-dark);
+        }
+
+        .progress-container.is-empty .progress-handle {
+            opacity: 0.4;
+        }
+
+        .progress-container:not(.is-empty):hover .progress-handle,
+        .progress-container:focus-visible .progress-handle,
+        .progress-container.dragging .progress-handle {
+            transform: translate(-50%, -50%) scale(1.3);
+        }
+
+        .progress-container:focus-visible .progress-track {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 6px;
+        }
+
+        /* 触っている位置の時間を上に出す吹き出し */
+        .progress-tip {
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 0;
+            transform: translateX(-50%);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            color: #fff;
+            background: var(--primary-color);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .dark .progress-tip {
+            background: var(--primary-color-dark);
+        }
+
+        .progress-container.dragging .progress-tip,
+        .progress-container.hovering:not(.is-empty) .progress-tip {
+            opacity: 1;
         }
 
         /* プレイヤーメインコントロール */
@@ -2805,11 +2960,13 @@
             border-color: rgba(255, 255, 255, 0.08);
         }
 
+        /* 音量: ふだんはアイコンと%だけ。伸ばしたときだけバーを出す */
         .volume-control-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex: 0 0 auto;
+            min-width: 0;
         }
 
         .control-btn {
@@ -2843,21 +3000,63 @@
             transform: scale(0.92);
         }
 
-        /* 今の音量までを色で塗る(--vol は JS で更新) */
+        /* 押せる範囲は高さ28px。線(トラック)は両端の丸い6px。--vol(今の音量)までを色で塗る */
         .volume-slider {
             --vol: 100%;
-            width: 110px;
-            height: 4px;
-            border-radius: 24px;
-            background: linear-gradient(to right, var(--primary-color) var(--vol), rgba(0, 0, 0, 0.08) var(--vol));
+            --vol-fill: var(--primary-color);
+            --vol-rest: rgba(0, 0, 0, 0.1);
+            flex: 0 0 auto;
+            width: 0;
+            height: 28px;
+            margin: 0;
+            padding: 0;
+            opacity: 0;
+            pointer-events: none;
+            background: transparent;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
             cursor: pointer;
+            touch-action: pan-y;
+            transition: width 0.25s ease, opacity 0.2s ease;
         }
 
         .dark .volume-slider {
-            background: linear-gradient(to right, var(--primary-color-dark) var(--vol), rgba(255, 255, 255, 0.1) var(--vol));
+            --vol-fill: var(--primary-color-dark);
+            --vol-rest: rgba(255, 255, 255, 0.12);
+        }
+
+        .volume-control-group.expanded .volume-slider,
+        .volume-control-group:has(:focus-visible) .volume-slider {
+            width: 120px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (hover: hover) {
+            .volume-control-group:hover .volume-slider {
+                width: 120px;
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
+
+        .volume-slider::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(to right, var(--vol-fill) var(--vol), var(--vol-rest) var(--vol));
+        }
+
+        .volume-slider::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--vol-rest);
+        }
+
+        .volume-slider::-moz-range-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--vol-fill);
         }
 
         .volume-slider:focus-visible {
@@ -2873,37 +3072,42 @@
             text-align: left;
         }
 
-        @media (max-width: 420px) {
-            .volume-slider {
-                width: 84px;
-            }
-        }
-
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 12px;
-            height: 12px;
+            margin-top: -5px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--panel-light);
             cursor: pointer;
+            transition: transform 0.15s ease;
         }
 
         .dark .volume-slider::-webkit-slider-thumb {
             background: var(--primary-color-dark);
+            box-shadow: 0 0 0 3px var(--panel-dark);
+        }
+
+        .volume-slider:hover::-webkit-slider-thumb,
+        .volume-slider:active::-webkit-slider-thumb {
+            transform: scale(1.2);
         }
 
         .volume-slider::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--panel-light);
             cursor: pointer;
             border: none;
         }
 
         .dark .volume-slider::-moz-range-thumb {
             background: var(--primary-color-dark);
+            box-shadow: 0 0 0 3px var(--panel-dark);
         }
 
         .playlist-controls {
@@ -3022,10 +3226,251 @@
         }
 
         .playlist-header h3 {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 400;
             margin: 0;
-            opacity: 0.85;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* プレイリストのタブ: 横に並べ、多いときは横スクロール */
+        .pl-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 2px 2px 4px;
+            margin: 0 0 12px;
+        }
+
+        .pl-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pl-tabs.fade-right {
+            -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+        }
+
+        .pl-tabs.fade-left {
+            -webkit-mask-image: linear-gradient(to right, transparent, #000 32px);
+            mask-image: linear-gradient(to right, transparent, #000 32px);
+        }
+
+        .pl-tabs.fade-left.fade-right {
+            -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+            mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+        }
+
+        .pl-tab {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 220px;
+            padding: 8px 14px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            color: inherit;
+            cursor: pointer;
+            box-shadow: none;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .light .pl-tab {
+            background: var(--panel-light);
+        }
+
+        .dark .pl-tab {
+            background: var(--panel-dark);
+        }
+
+        .pl-tab-name {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pl-tab-count {
+            min-width: 20px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-variant-numeric: tabular-nums;
+            background: rgba(128, 128, 128, 0.16);
+        }
+
+        .light .pl-tab.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .dark .pl-tab.active {
+            background: var(--primary-color-dark);
+            color: #fff;
+        }
+
+        .pl-tab.active .pl-tab-count {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .light .pl-tab:not(.active):hover {
+            border-color: var(--primary-color);
+        }
+
+        .dark .pl-tab:not(.active):hover {
+            border-color: var(--primary-color-dark);
+        }
+
+        .pl-tab.pl-tab-add {
+            gap: 6px;
+            background: transparent !important;
+            border: 2px dashed rgba(128, 128, 128, 0.35);
+            opacity: 0.8;
+        }
+
+        .pl-tab.pl-tab-add:hover {
+            opacity: 1;
+        }
+
+        /* … ボタン */
+        .pl-more-btn {
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            box-shadow: none;
+            opacity: 0.7;
+            transition: background-color 0.15s ease, opacity 0.15s ease;
+        }
+
+        .pl-more-btn:hover,
+        .pl-more-btn[aria-expanded="true"] {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.14);
+        }
+
+        /* … と移動先の小さなメニュー */
+        .pl-pop {
+            position: fixed;
+            z-index: 1500;
+            min-width: 210px;
+            max-width: min(300px, calc(100vw - 24px));
+            max-height: min(360px, calc(100vh - 24px));
+            overflow-y: auto;
+            padding: 6px;
+            border-radius: 24px;
+            display: none;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .pl-pop.show {
+            display: block;
+        }
+
+        .light .pl-pop {
+            background: var(--bg-light);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .dark .pl-pop {
+            background: var(--panel-dark-2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pl-pop-head {
+            padding: 8px 12px 6px;
+            font-size: 0.75rem;
+            opacity: 0.55;
+        }
+
+        .pl-pop-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 0.88rem;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .pl-pop-item:hover:not(:disabled) {
+            background: rgba(128, 128, 128, 0.12);
+        }
+
+        .pl-pop-item:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .pl-pop-item.danger:not(:disabled) {
+            color: #e06c6c;
+        }
+
+        .pl-pop-icon {
+            flex-shrink: 0;
+            opacity: 0.75;
+        }
+
+        .pl-pop-label {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pl-pop-meta {
+            font-size: 0.75rem;
+            opacity: 0.55;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 空のプレイリスト */
+        .playlist-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 28px 16px;
+            border-radius: 24px;
+            border: 2px dashed rgba(128, 128, 128, 0.25);
+            text-align: center;
+        }
+
+        .playlist-empty-text {
+            font-size: 0.88rem;
+            opacity: 0.6;
+        }
+
+        .playlist-empty button {
+            padding: 9px 20px;
+            font-size: 0.85rem;
+        }
+
+        .playlist-manager-hint {
+            margin: -4px 0 12px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            text-align: center;
         }
 
         .playlist-title-row {
@@ -3062,11 +3507,12 @@
         }
 
         .playlist-count {
+            flex-shrink: 0;
             font-size: 0.8rem;
             opacity: 0.6;
             background: transparent;
             padding: 4px 8px;
-            border-radius: 8px;
+            border-radius: 999px;
         }
 
         .dark .playlist-count {
@@ -5958,7 +6404,7 @@
         .playlist-manager-item-actions {
             display: flex;
             gap: 6px;
-            opacity: 0;
+            opacity: 0.85;
             transition: opacity 0.2s;
         }
 
@@ -11717,6 +12163,630 @@
                 min-width: 12px;
             }
         }
+
+        /* ═══ 入力欄の高さをアプリ全体でそろえる ═══
+           ・ふつうの入力欄(単独で置くもの)… 48px
+           ・設定の行の右端などに置く小さな入力欄 … 36px
+           高さは height で決め、上下の padding は 0 にして中身の大きさに左右されないようにする */
+        :root {
+            --field-h: 48px;
+            --field-h-sm: 36px;
+        }
+
+        #groupInput,
+        #todoInput,
+        #groupAddInput,
+        #textPromptInput,
+        #calendarAddTodoInput,
+        .custom-date-input,
+        .custom-confirm-dialog input[type="text"],
+        .custom-confirm-dialog input[type="url"],
+        .calendar-day-add-form input[type="text"],
+        .fcx input[type="text"],
+        .fcx input[type="number"],
+        .fc-add-card-form input[type="text"],
+        .fc-add-card-form input[type="number"],
+        .custom-select select,
+        .repeat-time-row input.repeat-minute-input {
+            height: var(--field-h) !important;
+            min-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            box-sizing: border-box;
+        }
+
+        /* 入力欄と並ぶ「追加」ボタンも同じ高さ */
+        .todo-input > button,
+        .group-add-row > button {
+            height: var(--field-h);
+            padding-top: 0;
+            padding-bottom: 0;
+            box-sizing: border-box;
+        }
+
+        /* 中に入力欄を入れて作っている検索ボックスやボタン型の選択欄 */
+        .list-search-box,
+        .settings-search,
+        .timer-group-select-btn {
+            height: var(--field-h);
+            min-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            box-sizing: border-box;
+        }
+
+        /* 行の中の小さな入力欄(設定の行・エディターのミニメニュー) */
+        .toggle-item .custom-select select,
+        .editor-mini-menu .emm-row .custom-select select,
+        .auto-stop-presets-input,
+        .auto-stop-preset-box {
+            height: var(--field-h-sm) !important;
+            min-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            box-sizing: border-box;
+        }
+
+        /* 小さな入力欄がある設定の行は、スイッチだけの行と同じ高さ(56px)になるよう上下を詰めて中央ぞろえ */
+        .toggle-item:has(> .custom-select),
+        .toggle-item:has(> input.auto-stop-presets-input),
+        .toggle-item:has(> .auto-stop-preset-boxes) {
+            align-items: center;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        /* ═══ 浮かぶメニューの見た目をそろえる(… メニュー・音楽の追加・グループ・右クリック) ═══ */
+        .file-dropdown-menu,
+        .timer-group-dropdown-menu,
+        .move-group-dropdown-menu,
+        .quick-nav-menu,
+        .pl-pop {
+            border-radius: 24px;
+            padding: 6px;
+        }
+
+        .light .file-dropdown-menu,
+        .light .timer-group-dropdown-menu,
+        .light .move-group-dropdown-menu,
+        .light .quick-nav-menu,
+        .light .pl-pop {
+            background: var(--bg-light);
+            color: #323232;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .dark .file-dropdown-menu,
+        .dark .timer-group-dropdown-menu,
+        .dark .move-group-dropdown-menu,
+        .dark .quick-nav-menu,
+        .dark .pl-pop {
+            background: var(--panel-dark-2);
+            color: #e8e8e8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .file-dropdown-menu .dropdown-item,
+        .timer-group-dropdown-item,
+        .move-group-dropdown-item,
+        .timer-group-add-btn,
+        .move-group-add-btn,
+        .quick-nav-menu .qnm-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            font-weight: 400;
+            text-align: left;
+        }
+
+        .timer-group-add-btn,
+        .move-group-add-btn,
+        .dark .timer-group-add-btn,
+        .dark .move-group-add-btn {
+            color: inherit;
+        }
+
+        .light .file-dropdown-menu .dropdown-item:hover,
+        .dark .file-dropdown-menu .dropdown-item:hover,
+        .light .timer-group-dropdown-item:hover,
+        .dark .timer-group-dropdown-item:hover,
+        .light .move-group-dropdown-item:hover,
+        .dark .move-group-dropdown-item:hover,
+        .light .timer-group-add-btn:hover,
+        .dark .timer-group-add-btn:hover,
+        .light .move-group-add-btn:hover,
+        .dark .move-group-add-btn:hover,
+        .light .quick-nav-menu .qnm-item:hover,
+        .dark .quick-nav-menu .qnm-item:hover {
+            background: rgba(128, 128, 128, 0.12);
+        }
+
+        .file-dropdown-menu .dropdown-divider,
+        .timer-group-dropdown-menu .dropdown-divider,
+        .move-group-dropdown-menu .dropdown-divider {
+            margin: 4px 10px;
+        }
+
+        .quick-nav-menu .qnm-item .qnm-chevron {
+            margin-left: auto;
+        }
+
+        .fm-icon,
+        .timer-group-add-btn svg,
+        .move-group-add-btn svg {
+            flex-shrink: 0;
+            opacity: 0.75;
+        }
+
+        /* ═══ ライセンス ═══ */
+        .lic-intro,
+        .lic-note {
+            margin: 0 0 14px;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            opacity: 0.75;
+        }
+
+        .lic-note {
+            margin: 14px 0 0;
+            font-size: 0.78rem;
+            text-align: center;
+            opacity: 0.55;
+        }
+
+        .lic-section + .lic-section {
+            margin-top: 18px;
+        }
+
+        .lic-head {
+            margin: 0 4px 8px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .lic-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            margin-bottom: 6px;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            color: inherit;
+            text-decoration: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .light .lic-item {
+            background: var(--bg-light);
+        }
+
+        .dark .lic-item {
+            background: var(--bg-dark);
+        }
+
+        .light .lic-item:hover {
+            border-color: var(--primary-color);
+        }
+
+        .dark .lic-item:hover {
+            border-color: var(--primary-color-dark);
+        }
+
+        .lic-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .lic-name {
+            font-size: 0.9rem;
+        }
+
+        .lic-by {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .lic-tag {
+            flex-shrink: 0;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+
+        .light .lic-tag {
+            color: var(--primary-color);
+            background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+        }
+
+        .dark .lic-tag {
+            color: var(--primary-color-dark);
+            background: color-mix(in srgb, var(--primary-color-dark) 20%, transparent);
+        }
+
+        /* ═══ プレイリストの管理 ═══ */
+        .plm-hint {
+            margin: 0 0 12px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            opacity: 0.65;
+        }
+
+        .plm-list {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .plm-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 8px 6px 4px;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            transition: border-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .light .plm-item {
+            background: var(--bg-light);
+        }
+
+        .dark .plm-item {
+            background: var(--bg-dark);
+        }
+
+        .light .plm-item.active {
+            border-color: var(--primary-color);
+        }
+
+        .dark .plm-item.active {
+            border-color: var(--primary-color-dark);
+        }
+
+        .plm-item.dragging {
+            opacity: 0.5;
+        }
+
+        .plm-handle {
+            width: 32px;
+            height: 40px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.45;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .plm-handle:active {
+            cursor: grabbing;
+        }
+
+        .plm-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 6px 4px;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .plm-name {
+            max-width: 100%;
+            font-size: 0.92rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .plm-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.76rem;
+            opacity: 0.65;
+        }
+
+        .plm-badge {
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            color: #fff;
+        }
+
+        .light .plm-badge {
+            background: var(--primary-color);
+        }
+
+        .dark .plm-badge {
+            background: var(--primary-color-dark);
+        }
+
+        .plm-add {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            height: var(--field-h, 48px);
+            border: 2px dashed rgba(128, 128, 128, 0.35);
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 0.88rem;
+            cursor: pointer;
+            box-shadow: none;
+            opacity: 0.85;
+            transition: opacity 0.15s ease, border-color 0.15s ease;
+        }
+
+        .plm-add:hover {
+            opacity: 1;
+        }
+
+        .light .plm-add:hover {
+            border-color: var(--primary-color);
+        }
+
+        .dark .plm-add:hover {
+            border-color: var(--primary-color-dark);
+        }
+
+        /* ═══ 優先度の色 ═══ */
+        .priority-color-dialog.pc-dialog {
+            max-width: 460px;
+            padding: 18px 22px 22px;
+        }
+
+        .pc-dialog .about-head h2 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 400;
+            text-align: left;
+            opacity: 0.8;
+        }
+
+        .pc-hint {
+            margin: 0 0 12px;
+            text-align: left;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            opacity: 0.65;
+        }
+
+        /* ToDoの見本の行(押すとその優先度を編集) */
+        .pc-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .pc-dialog .pc-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            width: 100%;
+            min-height: 48px;
+            padding: 10px 16px;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .light .pc-dialog .pc-row {
+            background: var(--panel-light);
+        }
+
+        .dark .pc-dialog .pc-row {
+            background: var(--panel-dark-2);
+        }
+
+        .light .pc-dialog .pc-row.active {
+            border-color: var(--primary-color);
+        }
+
+        .dark .pc-dialog .pc-row.active {
+            border-color: var(--primary-color-dark);
+        }
+
+        .pc-dot {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+
+        .pc-row-text {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pc-row-tag {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        /* 色の候補 */
+        .pc-swatches {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .pc-swatch {
+            aspect-ratio: 1;
+            width: 100%;
+            max-width: 44px;
+            justify-self: center;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: var(--c);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .pc-swatch:hover {
+            transform: scale(1.08);
+        }
+
+        .light .pc-swatch.active {
+            box-shadow: 0 0 0 3px var(--bg-light), 0 0 0 5px var(--c);
+        }
+
+        .dark .pc-swatch.active {
+            box-shadow: 0 0 0 3px var(--panel-dark), 0 0 0 5px var(--c);
+        }
+
+        /* 自由に選ぶ(たたんでおく) */
+        .pc-custom {
+            margin-bottom: 16px;
+            border-radius: 24px;
+        }
+
+        .light .pc-custom {
+            background: var(--panel-light);
+        }
+
+        .dark .pc-custom {
+            background: var(--panel-dark-2);
+        }
+
+        .pc-custom summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 0 16px;
+            list-style: none;
+            cursor: pointer;
+            font-size: 0.88rem;
+        }
+
+        .pc-custom summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .pc-custom summary::after {
+            content: '';
+            width: 7px;
+            height: 7px;
+            margin-left: 4px;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: translateY(-2px) rotate(45deg);
+            opacity: 0.45;
+            transition: transform 0.2s ease;
+        }
+
+        .pc-custom[open] summary::after {
+            transform: translateY(2px) rotate(-135deg);
+        }
+
+        .pc-current {
+            width: 22px;
+            height: 22px;
+            margin-left: auto;
+            border-radius: 50%;
+        }
+
+        .pc-custom-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 14px 14px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .pc-dialog .priority-color-board {
+            height: 150px;
+            border-radius: 24px;
+        }
+
+        .pc-dialog .priority-color-hue {
+            height: 14px;
+        }
+
+        .pc-dialog .priority-color-hex {
+            margin-top: 0;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.05em;
+        }
+
+        .light .pc-dialog .priority-color-hex {
+            background: var(--bg-light);
+        }
+
+        .dark .pc-dialog .priority-color-hex {
+            background: var(--panel-dark);
+        }
+
+        .pc-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pc-actions .primary {
+            flex: 1;
+            height: var(--field-h, 48px);
+        }
+
+        .pc-reset {
+            padding: 0 14px;
+            height: var(--field-h, 48px);
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            cursor: pointer;
+            box-shadow: none;
+            white-space: nowrap;
+        }
+
+        .pc-reset:hover {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.12);
+        }
     </style>
 
 </head>
@@ -11783,17 +12853,19 @@
         </div>
     </div>
 
-    <div class="custom-confirm-overlay" id="playlistManagerOverlay">
-        <div class="custom-confirm-dialog" style="max-width: 520px; width: min(92vw, 520px);">
-            <div class="custom-confirm-title" data-i18n="playlistManagerTitle">プレイリスト管理</div>
-            <div class="playlist-manager-add-row">
-                <input type="text" id="newPlaylistNameInput" data-i18n="newPlaylistPlaceholder"
-                    placeholder="新しいプレイリスト名">
-                <button class="primary" id="addPlaylistBtn" onclick="addNewPlaylist()" data-i18n="addButton">追加</button>
+    <div class="pl-pop" id="playlistPopover" role="menu"></div>
+
+    <div class="about-overlay" id="playlistManagerOverlay" aria-hidden="true">
+        <div class="about-dialog about-dialog-narrow" role="dialog" aria-modal="true" aria-labelledby="playlistManagerTitle">
+            <div class="about-head">
+                <h2 id="playlistManagerTitle" data-i18n="playlistManagerTitle">プレイリストの管理</h2>
+                <button type="button" class="about-close" onclick="closePlaylistManager()" aria-label="閉じる"
+                    data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
-            <div id="playlistManagerList" class="playlist-manager-list"></div>
-            <div class="custom-confirm-buttons">
-                <button class="custom-confirm-ok" onclick="closePlaylistManager()" data-i18n="closeButton">閉じる</button>
+            <div class="about-content">
+                <p class="plm-hint" data-i18n="playlistManagerHint">つまみをドラッグして並べ替え。名前を押すとそのプレイリストに切り替わります。</p>
+                <div id="playlistManagerList" class="plm-list"></div>
+                <button type="button" class="plm-add" onclick="addPlaylistFromManager()"><svg class="fm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-i18n="newPlaylist">新しいプレイリスト</span></button>
             </div>
         </div>
     </div>
@@ -12049,84 +13121,37 @@
     </div>
 
     <div class="about-overlay" id="licenseOverlay" aria-hidden="true">
-        <div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
-            <h2 id="licenseTitle" data-i18n="licenseTitle">ライセンス</h2>
-            <div id="licenseContent" class="about-content"
-                style="font-size: 0.85rem; max-height: 60vh; overflow-y: auto; text-align: left;">
-                <b>[Google Fonts]</b><br>
-
-                <a href="https://fonts.google.com/specimen/Jost" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Jost</b></a><br>
-                by Indestructible Type (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Zen+Kaku+Gothic+Antique" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Zen Kaku Gothic Antique</b></a><br>
-                by Astrolab Inc. (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/JetBrains+Mono" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>JetBrains Mono</b></a><br>
-                by JetBrains s.r.o. (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Montserrat" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Montserrat</b></a><br>
-                by Julieta Ulanovsky (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Lora" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Lora</b></a><br>
-                by Cyreal (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Quicksand" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Quicksand</b></a><br>
-                by Andrew Paglinawan (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Klee+One" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Klee One</b></a><br>
-                by Fontworks Inc. (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/BIZ+UDPGothic" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>BIZ UDPGothic</b></a><br>
-                by Morisawa Inc. (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Zen+Maru+Gothic" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Zen Maru Gothic</b></a><br>
-                by Yoshimichi Ohira (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Noto+Sans+JP" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Noto Sans JP</b></a><br>
-                by Google (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Sawarabi+Gothic" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Sawarabi Gothic</b></a><br>
-                by mplus-fonts-dev (SIL OFL 1.1 / CC BY 4.0)<br>
-                <br>
-                <a href="https://fonts.google.com/specimen/Hina+Mincho" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>Hina Mincho</b></a><br>
-                by Shujiro Sano (SIL OFL 1.1)<br>
-                <br>
-
-                <hr style="opacity: 0.2; margin: 15px 0;">
-                <br>
-
-                <b>[Local Fonts]</b><br>
-
-                <a href="https://flopdesign.com/blog/font/58/" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>うつくし明朝体 (Utsukushi Font)</b></a><br>
-                by FLOP DESIGN (IPA Font License v1.0)<br>
-                <br>
-                <a href="https://littlelimit.net/misaki.htm" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>美咲ゴシック (Misaki Gothic)</b></a><br>
-                by 門真 なむ / Little Limit (MIT License)<br>
-                <br>
-                <a href="http://jikasei.me/font/kh-dotfont/" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>小伝馬町 (Kodenmachou)</b></a><br>
-                by 自家製フォント工房 (SIL OFL 1.1)<br>
-                <br>
-                <a href="https://modi.jpn.org/font_mushin.php" target="_blank"
-                    style="color: inherit; text-decoration: underline;"><b>無心 (Mushin)</b></a><br>
-                by Maniackers Design (IPA Font License v1.0)
+        <div class="about-dialog about-dialog-narrow" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
+            <div class="about-head">
+                <h2 id="licenseTitle" data-i18n="licenseTitle">ライセンス</h2>
+                <button type="button" class="about-close" id="licenseOkBtn" aria-label="閉じる"
+                    data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
-            <div class="about-actions">
-                <button class="primary" id="licenseOkBtn" data-i18n="closeButton">閉じる</button>
+            <div id="licenseContent" class="about-content">
+                <p class="lic-intro" data-i18n="licenseIntro">ツミキappでは、次のフォントをそれぞれのライセンスに従って使わせていただいています。</p>
+                <div class="lic-section">
+                    <div class="lic-head">Google Fonts</div>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Jost" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Jost</span><span class="lic-by">Owen Earl (indestructible type*)</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Zen+Kaku+Gothic+Antique" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Zen Kaku Gothic Antique</span><span class="lic-by">Yoshimichi Ohira</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Zen+Maru+Gothic" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Zen Maru Gothic</span><span class="lic-by">Yoshimichi Ohira</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Klee+One" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Klee One</span><span class="lic-by">Fontworks Inc.</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/BIZ+UDPGothic" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">BIZ UDPGothic</span><span class="lic-by">Type Bank Co., Morisawa Inc.</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Noto+Sans+JP" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Noto Sans JP</span><span class="lic-by">Google</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Sawarabi+Gothic" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Sawarabi Gothic</span><span class="lic-by">mshio</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Hina+Mincho" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Hina Mincho</span><span class="lic-by">Satsuyako</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/JetBrains+Mono" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">JetBrains Mono</span><span class="lic-by">JetBrains, Philipp Nurullin, Konstantin Bulenkov</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Montserrat" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Montserrat</span><span class="lic-by">Julieta Ulanovsky, Sol Matas, Juan Pablo del Peral, Jacques Le Bailly</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Lora" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Lora</span><span class="lic-by">Cyreal</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://fonts.google.com/specimen/Quicksand" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Quicksand</span><span class="lic-by">Andrew Paglinawan</span></span><span class="lic-tag">OFL 1.1</span></a>
+                </div>
+                <div class="lic-section">
+                    <div class="lic-head" data-i18n="licenseLocalFonts">同梱しているフォント</div>
+                    <a class="lic-item" href="https://flopdesign.com/blog/font/58/" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">うつくし明朝体 (Utsukushi Font)</span><span class="lic-by">FLOP DESIGN</span></span><span class="lic-tag">IPA Font License v1.0</span></a>
+                    <a class="lic-item" href="https://littlelimit.net/misaki.htm" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">美咲ゴシック第2 (Misaki Gothic 2nd)</span><span class="lic-by">Little Limit</span></span><span class="lic-tag">Free software</span></a>
+                    <a class="lic-item" href="http://jikasei.me/font/kh-dotfont/" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">小伝馬町 (KH Dot Kodenmachou)</span><span class="lic-by">自家製フォント工房</span></span><span class="lic-tag">OFL 1.1</span></a>
+                    <a class="lic-item" href="https://modi.jpn.org/font_mushin.php" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">無心 (Mushin)</span><span class="lic-by">MODI工場</span></span><span class="lic-tag">MODI License</span></a>
+                </div>
+                <p class="lic-note" data-i18n="licenseNote">OFL = SIL Open Font License。名前を押すと配布元のページが開きます。</p>
             </div>
         </div>
     </div>
@@ -12233,7 +13258,7 @@
                             <div class="timer-group-dropdown-list" id="timerGroupDropdownList"></div>
                             <div class="dropdown-divider"></div>
                             <div class="timer-group-add-btn" onclick="openAddGroupModal('timer')">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <svg class="fm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                                 <span data-i18n="addGroup">グループを追加</span>
                             </div>
                         </div>
@@ -12431,10 +13456,9 @@
                             onchange="addMusicFile(event)" multiple style="display:none;">
 
                         <div class="file-dropdown-menu" id="musicDropdownMenu" role="menu" aria-hidden="true">
-                            <div class="dropdown-item" id="addFileItem" data-i18n="selectFile">ファイルを追加</div>
-                            <div class="dropdown-item" id="chooseFolderItem" data-i18n="selectFolder">フォルダ内を一括追加</div>
-                            <div class="dropdown-item" id="addYoutubeItem" data-i18n="addYoutubeVideo"
-                                style="display:none;">Youtube動画を追加</div>
+                            <div class="dropdown-item" id="addFileItem"><svg class="fm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span data-i18n="selectFile">ファイルを追加</span></div>
+                            <div class="dropdown-item" id="chooseFolderItem"><svg class="fm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span data-i18n="selectFolder">フォルダ内を一括追加</span></div>
+                            <div class="dropdown-item" id="addYoutubeItem" style="display:none;"><svg class="fm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.5 9.5l4 2.5-4 2.5z" fill="currentColor"/></svg><span data-i18n="addYoutubeVideo">YouTube動画を追加</span></div>
                         </div>
 
                         <input type="file" id="musicFolderInput" webkitdirectory directory multiple
@@ -12457,12 +13481,19 @@
                         <!-- YouTube video zone placeholder -->
                         <div id="ytMusicZone"></div>
                         <div class="music-progress-section">
-                            <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
                             <div class="progress-wrapper">
-                                <div id="progressContainer" class="progress-container">
-                                    <div id="progressBar" class="progress-bar"></div>
+                                <!-- 押せる範囲は高さ28px。見た目の線は細く、つまみと時間の吹き出しを重ねる -->
+                                <div id="progressContainer" class="progress-container is-empty" role="slider" tabindex="0"
+                                    aria-label="再生位置" data-i18n-aria="seekPosition" aria-valuemin="0" aria-valuemax="0"
+                                    aria-valuenow="0" aria-valuetext="0:00">
+                                    <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
                                     <div id="progressHandle" class="progress-handle"></div>
+                                    <div id="progressTip" class="progress-tip" aria-hidden="true">0:00</div>
                                 </div>
+                            </div>
+                            <div class="time-row" aria-hidden="true">
+                                <span id="timeCurrent">0:00</span>
+                                <span id="timeDuration">0:00</span>
                             </div>
                         </div>
                     </div>
@@ -12482,8 +13513,8 @@
                     </div>
 
                     <div class="player-sub-controls">
-                        <div class="volume-control-group">
-                            <button class="control-btn" id="volumeBtn" aria-label="ミュート" title="ミュート">
+                        <div class="volume-control-group" id="volumeControlGroup">
+                            <button class="control-btn" id="volumeBtn" aria-label="ミュート" title="ミュート" aria-expanded="false">
                                 <img id="volumeBtnImg" src="volume.webp" alt="音量" data-i18n-alt="volume">
                             </button>
                             <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="1"
@@ -12504,24 +13535,28 @@
                 </div>
 
                 <div class="playlist-section">
+                    <!-- プレイリストの切り替え: 押すだけで切り替わるタブ -->
+                    <div class="pl-tabs" id="playlistTabs" role="tablist" aria-label="プレイリスト"
+                        data-i18n-aria="playlist"></div>
                     <div class="playlist-header">
                         <div class="playlist-title-row">
                             <h3 id="playlistTitle">プレイリスト</h3>
-                            <button class="playlist-manager-btn" id="playlistManagerBtn" onclick="openPlaylistManager()"
-                                aria-label="プレイリスト管理" data-i18n-aria="playlistManagerTitle">
-                                <img src="arrow_down.webp" alt="メニュー" data-i18n-alt="menu">
-                            </button>
+                            <span class="playlist-count" id="playlistCount">0</span>
                         </div>
                         <div class="playlist-header-actions">
-                            <span class="playlist-count" id="playlistCount">0</span>
                             <button id="playlistSelectModeBtn" class="secondary playlist-select-toggle"
                                 onclick="togglePlaylistSelectMode()" data-i18n="playlistSelectMode">選択</button>
+                            <button type="button" class="pl-more-btn" id="playlistMoreBtn"
+                                onclick="openPlaylistMoreMenu(this)" aria-haspopup="menu" aria-label="プレイリストのメニュー"
+                                data-i18n-aria="playlistMenu"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></svg></button>
                         </div>
                     </div>
                     <div class="playlist-warning hidden" id="playlistWarning" role="status" aria-live="polite"></div>
                     <div class="playlist-batch-actions hidden" id="playlistBatchActions">
                         <span class="playlist-selected-count" id="playlistSelectedCount">0</span>
                         <button class="secondary" id="playlistSelectAllBtn" onclick="toggleSelectAllPlaylistItems()">すべて選択</button>
+                        <button class="secondary" id="playlistMoveSelectedBtn" onclick="openPlaylistMoveMenu(this)"
+                            aria-haspopup="menu" data-i18n="playlistMoveTo">別のプレイリストへ</button>
                         <button class="delete-btn" id="playlistDeleteSelectedBtn" onclick="deleteSelectedMusic()"
                             data-i18n="deleteSelectedMusic">選択を削除</button>
                     </div>
@@ -12860,6 +13895,13 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
+                <div class="toggle-item">
+                    <span data-i18n="autoStopCompactSetting">自動停止の表示をコンパクトにする</span>
+                    <div class="toggle-switch" id="toggleAutoStopCompact" onclick="toggleAutoStopCompactSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="autoStopCompactNote">アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。</div>
                 <div class="toggle-item">
                     <span data-i18n="endConfirmSetting">長いセッション終了時に確認</span>
                     <div class="toggle-switch" id="toggleEndConfirm" onclick="toggleEndConfirmSetting()">
@@ -13374,44 +14416,51 @@
         </div>
 
         <div class="priority-color-overlay" id="priorityColorOverlay" aria-hidden="true">
-            <div class="priority-color-dialog" role="dialog" aria-modal="true" aria-label="ToDo優先度カラー設定">
-                <h2 style="margin-bottom: 14px;" data-i18n="todoPriorityColorSettingsTitle">ToDo優先度カラー設定</h2>
-                <div class="priority-color-targets">
-                    <button class="priority-color-target active" id="priorityTargetHigh"
+            <div class="priority-color-dialog pc-dialog" role="dialog" aria-modal="true" aria-labelledby="priorityColorTitle">
+                <div class="about-head">
+                    <h2 id="priorityColorTitle" data-i18n="todoPriorityColorSettingsTitle">優先度の色</h2>
+                    <button type="button" class="about-close" onclick="closeTodoPriorityColorModal()" aria-label="閉じる"
+                        data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <p class="pc-hint" data-i18n="priorityColorHint">変えたい優先度を選んでから、下の色を押してください。</p>
+                <!-- ToDoでの見え方の見本。押した行の色を編集する -->
+                <div class="pc-rows" role="group">
+                    <button type="button" class="priority-color-target pc-row active" id="priorityTargetHigh"
                         onclick="selectTodoPriorityColorTarget('high')">
-                        <span class="priority-color-target-swatch" id="priorityColorSampleHigh"></span>
-                        <span class="priority-color-target-name" data-i18n="priorityHigh">高</span>
+                        <span class="pc-dot" id="priorityColorSampleHigh"></span>
+                        <span class="pc-row-text" data-i18n="priorityColorSampleTextHigh">数学の宿題</span>
+                        <span class="pc-row-tag" data-i18n="priorityHigh">高</span>
                     </button>
-                    <button class="priority-color-target" id="priorityTargetNormal"
+                    <button type="button" class="priority-color-target pc-row" id="priorityTargetNormal"
                         onclick="selectTodoPriorityColorTarget('normal')">
-                        <span class="priority-color-target-swatch" id="priorityColorSampleNormal"></span>
-                        <span class="priority-color-target-name" data-i18n="priorityNormal">通常</span>
+                        <span class="pc-dot" id="priorityColorSampleNormal"></span>
+                        <span class="pc-row-text" data-i18n="priorityColorSampleTextNormal">英単語を50個</span>
+                        <span class="pc-row-tag" data-i18n="priorityNormal">通常</span>
                     </button>
-                    <button class="priority-color-target" id="priorityTargetLow"
+                    <button type="button" class="priority-color-target pc-row" id="priorityTargetLow"
                         onclick="selectTodoPriorityColorTarget('low')">
-                        <span class="priority-color-target-swatch" id="priorityColorSampleLow"></span>
-                        <span class="priority-color-target-name" data-i18n="priorityLow">低</span>
+                        <span class="pc-dot" id="priorityColorSampleLow"></span>
+                        <span class="pc-row-text" data-i18n="priorityColorSampleTextLow">机の片付け</span>
+                        <span class="pc-row-tag" data-i18n="priorityLow">低</span>
                     </button>
                 </div>
-                <div class="priority-color-picker-wrap">
-                    <div class="priority-color-preview" id="priorityColorCurrentPreview"></div>
-                    <div class="priority-color-board-wrap">
+                <div class="pc-swatches" id="priorityColorSwatches" role="group" aria-label="色" data-i18n-aria="priorityColorPresets"></div>
+                <details class="pc-custom" id="priorityColorCustom">
+                    <summary><span data-i18n="priorityColorCustom">自由に選ぶ</span><span class="pc-current" id="priorityColorCurrentPreview"></span></summary>
+                    <div class="pc-custom-body">
                         <div class="priority-color-board" id="priorityColorBoard">
                             <div class="priority-color-board-cursor" id="priorityColorBoardCursor"></div>
                         </div>
-                        <div class="priority-color-hue-wrap">
-                            <input type="range" min="0" max="360" value="0" class="priority-color-hue"
-                                id="priorityColorHue">
-                        </div>
+                        <input type="range" min="0" max="360" value="0" class="priority-color-hue" id="priorityColorHue"
+                            aria-label="色相" data-i18n-aria="priorityColorHueLabel">
+                        <input class="priority-color-hex" id="priorityColorHexInput" value="#E74C3C" maxlength="7"
+                            aria-label="カラーコード" data-i18n-aria="priorityColorHexLabel" autocomplete="off" spellcheck="false">
                     </div>
-                </div>
-                <input class="priority-color-hex" id="priorityColorHexInput" value="#E74C3C" maxlength="7">
-                <div class="priority-color-actions">
-                    <button class="secondary" onclick="resetTodoPriorityColorSettings()"
-                        data-i18n="resetButton">初期値</button>
-                    <button class="secondary" onclick="closeTodoPriorityColorModal()"
-                        data-i18n="cancelButton">キャンセル</button>
-                    <button class="primary" onclick="saveTodoPriorityColorSettings()" data-i18n="saveButton">保存</button>
+                </details>
+                <div class="pc-actions">
+                    <button type="button" class="pc-reset" onclick="resetTodoPriorityColorSettings()"
+                        data-i18n="resetButton">初期値に戻す</button>
+                    <button type="button" class="primary" onclick="saveTodoPriorityColorSettings()" data-i18n="saveButton">保存</button>
                 </div>
             </div>
         </div>
@@ -13609,7 +14658,7 @@
                     addMusicButton: '音楽を追加',
                     selectFile: 'ファイルを追加',
                     selectFolder: 'フォルダ内を一括追加',
-                    addYoutubeVideo: 'Youtube動画を追加',
+                    addYoutubeVideo: 'YouTube動画を追加',
                     youtubeUrlPlaceholder: 'YouTube URL を入力 (youtube.com/watch?v=, youtu.be/)',
                     youtubeInvalidUrl: '無効なURLです。対応形式: youtube.com/watch?v= / youtu.be/',
                     youtubeVideoEnabled: 'プレイリストにYoutube動画を追加',
@@ -13683,6 +14732,8 @@
                     focusTotalLabel: '合計',
                     autoStopSettingsTitle: 'タイマーと自動停止',
                     autoStopMenuBtnSetting: '自動停止',
+                    autoStopCompactSetting: '自動停止の表示をコンパクトにする',
+                    autoStopCompactNote: 'アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。',
                     endConfirmSetting: '長いセッション終了時に確認',
                     endConfirmThresholdLabel: '確認するしきい値(分)',
                     endConfirmThresholdNote: 'この時間以上のセッションを終了する際に確認ダイアログを表示します',
@@ -13749,7 +14800,15 @@
                     repeatMonthly: '毎月',
                     priority: '優先度',
                     todoPriorityColorSettingsButton: 'ToDo優先度カラーを設定',
-                    todoPriorityColorSettingsTitle: 'ToDo優先度カラー設定',
+                    todoPriorityColorSettingsTitle: '優先度の色',
+                    priorityColorHint: '変えたい優先度を選んでから、下の色を押してください。',
+                    priorityColorSampleTextHigh: '数学の宿題',
+                    priorityColorSampleTextNormal: '英単語を50個',
+                    priorityColorSampleTextLow: '机の片付け',
+                    priorityColorPresets: '色の候補',
+                    priorityColorCustom: '自由に選ぶ',
+                    priorityColorHueLabel: '色相',
+                    priorityColorHexLabel: 'カラーコード',
                     resetButton: '初期値に戻す',
                     priorityLow: '低',
                     priorityNormal: '通常',
@@ -13925,7 +14984,21 @@
                     tourDoneButton: 'はじめる',
                     // アクセシビリティ用ラベル
                     dragHandle: '並べ替えハンドル',
-                    playlistManagerTitle: 'プレイリスト管理',
+                    playlistManagerTitle: 'プレイリストの管理',
+                    playlistManagerHint: 'つまみをドラッグして並べ替え。名前を押すとそのプレイリストに切り替わります。',
+                    playlistCurrent: '選択中',
+                    seekPosition: '再生位置',
+                    licenseIntro: 'ツミキappでは、次のフォントをそれぞれのライセンスに従って使わせていただいています。',
+                    licenseLocalFonts: '同梱しているフォント',
+                    licenseNote: 'OFL = SIL Open Font License。名前を押すと配布元のページが開きます。',
+                    playlistMenu: 'プレイリストのメニュー',
+                    playlistReorder: '並べ替え',
+                    deletePlaylist: 'このプレイリストを削除',
+                    deletePlaylistConfirm: '「{name}」を削除しますか? 中の曲も消えます。',
+                    newPlaylist: '新しいプレイリスト',
+                    createPlaylistButton: '作成',
+                    playlistMoveTo: '別のプレイリストへ',
+                    playlistTrackCount: '{n}曲',
                     newPlaylistPlaceholder: '新しいプレイリスト名',
                     renamePlaylist: 'プレイリスト名を変更',
                     playlistNamePlaceholder: 'プレイリスト名を入力',
@@ -14214,7 +15287,7 @@
 
                     // 音楽プレイヤー - 追加
                     addFilesMessage: 'ファイルを追加してください',
-                    emptyPlaylist: 'ファイルを追加してください',
+                    emptyPlaylist: 'このプレイリストはまだ空です',
 
                     // ToDoリスト - 追加
                     noTasks: 'タスクがありません',
@@ -14458,6 +15531,8 @@
                     focusTotalLabel: 'Total',
                     autoStopSettingsTitle: 'Timer & Auto-stop',
                     autoStopMenuBtnSetting: 'Auto-stop',
+                    autoStopCompactSetting: 'Compact auto-stop button',
+                    autoStopCompactNote: 'Shows only an icon: at the lower left of the clock on the timer, and to the right of the title in the music player. It turns colored while a stop is scheduled.',
                     endConfirmSetting: 'Confirm before ending long sessions',
                     endConfirmThresholdLabel: 'Confirm threshold (minutes)',
                     endConfirmThresholdNote: 'Shows a confirmation dialog when ending a session longer than this',
@@ -14494,7 +15569,15 @@
                     repeatMonthly: 'Monthly',
                     priority: 'Priority',
                     todoPriorityColorSettingsButton: 'Set ToDo Priority Colors',
-                    todoPriorityColorSettingsTitle: 'ToDo Priority Color Settings',
+                    todoPriorityColorSettingsTitle: 'Priority colors',
+                    priorityColorHint: 'Pick a priority, then tap a color below.',
+                    priorityColorSampleTextHigh: 'Math homework',
+                    priorityColorSampleTextNormal: 'Learn 50 words',
+                    priorityColorSampleTextLow: 'Tidy up the desk',
+                    priorityColorPresets: 'Color presets',
+                    priorityColorCustom: 'Custom color',
+                    priorityColorHueLabel: 'Hue',
+                    priorityColorHexLabel: 'Color code',
                     resetButton: 'Reset',
                     priorityLow: 'Low',
                     priorityNormal: 'Normal',
@@ -14669,7 +15752,21 @@
                     tourDoneButton: "Let's go",
                     // Accessibility labels
                     dragHandle: 'Drag handle',
-                    playlistManagerTitle: 'Playlist manager',
+                    playlistManagerTitle: 'Manage playlists',
+                    playlistManagerHint: 'Drag the handle to reorder. Tap a name to switch to that playlist.',
+                    playlistCurrent: 'Current',
+                    seekPosition: 'Playback position',
+                    licenseIntro: 'Tsumiki app uses the following fonts under their respective licenses.',
+                    licenseLocalFonts: 'Bundled fonts',
+                    licenseNote: 'OFL = SIL Open Font License. Tap a name to open its source page.',
+                    playlistMenu: 'Playlist menu',
+                    playlistReorder: 'Reorder',
+                    deletePlaylist: 'Delete this playlist',
+                    deletePlaylistConfirm: 'Delete "{name}"? Its tracks will be removed too.',
+                    newPlaylist: 'New playlist',
+                    createPlaylistButton: 'Create',
+                    playlistMoveTo: 'Move to playlist',
+                    playlistTrackCount: '{n} tracks',
                     newPlaylistPlaceholder: 'New playlist name',
                     renamePlaylist: 'Rename playlist',
                     playlistNamePlaceholder: 'Enter playlist name',
@@ -14912,7 +16009,7 @@
 
                     // Music Player - Additional
                     addFilesMessage: 'Please add files',
-                    emptyPlaylist: 'Please add files',
+                    emptyPlaylist: 'This playlist is empty',
 
                     deleteTaskConfirm: 'Are you sure you want to delete this task?',
                     deleteMusicConfirm: 'Are you sure you want to delete this music file?',
@@ -16494,6 +17591,43 @@
                 const newState = !isAutoStopMenuBtnVisible();
                 saveData('feature_auto_stop_menu_btn', newState ? 'true' : 'false');
                 applyAutoStopMenuBtnVisibility();
+                applyAutoStopCompact();
+            }
+
+            // ── 自動停止のコンパクト表示: ボタンをアイコンだけにして、専用の1行を使わない場所へ移す ──
+            function isAutoStopCompact() {
+                return getData('auto_stop_compact') === 'true';
+            }
+
+            function applyAutoStopCompact() {
+                const compact = isAutoStopCompact();
+                document.body.classList.toggle('auto-stop-compact', compact);
+                const t = document.getElementById('toggleAutoStopCompact');
+                if (t) t.classList.toggle('active', compact);
+                // タイマー: 時計の左下(右下の全画面ボタンと左右対称)/ 音楽: 曲名の右
+                const places = [
+                    ['timerAutoStopPill', 'timerAutoStopControl', document.querySelector('#timerPage .timer-wrapper')],
+                    ['musicAutoStopPill', 'musicAutoStopControl', document.querySelector('#musicPage .music-info-header')]
+                ];
+                places.forEach(([pillId, controlId, compactHome]) => {
+                    const pill = document.getElementById(pillId);
+                    const control = document.getElementById(controlId);
+                    if (!pill || !control || !compactHome) return;
+                    if (compact && pill.parentElement !== compactHome) compactHome.appendChild(pill);
+                    if (!compact && pill.parentElement !== control) control.insertBefore(pill, control.firstChild);
+                });
+            }
+
+            function toggleAutoStopCompactSetting() {
+                saveData('auto_stop_compact', isAutoStopCompact() ? 'false' : 'true');
+                applyAutoStopCompact();
+            }
+
+            // アイコンだけのときも、何の状態かが分かるように(マウスを乗せたときの説明と読み上げ)
+            function setAutoStopPillLabel(pill, text) {
+                if (!pill) return;
+                pill.title = text;
+                pill.setAttribute('aria-label', text);
             }
 
             function isHistoryListVisible() {
@@ -17447,6 +18581,171 @@
                 if (!titleEl) return;
                 const active = getActivePlaylistMeta();
                 titleEl.textContent = (active && active.name) ? active.name : getText('playlist');
+                renderPlaylistTabs();
+            }
+
+            function playlistTrackCount(p) {
+                if (p.id === currentPlaylistId) return musicFiles.length;
+                return Array.isArray(p.tracks) ? p.tracks.length : 0;
+            }
+
+            // プレイリストのタブ(名前と曲数)。最後に「+ 新しいプレイリスト」
+            function renderPlaylistTabs() {
+                const box = document.getElementById('playlistTabs');
+                if (!box) return;
+                ensurePlaylistsState();
+                box.innerHTML = musicPlaylists.map(p => {
+                    const on = p.id === currentPlaylistId;
+                    return `<button type="button" class="pl-tab${on ? ' active' : ''}" role="tab" aria-selected="${on}" onclick="switchPlaylist('${p.id}')">`
+                        + `<span class="pl-tab-name">${escapeHtml(p.name || getText('playlist'))}</span><span class="pl-tab-count">${playlistTrackCount(p)}</span></button>`;
+                }).join('')
+                    + `<button type="button" class="pl-tab pl-tab-add" onclick="promptNewPlaylist()" aria-label="${getText('newPlaylist')}">`
+                    + `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+                    + `<span>${getText('newPlaylist')}</span></button>`;
+                const updateFade = () => {
+                    box.classList.toggle('fade-right', box.scrollLeft + box.clientWidth < box.scrollWidth - 4);
+                    box.classList.toggle('fade-left', box.scrollLeft > 4);
+                };
+                if (!box._fadeBound) {
+                    box._fadeBound = true;
+                    box.addEventListener('scroll', updateFade, { passive: true });
+                    window.addEventListener('resize', updateFade);
+                }
+                const active = box.querySelector('.pl-tab.active');
+                requestAnimationFrame(updateFade);
+                if (active && box.scrollWidth > box.clientWidth) {
+                    const left = active.offsetLeft - box.clientWidth / 2 + active.offsetWidth / 2;
+                    box.scrollTo({ left: Math.max(0, left) });
+                }
+            }
+
+            // ── プレイリストの小さなメニュー(… と 移動先の選択で共用) ──
+            let playlistPopoverItems = [];
+
+            function openPlaylistPopover(anchor, items) {
+                const pop = document.getElementById('playlistPopover');
+                if (!pop) return;
+                if (pop.classList.contains('show') && pop._anchor === anchor) {
+                    closePlaylistPopover();
+                    return;
+                }
+                playlistPopoverItems = items;
+                pop.innerHTML = items.map((it, i) => {
+                    if (it.header) return `<div class="pl-pop-head">${escapeHtml(it.header)}</div>`;
+                    return `<button type="button" role="menuitem" class="pl-pop-item${it.danger ? ' danger' : ''}"${it.disabled ? ' disabled' : ''} onclick="runPlaylistPopoverItem(${i})">`
+                        + (it.icon || '') + `<span class="pl-pop-label">${escapeHtml(it.label)}</span>`
+                        + (it.meta != null ? `<span class="pl-pop-meta">${escapeHtml(String(it.meta))}</span>` : '') + `</button>`;
+                }).join('');
+                pop._anchor = anchor;
+                if (anchor) anchor.setAttribute('aria-expanded', 'true');
+                pop.style.left = '0px';
+                pop.style.top = '0px';
+                pop.classList.add('show');
+                const r = anchor.getBoundingClientRect();
+                const w = pop.offsetWidth;
+                const h = pop.offsetHeight;
+                const left = Math.min(window.innerWidth - w - 12, Math.max(12, r.right - w));
+                let top = r.bottom + 6;
+                if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+                pop.style.left = left + 'px';
+                pop.style.top = top + 'px';
+            }
+
+            function closePlaylistPopover() {
+                const pop = document.getElementById('playlistPopover');
+                if (!pop || !pop.classList.contains('show')) return;
+                pop.classList.remove('show');
+                if (pop._anchor) pop._anchor.setAttribute('aria-expanded', 'false');
+                pop._anchor = null;
+            }
+
+            function runPlaylistPopoverItem(i) {
+                const it = playlistPopoverItems[i];
+                closePlaylistPopover();
+                if (it && !it.disabled && it.onClick) it.onClick();
+            }
+
+            document.addEventListener('click', (e) => {
+                const pop = document.getElementById('playlistPopover');
+                if (!pop || !pop.classList.contains('show')) return;
+                if (pop.contains(e.target) || (pop._anchor && pop._anchor.contains(e.target))) return;
+                closePlaylistPopover();
+            });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePlaylistPopover(); });
+            window.addEventListener('resize', closePlaylistPopover);
+            window.addEventListener('scroll', closePlaylistPopover, true);
+
+            const PL_ICON = (d) => `<svg class="pl-pop-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+
+            function openPlaylistMoreMenu(anchor) {
+                ensurePlaylistsState();
+                openPlaylistPopover(anchor, [
+                    { label: getText('renamePlaylist'), icon: PL_ICON('<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'), onClick: () => renamePlaylistMeta(currentPlaylistId) },
+                    { label: getText('playlistManagerTitle'), icon: PL_ICON('<path d="M4 6h16M4 12h16M4 18h10"/>'), onClick: openPlaylistManager },
+                    { label: getText('deletePlaylist'), icon: PL_ICON('<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>'), danger: true, disabled: musicPlaylists.length < 2, onClick: () => deletePlaylistMeta(currentPlaylistId) }
+                ]);
+            }
+
+            // 「動画/音楽を追加」と同じ項目を、押したボタンのそばに出す(空のプレイリストから使う)
+            function openMusicAddMenu(anchor) {
+                const items = [
+                    { label: getText('selectFile'), icon: PL_ICON('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'), onClick: () => document.getElementById('musicFileInput')?.click() },
+                    { label: getText('selectFolder'), icon: PL_ICON('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'), onClick: () => document.getElementById('musicFolderInput')?.click() }
+                ];
+                if (isYoutubeVideoEnabled()) {
+                    items.push({ label: getText('addYoutubeVideo'), icon: PL_ICON('<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.5 9.5l4 2.5-4 2.5z" fill="currentColor"/>'), onClick: () => openYoutubeDialog() });
+                }
+                openPlaylistPopover(anchor, items);
+            }
+
+            // 選んだ曲の移動先を選ぶ
+            function openPlaylistMoveMenu(anchor) {
+                if (!selectedMusicItems.size) return;
+                ensurePlaylistsState();
+                const others = musicPlaylists.filter(p => p.id !== currentPlaylistId);
+                const items = [{ header: getText('playlistMoveTo') }];
+                others.forEach(p => items.push({ label: p.name || getText('playlist'), meta: playlistTrackCount(p), onClick: () => moveSelectedMusicTo(p.id) }));
+                items.push({ label: getText('newPlaylist'), icon: PL_ICON('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'), onClick: async () => {
+                    const id = await promptNewPlaylist({ switchTo: false });
+                    if (id) moveSelectedMusicTo(id);
+                } });
+                openPlaylistPopover(anchor, items);
+            }
+
+            // 選んだ曲を別のプレイリストへ移す(同じファイルを2か所で持たないよう、コピーではなく移動)
+            function moveSelectedMusicTo(playlistId) {
+                const target = musicPlaylists.find(p => p.id === playlistId);
+                if (!target || playlistId === currentPlaylistId || !selectedMusicItems.size) return;
+                const picked = Array.from(selectedMusicItems).filter(i => i >= 0 && i < musicFiles.length).sort((a, b) => a - b);
+                const current = currentMusicIndex >= 0 ? musicFiles[currentMusicIndex] : null;
+                if (!Array.isArray(target.tracks)) target.tracks = [];
+                picked.forEach(i => {
+                    const m = musicFiles[i];
+                    const meta = { id: m.id, title: m.title };
+                    if (m.youtubeId) meta.youtubeId = m.youtubeId;
+                    if (m.isVideo) meta.video = true;
+                    target.tracks.push(meta);
+                });
+                const moved = new Set(picked);
+                if (current && moved.has(currentMusicIndex)) {
+                    // 再生中の曲を移したら止める
+                    const audio = document.getElementById('audioPlayer');
+                    if (audio) { audio.pause(); audio.src = ''; }
+                    if (current.youtubeId) {
+                        try { if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo(); } catch (e) { }
+                        ytPlayerIsPlaying = false;
+                    }
+                    saveData('music_current_track_id', '');
+                }
+                musicFiles = musicFiles.filter((_, i) => !moved.has(i));
+                currentMusicIndex = current ? musicFiles.indexOf(current) : -1;
+                selectedMusicItems.clear();
+                playlistSelectMode = false;
+                savePlaylist();
+                loadPlaylist();
+                updateMusicPlayerModeUI();
+                syncMiniPlayerUI();
+                updateMiniPlayerVisibility();
             }
 
             function savePlaylist() {
@@ -17461,7 +18760,8 @@
                 updatePlaylistTitle();
                 updatePlaylistSelectionUI();
                 if (musicFiles.length === 0) {
-                    playlistDiv.innerHTML = `<div class="empty-state">${getText('emptyPlaylist')}</div>`;
+                    playlistDiv.innerHTML = `<div class="playlist-empty"><div class="playlist-empty-text">${getText('emptyPlaylist')}</div>`
+                        + `<button type="button" class="secondary" aria-haspopup="menu" onclick="openMusicAddMenu(this)">${getText(isYoutubeVideoEnabled() ? 'addMusicButtonYt' : 'addMusicButton')}</button></div>`;
                     if (playlistCount) playlistCount.textContent = '0';
                     selectedMusicItems.clear();
                     updatePlaylistSelectionUI();
@@ -17795,6 +19095,8 @@
                 if (allBtn) allBtn.textContent = getText(musicFiles.length && n === musicFiles.length ? 'playlistDeselectAll' : 'selectAll');
                 const delBtn = document.getElementById('playlistDeleteSelectedBtn');
                 if (delBtn) delBtn.disabled = n === 0;
+                const moveBtn = document.getElementById('playlistMoveSelectedBtn');
+                if (moveBtn) moveBtn.disabled = n === 0;
             }
 
             function togglePlaylistSelectMode() {
@@ -17893,144 +19195,79 @@
 
             function renderPlaylistManager() {
                 ensurePlaylistsState();
+                syncActivePlaylistTracksFromRuntime();
                 const listEl = document.getElementById('playlistManagerList');
                 if (!listEl) return;
-
+                const canDelete = musicPlaylists.length > 1;
                 listEl.innerHTML = musicPlaylists.map((p, index) => {
-                    const trackCount = Array.isArray(p.tracks) ? p.tracks.length : 0;
-                    return `
-                            <div class="playlist-manager-item ${p.id === currentPlaylistId ? 'playing' : ''}" data-pl-index="${index}" data-pl-id="${p.id}" draggable="true">
-                                <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-                                    <img src="${getDragHandleSrc(p.id === currentPlaylistId)}" class="drag-handle" alt="" data-i18n-aria="dragHandle" aria-label="${getText('dragHandle')}" style="cursor: grab; width: 24px; height: 24px;">
-                                    <div style="display:flex; flex-direction:column; min-width:0;">
-                                        <span class="playlist-manager-item-name">${escapeHtml(p.name || getText('playlist'))}</span>
-                                        <span class="playlist-manager-item-count" style="opacity:.65; font-size:.82rem;">${trackCount}曲</span>
-                                    </div>
-                                </div>
-                                <div class="playlist-manager-item-actions">
-                                    <button class="todo-icon-btn" data-action="rename" data-pl-id="${p.id}" title="${getText('renameButton')}" aria-label="${getText('renameButton')}">${getEditIconSvg()}</button>
-                                    <button class="trash-btn" data-action="delete" data-pl-id="${p.id}" title="${getText('deleteButton')}" aria-label="${getText('deleteButton')}">${getTrashIconSvg()}</button>
-                                </div>
-                            </div>
-                        `;
+                    const active = p.id === currentPlaylistId;
+                    const count = getText('playlistTrackCount').replace('{n}', Array.isArray(p.tracks) ? p.tracks.length : 0);
+                    return `<div class="plm-item${active ? ' active' : ''}" data-pl-index="${index}" data-pl-id="${p.id}">`
+                        + `<span class="plm-handle" role="button" aria-label="${getText('dragHandle')}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>`
+                        + `<button type="button" class="plm-main" data-action="switch"><span class="plm-name">${escapeHtml(p.name || getText('playlist'))}</span>`
+                        + `<span class="plm-meta">${count}${active ? `<span class="plm-badge">${getText('playlistCurrent')}</span>` : ''}</span></button>`
+                        + `<button type="button" class="todo-icon-btn" data-action="rename" title="${getText('renameButton')}" aria-label="${getText('renameButton')}">${getEditIconSvg()}</button>`
+                        + (canDelete ? `<button type="button" class="trash-btn" data-action="delete" title="${getText('deleteButton')}" aria-label="${getText('deleteButton')}">${getTrashIconSvg()}</button>` : '')
+                        + `</div>`;
                 }).join('');
-
                 attachPlaylistManagerHandlers();
-                updateDragHandleIcons();
             }
 
             function attachPlaylistManagerHandlers() {
                 const listEl = document.getElementById('playlistManagerList');
                 if (!listEl) return;
-                let srcIndex = null;
-                const getManagerItems = () => Array.from(listEl.querySelectorAll('.playlist-manager-item'));
-
-                const clearIndicators = () => {
-                    listEl.querySelectorAll('.playlist-manager-item').forEach(el => {
-                        el.classList.remove('drag-over-top');
-                        el.classList.remove('drag-over-bottom');
-                    });
-                    clearInsertIndicator(listEl, null);
-                };
-
                 listEl.onclick = async (e) => {
                     const btn = e.target.closest('button[data-action]');
-                    if (btn) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const action = btn.getAttribute('data-action');
-                        const plId = btn.getAttribute('data-pl-id');
-                        if (action === 'rename') {
-                            renamePlaylistMeta(plId);
-                        } else if (action === 'delete') {
-                            await deletePlaylistMeta(plId);
-                        }
-                        return;
-                    }
-
-                    const item = e.target.closest('.playlist-manager-item');
-                    if (item && !e.target.closest('.drag-handle')) {
-                        const plId = item.getAttribute('data-pl-id');
-                        if (plId) {
-                            await switchPlaylist(plId);
-                        }
-                    }
+                    if (!btn) return;
+                    const plId = btn.closest('.plm-item').getAttribute('data-pl-id');
+                    const action = btn.getAttribute('data-action');
+                    if (action === 'switch') await switchPlaylist(plId);
+                    else if (action === 'rename') renamePlaylistMeta(plId);
+                    else if (action === 'delete') await deletePlaylistMeta(plId);
                 };
-
-                if (!listEl.dataset.dragBound) {
-                    listEl.dataset.dragBound = 'true';
-                    listEl.addEventListener('dragover', (e) => {
-                        if (srcIndex == null) return;
+                // つまみを押したまま上下に動かして並べ替え(マウスでも指でも)
+                listEl.querySelectorAll('.plm-handle').forEach(handle => {
+                    handle.addEventListener('pointerdown', (e) => {
+                        if (e.button !== undefined && e.button !== 0) return;
                         e.preventDefault();
-                        const items = getManagerItems();
-                        const insertIndex = getInsertIndexByClientY(items, e.clientY);
-                        setInsertIndicator(listEl, items, insertIndex);
-                    });
-
-                    listEl.addEventListener('drop', (e) => {
-                        if (srcIndex == null) return;
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const items = getManagerItems();
-                        let insertIndex = getInsertIndexByClientY(items, e.clientY);
-                        if (srcIndex < insertIndex) insertIndex -= 1;
-                        if (srcIndex !== insertIndex) {
-                            const moved = musicPlaylists.splice(srcIndex, 1)[0];
-                            musicPlaylists.splice(insertIndex, 0, moved);
-                            persistPlaylists();
-                            renderPlaylistManager();
-                        }
-                        clearIndicators();
-                    });
-                }
-
-                listEl.querySelectorAll('.playlist-manager-item').forEach(item => {
-                    item.addEventListener('dragstart', (e) => {
-                        if (e.target && e.target.closest && e.target.closest('button')) {
-                            e.preventDefault();
-                            return;
-                        }
-                        srcIndex = parseInt(item.getAttribute('data-pl-index'), 10);
+                        const item = handle.closest('.plm-item');
+                        const src = parseInt(item.getAttribute('data-pl-index'), 10);
+                        let insert = src;
                         item.classList.add('dragging');
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('text/plain', String(srcIndex));
-                        clearIndicators();
-                    });
-
-                    item.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        const items = getManagerItems();
-                        const insertIndex = getInsertIndexByClientY(items, e.clientY);
-                        setInsertIndicator(listEl, items, insertIndex);
-                    });
-
-                    item.addEventListener('dragleave', () => {
-                        item.classList.remove('drag-over-top');
-                        item.classList.remove('drag-over-bottom');
-                    });
-
-                    item.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        const items = getManagerItems();
-                        let insertIndex = getInsertIndexByClientY(items, e.clientY);
-                        if (srcIndex < insertIndex) insertIndex -= 1;
-                        if (srcIndex != null && srcIndex !== insertIndex) {
-                            const moved = musicPlaylists.splice(srcIndex, 1)[0];
-                            musicPlaylists.splice(insertIndex, 0, moved);
-                            persistPlaylists();
-                            renderPlaylistManager();
-                        }
-                        clearIndicators();
-                    });
-
-                    item.addEventListener('dragend', () => {
-                        item.classList.remove('dragging');
-                        item.classList.remove('drag-over-top');
-                        item.classList.remove('drag-over-bottom');
-                        srcIndex = null;
-                        clearIndicators();
+                        try { handle.setPointerCapture(e.pointerId); } catch (err) { }
+                        const items = () => Array.from(listEl.querySelectorAll('.plm-item'));
+                        const onMove = (ev) => {
+                            insert = getInsertIndexByClientY(items(), ev.clientY);
+                            setInsertIndicator(listEl, items(), insert);
+                        };
+                        const onEnd = () => {
+                            handle.removeEventListener('pointermove', onMove);
+                            handle.removeEventListener('pointerup', onEnd);
+                            handle.removeEventListener('pointercancel', onEnd);
+                            item.classList.remove('dragging');
+                            clearInsertIndicator(listEl, items());
+                            let to = insert;
+                            if (src < to) to -= 1;
+                            if (to !== src && to >= 0) {
+                                const moved = musicPlaylists.splice(src, 1)[0];
+                                musicPlaylists.splice(to, 0, moved);
+                                persistPlaylists();
+                                renderPlaylistTabs();
+                                renderPlaylistManager();
+                            }
+                        };
+                        handle.addEventListener('pointermove', onMove);
+                        handle.addEventListener('pointerup', onEnd);
+                        handle.addEventListener('pointercancel', onEnd);
                     });
                 });
+            }
+
+            // 管理画面の「+ 新しいプレイリスト」: 作ったら管理画面に戻って一覧に加わったことを見せる
+            async function addPlaylistFromManager() {
+                closePlaylistManager();
+                await promptNewPlaylist({ switchTo: false });
+                openPlaylistManager();
             }
 
             function openPlaylistManager() {
@@ -18038,46 +19275,58 @@
                 if (!overlay) return;
                 renderPlaylistManager();
                 overlay.classList.add('show');
-                const input = document.getElementById('newPlaylistNameInput');
-                if (input) {
-                    setTimeout(() => input.focus(), 0);
-                }
+                overlay.setAttribute('aria-hidden', 'false');
             }
 
             function closePlaylistManager() {
                 const overlay = document.getElementById('playlistManagerOverlay');
                 if (!overlay) return;
                 overlay.classList.remove('show');
+                overlay.setAttribute('aria-hidden', 'true');
             }
 
-            async function addNewPlaylist() {
-                const input = document.getElementById('newPlaylistNameInput');
-                if (!input) return;
-                const rawName = (input.value || '').trim();
-                const name = rawName || `${getText('playlist')} ${musicPlaylists.length + 1}`;
-
+            // 新しいプレイリスト。switchTo=false なら作るだけ(曲の移動先に使う)。作ったIDを返す
+            async function promptNewPlaylist(opts = {}) {
                 ensurePlaylistsState();
+                let n = musicPlaylists.length + 1;
+                while (musicPlaylists.some(p => (p.name || '').trim() === `${getText('playlist')} ${n}`)) n += 1;
+                const name = await openTextPrompt({
+                    title: getText('newPlaylist'),
+                    value: `${getText('playlist')} ${n}`,
+                    placeholder: getText('playlistNamePlaceholder'),
+                    okLabel: getText('createPlaylistButton'),
+                    validate: (v) => musicPlaylists.some(p => (p.name || '').trim() === v) ? getText('playlistNameExists') : ''
+                });
+                if (name === null) return null;
                 const id = createPlaylistId();
-                musicPlaylists.push({ id, name, tracks: [] });
                 syncActivePlaylistTracksFromRuntime();
+                musicPlaylists.push({ id, name, tracks: [] });
+                if (opts.switchTo === false) {
+                    persistPlaylists();
+                    renderPlaylistTabs();
+                    return id;
+                }
                 currentPlaylistId = id;
                 musicFiles = [];
                 currentMusicIndex = -1;
+                playlistSelectMode = false;
+                selectedMusicItems.clear();
                 const audio = document.getElementById('audioPlayer');
                 if (audio) {
                     audio.pause();
                     audio.src = '';
                 }
-                input.value = '';
                 persistPlaylists();
                 loadPlaylist();
-                renderPlaylistManager();
+                return id;
             }
 
             async function switchPlaylist(playlistId) {
                 if (!playlistId || playlistId === currentPlaylistId) return;
                 syncActivePlaylistTracksFromRuntime();
                 currentPlaylistId = playlistId;
+                playlistSelectMode = false;
+                selectedMusicItems.clear();
 
                 const audio = document.getElementById('audioPlayer');
                 if (audio) {
@@ -18090,12 +19339,19 @@
                 persistPlaylists();
                 loadPlaylist();
                 renderPlaylistManager();
+                updateMusicTitleDisplay();
             }
 
-            // プレイリスト名の変更(終わったらプレイリスト管理に戻る)
+            function isPlaylistManagerOpen() {
+                const overlay = document.getElementById('playlistManagerOverlay');
+                return !!(overlay && overlay.classList.contains('show'));
+            }
+
+            // プレイリスト名の変更(管理画面から開いたときは、終わったら管理画面に戻る)
             async function renamePlaylistMeta(playlistId) {
                 const target = musicPlaylists.find(p => p.id === playlistId);
                 if (!target) return;
+                const reopen = isPlaylistManagerOpen();
                 closePlaylistManager();
                 _renamingPlaylistId = playlistId;
                 const currentName = target.name || getText('playlist');
@@ -18113,16 +19369,19 @@
                     persistPlaylists();
                     loadPlaylist();
                 }
-                openPlaylistManager();
+                if (reopen) openPlaylistManager();
             }
 
             async function deletePlaylistMeta(playlistId) {
                 if (!playlistId) return;
                 if (musicPlaylists.length <= 1) return;
+                const target = musicPlaylists.find(p => p.id === playlistId);
+                if (!target) return;
+                const reopen = isPlaylistManagerOpen();
                 closePlaylistManager();
-                const ok = await customConfirm(getText('confirmDelete'), getText('deleteConfirmTitle'), 'delete.webp');
+                const ok = await customConfirm(getText('deletePlaylistConfirm').replace('{name}', target.name || getText('playlist')), getText('deleteConfirmTitle'), 'delete.webp');
                 if (!ok) {
-                    openPlaylistManager();
+                    if (reopen) openPlaylistManager();
                     return;
                 }
 
@@ -18143,8 +19402,8 @@
 
                 persistPlaylists();
                 loadPlaylist();
-                renderPlaylistManager();
-                openPlaylistManager();
+                updateMusicTitleDisplay();
+                if (reopen) openPlaylistManager();
             }
 
             async function restorePlaylistsFromStorage() {
@@ -18315,14 +19574,8 @@
             document.getElementById('playlistManagerOverlay')?.addEventListener('click', (e) => {
                 if (e.target === e.currentTarget) closePlaylistManager();
             });
-            document.getElementById('newPlaylistNameInput')?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addNewPlaylist();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    closePlaylistManager();
-                }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isPlaylistManagerOpen()) closePlaylistManager();
             });
 
             // 汎用: 再生を試み、失敗時はリトライするヘルパー
@@ -18654,9 +19907,13 @@
             });
 
             const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const timeDisplay = document.getElementById('timeDisplay');
-            const progressHandle = document.getElementById('progressHandle');
+            audioEl.addEventListener('play', resumeMusicAudioCtx);
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeMusicAudioCtx(); });
+
+            const progressTip = document.getElementById('progressTip');
+            const timeCurrentEl = document.getElementById('timeCurrent');
+            const timeDurationEl = document.getElementById('timeDuration');
+            let seekDragging = false;
             const volumeBtn = document.getElementById('volumeBtn');
             const volumeBtnImg = document.getElementById('volumeBtnImg');
             const volumeSlider = document.getElementById('volumeSlider');
@@ -18669,12 +19926,25 @@
                 return `${minutes}:${String(seconds).padStart(2, '0')}`;
             }
 
+            // 再生位置の表示(バー・つまみ・時間・読み上げ用の値)をまとめて更新
+            function renderSeekBar(cur, dur) {
+                if (!progressContainer) return;
+                const ratio = dur ? Math.max(0, Math.min(1, cur / dur)) : 0;
+                progressContainer.style.setProperty('--p', `${ratio * 100}%`);
+                progressContainer.classList.toggle('is-empty', !dur);
+                if (timeCurrentEl) timeCurrentEl.textContent = formatAudioTime(cur);
+                if (timeDurationEl) timeDurationEl.textContent = formatAudioTime(dur);
+                progressContainer.setAttribute('aria-valuemax', String(Math.floor(dur || 0)));
+                progressContainer.setAttribute('aria-valuenow', String(Math.floor(cur || 0)));
+                progressContainer.setAttribute('aria-valuetext', `${formatAudioTime(cur)} / ${formatAudioTime(dur)}`);
+            }
+
+            ['timeupdate', 'loadedmetadata', 'durationchange', 'emptied'].forEach(ev => audioEl.addEventListener(ev, () => {
+                if (!seekDragging) renderSeekBar(audioEl.currentTime || 0, audioEl.duration || 0);
+            }));
+
             audioEl.addEventListener('timeupdate', () => {
                 const cur = audioEl.currentTime;
-                const dur = audioEl.duration || 0;
-                const pct = dur ? (cur / dur) * 100 : 0;
-                if (progressBar) progressBar.style.width = `${pct}%`;
-                if (timeDisplay) timeDisplay.textContent = `${formatAudioTime(cur)} / ${formatAudioTime(dur)}`;
 
                 // 再生中は復帰情報を定期保存して、更新後の再開ズレを最小化する
                 if (!audioEl.paused && currentMusicIndex >= 0 && musicFiles[currentMusicIndex] && isMusicResumeOnTapEnabled()) {
@@ -18686,46 +19956,103 @@
             });
 
             if (progressContainer) {
-                const seekByClientX = (clientX) => {
+                const ratioAt = (clientX) => {
                     const rect = progressContainer.getBoundingClientRect();
-                    const x = clientX - rect.left;
-                    const pct = Math.max(0, Math.min(1, x / rect.width));
-                    if (audioEl.duration) audioEl.currentTime = pct * audioEl.duration;
+                    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
                 };
+                // 吹き出しは端ではみ出さないよう、バーの内側に収める
+                const placeTip = (ratio) => {
+                    if (!progressTip) return;
+                    const w = progressContainer.clientWidth;
+                    const half = progressTip.offsetWidth / 2;
+                    progressTip.style.left = `${Math.max(half, Math.min(w - half, ratio * w))}px`;
+                };
+                let dragRatio = 0;
 
-                let isSeeking = false;
-
+                // ドラッグ中は表示だけ動かし、離したときに1回だけ再生位置を変える(音が途切れないように)
                 progressContainer.addEventListener('pointerdown', (e) => {
-                    isSeeking = true;
-                    if (typeof progressContainer.setPointerCapture === 'function') {
-                        try { progressContainer.setPointerCapture(e.pointerId); } catch (_) { }
-                    }
-                    seekByClientX(e.clientX);
+                    if (e.button !== undefined && e.button !== 0) return;
+                    const dur = audioEl.duration || 0;
+                    if (!dur) return;
+                    e.preventDefault();
+                    seekDragging = true;
+                    progressContainer.classList.add('dragging');
+                    try { progressContainer.setPointerCapture(e.pointerId); } catch (_) { }
+                    dragRatio = ratioAt(e.clientX);
+                    renderSeekBar(dragRatio * dur, dur);
+                    if (progressTip) progressTip.textContent = formatAudioTime(dragRatio * dur);
+                    placeTip(dragRatio);
                 });
 
                 progressContainer.addEventListener('pointermove', (e) => {
-                    if (!isSeeking) return;
-                    seekByClientX(e.clientX);
+                    const dur = audioEl.duration || 0;
+                    if (!dur) return;
+                    const ratio = ratioAt(e.clientX);
+                    if (seekDragging) {
+                        dragRatio = ratio;
+                        renderSeekBar(ratio * dur, dur);
+                    } else if (e.pointerType === 'mouse') {
+                        progressContainer.classList.add('hovering');
+                    }
+                    if (progressTip) progressTip.textContent = formatAudioTime(ratio * dur);
+                    placeTip(ratio);
                 });
 
-                progressContainer.addEventListener('pointerup', () => {
-                    isSeeking = false;
-                });
+                const endSeek = (commit) => {
+                    if (!seekDragging) return;
+                    seekDragging = false;
+                    progressContainer.classList.remove('dragging');
+                    const dur = audioEl.duration || 0;
+                    if (commit && dur) audioEl.currentTime = dragRatio * dur;
+                    renderSeekBar(commit && dur ? dragRatio * dur : audioEl.currentTime || 0, dur);
+                };
+                progressContainer.addEventListener('pointerup', () => endSeek(true));
+                progressContainer.addEventListener('pointercancel', () => endSeek(false));
+                progressContainer.addEventListener('pointerleave', () => progressContainer.classList.remove('hovering'));
 
-                progressContainer.addEventListener('pointercancel', () => {
-                    isSeeking = false;
-                });
-
-                progressContainer.addEventListener('click', (e) => {
-                    seekByClientX(e.clientX);
+                // キーボード: ←→ で5秒、Home/End で先頭/最後
+                progressContainer.addEventListener('keydown', (e) => {
+                    const dur = audioEl.duration || 0;
+                    if (!dur) return;
+                    let t = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') t = audioEl.currentTime + 5;
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') t = audioEl.currentTime - 5;
+                    else if (e.key === 'Home') t = 0;
+                    else if (e.key === 'End') t = dur - 0.5;
+                    if (t === null) return;
+                    e.preventDefault();
+                    audioEl.currentTime = Math.max(0, Math.min(dur, t));
+                    renderSeekBar(audioEl.currentTime, dur);
                 });
             }
 
-            // アイコンを押すとミュート/解除(解除時はミュート前の音量に戻す)
+            // 音量バーはふだんたたんでおく。マウスは乗せると伸び(CSS)、タッチは1回目のタップで伸ばす
+            const volumeGroup = document.getElementById('volumeControlGroup');
+            const isTouchOnly = () => window.matchMedia && window.matchMedia('(hover: none)').matches;
+            let volumeCollapseTimer = null;
+            function setVolumeExpanded(on) {
+                if (!volumeGroup) return;
+                volumeGroup.classList.toggle('expanded', on);
+                if (volumeBtn) volumeBtn.setAttribute('aria-expanded', String(on));
+                clearTimeout(volumeCollapseTimer);
+                // タッチでは、触らずに3秒たったらたたむ
+                if (on && isTouchOnly()) volumeCollapseTimer = setTimeout(() => setVolumeExpanded(false), 3000);
+            }
+            document.addEventListener('pointerdown', (e) => {
+                if (volumeGroup && volumeGroup.classList.contains('expanded') && !volumeGroup.contains(e.target)) setVolumeExpanded(false);
+            });
+
+            // アイコンを押すとミュート/解除(解除時はミュート前の音量に戻す)。タッチでたたんでいるときは、まず伸ばす
             if (volumeBtn) {
                 volumeBtn.addEventListener('click', () => {
-                    if (audioEl.volume > 0) {
-                        saveData('music_volume_before_mute', String(audioEl.volume));
+                    const muted = getSavedMusicVolume() === 0;
+                    if (isTouchOnly() && volumeGroup && !volumeGroup.classList.contains('expanded') && !muted) {
+                        setVolumeExpanded(true);
+                        return;
+                    }
+                    if (isTouchOnly()) setVolumeExpanded(true); // ミュートしても、もう少し開いたままにする
+                    if (!muted) {
+                        saveData('music_volume_before_mute', String(getSavedMusicVolume()));
                         setMusicVolume(0);
                     } else {
                         const before = parseFloat(getData('music_volume_before_mute'));
@@ -18736,14 +20063,80 @@
             if (volumeSlider) {
                 volumeSlider.addEventListener('input', (e) => {
                     setMusicVolume(parseFloat(e.target.value));
+                    if (isTouchOnly()) setVolumeExpanded(true); // 動かしている間は閉じない
                 });
+                // キーボードで移ってきたときだけ伸ばす(マウスやタッチで押したときのフォーカスでは伸ばしたままにしない)
+                volumeSlider.addEventListener('focus', () => { if (volumeSlider.matches(':focus-visible')) setVolumeExpanded(true); });
+                volumeSlider.addEventListener('blur', () => { if (!isTouchOnly()) setVolumeExpanded(false); });
+                // パソコンではマウスのホイールでも5%ずつ
+                volumeSlider.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const cur = parseFloat(volumeSlider.value) || 0;
+                    setMusicVolume(Math.round((cur + (e.deltaY < 0 ? 0.05 : -0.05)) * 100) / 100);
+                }, { passive: false });
+            }
+
+            // iPhone(iOS)では、ページから audio/video の volume を変えても無視される(常に1のまま)。
+            // その端末では Web Audio の GainNode を通して音を小さくする。
+            // 100%のままなら Web Audio は使わない(使わずに済む人には影響を出さないため)
+            const mediaVolumeWritable = (() => {
+                try {
+                    const probe = document.createElement('audio');
+                    probe.volume = 0.5;
+                    return Math.abs(probe.volume - 0.5) < 0.01;
+                } catch (e) {
+                    return true;
+                }
+            })();
+            let musicAudioCtx = null;
+            let musicGainNode = null;
+
+            function getMusicGainNode() {
+                if (musicGainNode) return musicGainNode;
+                const AC = window.AudioContext || window.webkitAudioContext;
+                const audio = document.getElementById('audioPlayer');
+                if (!AC || !audio) return null;
+                try {
+                    musicAudioCtx = new AC();
+                    const source = musicAudioCtx.createMediaElementSource(audio);
+                    musicGainNode = musicAudioCtx.createGain();
+                    source.connect(musicGainNode);
+                    musicGainNode.connect(musicAudioCtx.destination);
+                } catch (e) {
+                    console.warn('[Music] Web Audio volume unavailable', e);
+                    musicGainNode = null;
+                }
+                return musicGainNode;
+            }
+
+            function resumeMusicAudioCtx() {
+                if (musicAudioCtx && musicAudioCtx.state !== 'running') musicAudioCtx.resume().catch(() => { });
+            }
+
+            // 実際の音に音量をかける(保存はしない。フェードアウトもここを通す)
+            function applyElementVolume(v) {
+                const audio = document.getElementById('audioPlayer');
+                if (!audio) return;
+                if (mediaVolumeWritable) {
+                    audio.volume = v;
+                    return;
+                }
+                if (v >= 0.999 && !musicGainNode) return;
+                const gain = getMusicGainNode();
+                if (!gain) return;
+                gain.gain.value = v;
+                resumeMusicAudioCtx();
+            }
+
+            function getSavedMusicVolume() {
+                const raw = parseFloat(getData('music_volume'));
+                return Math.max(0, Math.min(1, Number.isFinite(raw) ? raw : 1));
             }
 
             // 音量の変更はすべてここを通す(音声/YouTube・アイコン・スライダー・%表示をまとめて更新)
             function setMusicVolume(value) {
                 const v = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 1));
-                const audio = document.getElementById('audioPlayer');
-                if (audio) audio.volume = v;
+                applyElementVolume(v);
                 saveData('music_volume', String(v));
                 if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.setVolume === 'function') {
                     try { ytPlayer.setVolume(Math.round(v * 100)); } catch (err) { }
@@ -21272,6 +22665,13 @@
                 document.getElementById('priorityTargetHigh').classList.toggle('active', editingPriorityKey === 'high');
                 document.getElementById('priorityTargetNormal').classList.toggle('active', editingPriorityKey === 'normal');
                 document.getElementById('priorityTargetLow').classList.toggle('active', editingPriorityKey === 'low');
+                ['High', 'Normal', 'Low'].forEach(k => {
+                    const el = document.getElementById('priorityTarget' + k);
+                    if (el) el.setAttribute('aria-pressed', String(el.classList.contains('active')));
+                });
+                const chip = document.getElementById('priorityColorCurrentPreview');
+                if (chip) chip.style.backgroundColor = todoPriorityEditingColors[editingPriorityKey];
+                renderPriorityColorSwatches();
             }
 
             function updateTodoPickerUIFromState() {
@@ -21299,6 +22699,36 @@
                 refreshTodoPriorityColorTargets();
             }
 
+            // アプリの落ち着いた色合いに合わせた候補
+            const PRIORITY_COLOR_PRESETS = ['#E06C6C', '#E8956B', '#E2B65A', '#8DBF7A', '#5FB3A6', '#7FB2D9',
+                '#4F7FB0', '#7A7FC4', '#A88BC7', '#D98BAF', '#9AA4AE', '#5E6B78'];
+
+            function renderPriorityColorSwatches() {
+                const box = document.getElementById('priorityColorSwatches');
+                if (!box) return;
+                const current = (todoPriorityEditingColors[editingPriorityKey] || '').toUpperCase();
+                if (!box.childElementCount) {
+                    box.innerHTML = PRIORITY_COLOR_PRESETS.map(hex =>
+                        `<button type="button" class="pc-swatch" data-hex="${hex}" style="--c:${hex}" aria-label="${hex}" onclick="pickPriorityPresetColor('${hex}')"></button>`).join('');
+                }
+                box.querySelectorAll('.pc-swatch').forEach(el => {
+                    const on = el.dataset.hex === current;
+                    el.classList.toggle('active', on);
+                    el.setAttribute('aria-pressed', String(on));
+                });
+            }
+
+            function pickPriorityPresetColor(hex) {
+                const hsv = hexToHsv(hex);
+                todoPickerState = { h: hsv.h, s: hsv.s, v: hsv.v };
+                updateTodoPickerUIFromState();
+                // HSV を通すと1ずれることがあるので、候補の色そのものにしておく
+                todoPriorityEditingColors[editingPriorityKey] = hex;
+                const hexInput = document.getElementById('priorityColorHexInput');
+                if (hexInput) hexInput.value = hex;
+                refreshTodoPriorityColorTargets();
+            }
+
             function selectTodoPriorityColorTarget(key) {
                 editingPriorityKey = key;
                 const hsv = hexToHsv(todoPriorityEditingColors[key]);
@@ -21322,6 +22752,8 @@
                 if (!overlay) return;
                 todoPriorityEditingColors = getTodoPriorityColors();
                 editingPriorityKey = 'high';
+                const custom = document.getElementById('priorityColorCustom');
+                if (custom) custom.open = false;
                 selectTodoPriorityColorTarget('high');
                 overlay.classList.add('show');
                 overlay.setAttribute('aria-hidden', 'false');
@@ -21873,6 +23305,7 @@
                 'group_input_visible',
                 'group_input_mode',
                 'feature_auto_stop_menu_btn',
+                'auto_stop_compact',
                 'history_list_visible',
                 'graph_enabled',
                 'graph_type',
@@ -21924,6 +23357,7 @@
                 'feature_stop_music_on_timer_end',
                 'feature_music_resume_on_tap_after_reload',
                 'feature_auto_stop_menu_btn',
+                'auto_stop_compact',
                 'lock_settings_during_timer',
                 'feature_focus_mode_display',
                 'focus_mode_enabled',
@@ -22659,8 +24093,8 @@
                 overlay.classList.add('show');
                 overlay.setAttribute('aria-hidden', 'false');
                 document.body.classList.add('no-scroll');
-                const okBtn = document.getElementById('licenseOkBtn');
-                try { if (okBtn) okBtn.focus(); } catch (e) { }
+                const content = document.getElementById('licenseContent');
+                if (content) content.scrollTop = 0;
             }
 
             function hideLicenseModal() {
@@ -23621,6 +25055,7 @@
                 applyGroupInputVisibility();
                 syncGroupInputToggle();
                 applyAutoStopMenuBtnVisibility();
+                applyAutoStopCompact();
                 applyHistoryListVisibility();
                 syncHistoryListToggle();
 
@@ -23798,11 +25233,10 @@
                 const volumeSlider = document.getElementById('volumeSlider');
                 const volumeBtnImg = document.getElementById('volumeBtnImg');
                 if (audioEl) {
-                    const savedVolumeRaw = parseFloat(getData('music_volume'));
-                    const savedVolume = Math.max(0, Math.min(1, Number.isFinite(savedVolumeRaw) ? savedVolumeRaw : 1));
-                    audioEl.volume = savedVolume;
+                    const savedVolume = getSavedMusicVolume();
+                    applyElementVolume(savedVolume);
                     audioEl.loop = isLoop;
-                    updateVolumeUI(audioEl.volume);
+                    updateVolumeUI(savedVolume);
                 }
                 await (async () => {
                     try {
@@ -24020,9 +25454,10 @@
             document.getElementById('priorityColorHexInput')?.addEventListener('input', (e) => {
                 const normalized = normalizeHexColor(e.target.value);
                 if (!normalized) return;
-                const hsv = hexToHsv(normalized);
-                todoPickerState = { h: hsv.h, s: hsv.s, v: hsv.v };
-                updateTodoPickerUIFromState();
+                // 候補の色と同じく、打った色そのものを使う(HSV を通すと1ずれることがある)
+                const caret = e.target.selectionStart;
+                pickPriorityPresetColor(normalized);
+                try { e.target.setSelectionRange(caret, caret); } catch (err) { }
             });
             (function bindPriorityBoardPointerEvents() {
                 const board = document.getElementById('priorityColorBoard');
@@ -24047,6 +25482,10 @@
             })();
             document.getElementById('priorityColorOverlay')?.addEventListener('click', (e) => {
                 if (e.target === e.currentTarget) closeTodoPriorityColorModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                const overlay = document.getElementById('priorityColorOverlay');
+                if (e.key === 'Escape' && overlay && overlay.classList.contains('show')) closeTodoPriorityColorModal();
             });
             document.getElementById('calendarDayDialog')?.addEventListener('click', (e) => {
                 if (e.target === e.currentTarget) closeCalendarDayDialog();
@@ -26760,16 +28199,15 @@
 
             function updateAddYoutubeMenuItem() {
                 const item = document.getElementById('addYoutubeItem');
-                if (item) item.style.display = isYoutubeVideoEnabled() ? 'block' : 'none';
+                if (item) item.style.display = isYoutubeVideoEnabled() ? '' : 'none';
             }
 
             // アプリ側の音量スライダー(0〜1)をYouTubeプレイヤーの音量(0〜100)に変換する。
             // プレイヤーを新規作成/曲を切り替えるたびにこれを適用しないと、
             // YouTube側のデフォルト(100%)でいきなり再生されてしまう
             function getMusicVolumePercent() {
-                const audioEl = document.getElementById('audioPlayer');
-                const v = audioEl ? audioEl.volume : parseFloat(getData('music_volume') || '1');
-                return Math.round(Math.max(0, Math.min(1, Number.isFinite(v) ? v : 1)) * 100);
+                // 端末の値(iOS では常に1)ではなく、保存している音量を使う
+                return Math.round(getSavedMusicVolume() * 100);
             }
 
             function loadYoutubeApi() {
@@ -27832,6 +29270,7 @@
                 const pillText = document.getElementById('timerAutoStopPillText');
                 if (pill) pill.classList.toggle('armed', active);
                 if (pillText) pillText.textContent = active ? status : getText('autoStopPillOff');
+                setAutoStopPillLabel(pill, active ? status : getText('autoStopPillOff'));
                 const fsEl = document.getElementById('fullscreenAutoStopDisplay');
                 if (fsEl) {
                     fsEl.style.display = active ? 'block' : 'none';
@@ -28086,6 +29525,7 @@
                 }
                 if (pill) pill.classList.toggle('armed', armed);
                 if (pillText) pillText.textContent = text;
+                setAutoStopPillLabel(pill, text);
             }
 
             // ── フェードアウト ──
@@ -28102,15 +29542,14 @@
                 } else {
                     const audio = document.getElementById('audioPlayer');
                     if (!audio) return;
-                    if (musicFadeBaseVolume == null) musicFadeBaseVolume = audio.volume;
-                    audio.volume = Math.max(0, Math.min(1, musicFadeBaseVolume * ratio));
+                    if (musicFadeBaseVolume == null) musicFadeBaseVolume = getSavedMusicVolume();
+                    applyElementVolume(Math.max(0, Math.min(1, musicFadeBaseVolume * ratio)));
                 }
             }
 
             function restoreMusicFadeVolume() {
                 if (musicFadeBaseVolume != null) {
-                    const audio = document.getElementById('audioPlayer');
-                    if (audio) audio.volume = musicFadeBaseVolume;
+                    applyElementVolume(musicFadeBaseVolume);
                     musicFadeBaseVolume = null;
                 }
                 if (musicFadeBaseYtVolume != null) {
