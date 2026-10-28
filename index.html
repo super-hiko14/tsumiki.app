@@ -5673,6 +5673,10 @@
             cursor: crosshair;
             overflow: hidden;
             background: red;
+            /* スマホで指を動かしても画面がスクロールしないように */
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .priority-color-board::before {
@@ -5716,6 +5720,7 @@
             border-radius: 24px;
             background: linear-gradient(to right, #ff0000 0%, #ffff00 16.66%, #00ff00 33.33%, #00ffff 50%, #0000ff 66.66%, #ff00ff 83.33%, #ff0000 100%);
             cursor: pointer;
+            touch-action: none;
         }
 
         .priority-color-hue::-webkit-slider-thumb {
@@ -25649,6 +25654,7 @@
                     updateTodoPickerByBoardEvent(event.clientX, event.clientY);
                 };
                 board.addEventListener('pointerdown', (event) => {
+                    event.preventDefault();
                     dragging = true;
                     board.setPointerCapture(event.pointerId);
                     updateTodoPickerByBoardEvent(event.clientX, event.clientY);
@@ -25660,6 +25666,28 @@
                 board.addEventListener('pointercancel', () => {
                     dragging = false;
                 });
+            })();
+            // 色相のバー: タッチでは、つまみ以外を触ってもその位置へ動かし、そのまま指で動かせるようにする
+            (function bindPriorityHueTouch() {
+                const hue = document.getElementById('priorityColorHue');
+                if (!hue) return;
+                let dragging = false;
+                const setFromX = (clientX) => {
+                    const rect = hue.getBoundingClientRect();
+                    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                    hue.value = String(Math.round(ratio * 360));
+                    hue.dispatchEvent(new Event('input', { bubbles: true }));
+                };
+                hue.addEventListener('pointerdown', (event) => {
+                    if (event.pointerType === 'mouse') return; // マウスはブラウザ標準の動きのまま
+                    event.preventDefault();
+                    dragging = true;
+                    hue.setPointerCapture(event.pointerId);
+                    setFromX(event.clientX);
+                });
+                hue.addEventListener('pointermove', (event) => { if (dragging) setFromX(event.clientX); });
+                hue.addEventListener('pointerup', () => { dragging = false; });
+                hue.addEventListener('pointercancel', () => { dragging = false; });
             })();
             document.getElementById('priorityColorOverlay')?.addEventListener('click', (e) => {
                 if (e.target === e.currentTarget) closeTodoPriorityColorModal();
