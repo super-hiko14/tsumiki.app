@@ -2654,60 +2654,53 @@
             color: var(--primary-color-dark);
         }
 
-        /* グラフ上部のサマリー(合計 / 1日平均 / 1日最長) */
+        /* グラフ上部のサマリー(合計 / 1日平均 / 1日最長): 枠なしで3つを横に並べる */
         .chart-summary {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 4px 0 14px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin: 0 0 16px;
+            text-align: left;
         }
 
-        /* 狭い画面でも3つを1列に収める(2段に崩れないように) */
-        @media (max-width: 480px) {
-            .chart-summary {
-                flex-wrap: nowrap;
-                gap: 6px;
-            }
-
-            .chart-stat {
-                flex: 1;
-                min-width: 0;
-                padding: 8px 6px;
-            }
-
-            .chart-stat-value {
-                font-size: 0.85rem;
-                white-space: nowrap;
-            }
+        .chart-summary[hidden] {
+            display: none;
         }
 
         .chart-stat {
-            border-radius: 24px;
-            padding: 8px 18px;
             display: flex;
             flex-direction: column;
             gap: 2px;
-            align-items: center;
-            min-width: 90px;
-        }
-
-        .light .chart-stat {
-            background: var(--panel-light);
-        }
-
-        .dark .chart-stat {
-            background: var(--panel-dark);
+            min-width: 0;
         }
 
         .chart-stat-label {
-            font-size: 0.68rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
             opacity: 0.6;
         }
 
+        /* グラフの平均の点線と同じ印 */
+        .chart-avg-key {
+            width: 16px;
+            border-top: 1.5px dashed currentColor;
+        }
+
         .chart-stat-value {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
+            font-weight: 600;
             font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 480px) {
+            .chart-stat-value {
+                font-size: 0.92rem;
+            }
         }
 
         .music-display-panel {
@@ -6033,18 +6026,163 @@
         #studyGraphContainer h2,
         #statsGraphContainer h2 {
             font-size: 1.1rem;
-            margin-bottom: 15px;
+            margin: 0 0 14px;
             text-align: left;
         }
 
+        /* 見出しと、期間の切り替え(週/月/年/全期間) */
+        .chart-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            margin-bottom: 10px;
+        }
+
+        #studyGraphContainer .chart-head h2,
+        #statsGraphContainer .chart-head h2 {
+            margin: 0;
+        }
+
+        .chart-range {
+            display: inline-flex;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.12);
+        }
+
+        .chart-range-btn {
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-size: 0.8rem;
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            opacity: 0.65;
+            transition: background 0.15s, opacity 0.15s;
+        }
+
+        .chart-range-btn:hover {
+            opacity: 1;
+        }
+
+        .chart-range-btn.active {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .light .chart-range-btn.active {
+            background: var(--bg-light);
+        }
+
+        .dark .chart-range-btn.active {
+            background: var(--panel-dark-2);
+        }
+
+        /* ‹ 2026年10月 › */
+        .chart-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0 0 12px -6px;
+        }
+
+        .chart-nav-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            padding: 0 2px;
+        }
+
+        .chart-nav-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            opacity: 0.7;
+        }
+
+        .chart-nav-btn:hover:not(:disabled) {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.14);
+        }
+
+        .chart-nav-btn:disabled {
+            opacity: 0.2;
+            cursor: default;
+        }
+
+        .chart-nav-btn[hidden] {
+            display: none;
+        }
+
+        .chart-nav:has(.chart-nav-prev[hidden]) {
+            margin-left: 0;
+        }
+
+        /* グラフは枠の幅に収める(横スクロールしない)。値の吹き出しを上に重ねる */
         .chart-scroll-wrap {
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
+            position: relative;
         }
 
         .chart-scroll-wrap canvas {
             display: block;
+            touch-action: pan-y;
+        }
+
+        .chart-tip {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.12s ease;
+        }
+
+        .chart-tip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .light .chart-tip {
+            background: var(--bg-light);
+            color: #323232;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .dark .chart-tip {
+            background: var(--panel-dark-2);
+            color: #e8e8e8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .chart-tip-date {
+            opacity: 0.6;
+        }
+
+        .chart-tip-value {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
         }
 
         .todo-item {
@@ -13361,7 +13499,21 @@
             </div>
             <div class="stats-container" id="statsContainer"></div>
             <div id="statsGraphContainer" style="display: none; margin-bottom: 30px;" data-editor-target="graph">
-                <canvas id="statsChart" style="max-height: 300px;"></canvas>
+                <div class="chart-head">
+                    <h2 data-i18n="graphTitle">勉強時間グラフ</h2>
+                    <div class="chart-range" role="group" aria-label="表示期間" data-i18n-aria="chartRangeLabel">
+                        <button type="button" class="chart-range-btn" data-range="week" aria-pressed="false" onclick="setGraphRange('week')" data-i18n="chartRangeWeek">週</button>
+                        <button type="button" class="chart-range-btn" data-range="month" aria-pressed="false" onclick="setGraphRange('month')" data-i18n="chartRangeMonth">月</button>
+                        <button type="button" class="chart-range-btn" data-range="year" aria-pressed="false" onclick="setGraphRange('year')" data-i18n="chartRangeYear">年</button>
+                        <button type="button" class="chart-range-btn" data-range="all" aria-pressed="false" onclick="setGraphRange('all')" data-i18n="chartRangeAll">全期間</button>
+                    </div>
+                </div>
+                <div class="chart-nav">
+                    <button type="button" class="chart-nav-btn chart-nav-prev" onclick="shiftGraphRange('statsChart', -1)" aria-label="前の期間" data-i18n-aria="chartPrev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+                    <span class="chart-nav-label" aria-live="polite"></span>
+                    <button type="button" class="chart-nav-btn chart-nav-next" onclick="shiftGraphRange('statsChart', 1)" aria-label="次の期間" data-i18n-aria="chartNext"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+                </div>
+                <canvas id="statsChart"></canvas>
             </div>
             <div class="group-selector" id="groupStatsSelector"></div>
             <div id="groupStats"></div>
@@ -13454,8 +13606,21 @@
             </div>
 
             <div id="studyGraphContainer" style="display: none; margin-bottom: 30px;" data-editor-target="graph">
-                <h2 data-i18n="graphTitle">勉強時間グラフ</h2>
-                <canvas id="studyChart" style="max-height: 300px;"></canvas>
+                <div class="chart-head">
+                    <h2 data-i18n="graphTitle">勉強時間グラフ</h2>
+                    <div class="chart-range" role="group" aria-label="表示期間" data-i18n-aria="chartRangeLabel">
+                        <button type="button" class="chart-range-btn" data-range="week" aria-pressed="false" onclick="setGraphRange('week')" data-i18n="chartRangeWeek">週</button>
+                        <button type="button" class="chart-range-btn" data-range="month" aria-pressed="false" onclick="setGraphRange('month')" data-i18n="chartRangeMonth">月</button>
+                        <button type="button" class="chart-range-btn" data-range="year" aria-pressed="false" onclick="setGraphRange('year')" data-i18n="chartRangeYear">年</button>
+                        <button type="button" class="chart-range-btn" data-range="all" aria-pressed="false" onclick="setGraphRange('all')" data-i18n="chartRangeAll">全期間</button>
+                    </div>
+                </div>
+                <div class="chart-nav">
+                    <button type="button" class="chart-nav-btn chart-nav-prev" onclick="shiftGraphRange('studyChart', -1)" aria-label="前の期間" data-i18n-aria="chartPrev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+                    <span class="chart-nav-label" aria-live="polite"></span>
+                    <button type="button" class="chart-nav-btn chart-nav-next" onclick="shiftGraphRange('studyChart', 1)" aria-label="次の期間" data-i18n-aria="chartNext"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+                </div>
+                <canvas id="studyChart"></canvas>
             </div>
             <div id="historyList" class="history-list" data-editor-target="historyList"></div>
             <button class="secondary list-clear-all" onclick="clearHistory()"
@@ -14041,24 +14206,10 @@
                             data-i18n="displayPeriod">表示期間</label>
                         <div class="custom-select" style="width: 100%;">
                             <select id="graphPeriod" onchange="saveGraphSettings()">
-                                <option value="7" data-i18n="period7days">過去7日間</option>
-                                <option value="14" data-i18n="period14days">過去14日間</option>
-                                <option value="30" selected data-i18n="period30days">過去30日間</option>
-                                <option value="90" data-i18n="period90days">過去90日間</option>
-                                <option value="365" data-i18n="period1year">過去1年間</option>
-                                <option value="all" data-i18n="periodAll">すべての期間</option>
-                            </select>
-                            <div class="select-arrow">▾</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 15px;">
-                        <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 8px;"
-                            data-i18n="graphDaysLabel">表示する日</label>
-                        <div class="custom-select" style="width: 100%;">
-                            <select id="graphDays" onchange="saveGraphSettings()">
-                                <option value="recorded" data-i18n="graphDaysRecorded">記録がある日のみ</option>
-                                <option value="continuous" data-i18n="graphDaysContinuous">毎日(0の日も含む)</option>
+                                <option value="week" data-i18n="chartRangeWeekOpt">週ごと</option>
+                                <option value="month" selected data-i18n="chartRangeMonthOpt">月ごと</option>
+                                <option value="year" data-i18n="chartRangeYearOpt">年ごと</option>
+                                <option value="all" data-i18n="chartRangeAllOpt">全期間</option>
                             </select>
                             <div class="select-arrow">▾</div>
                         </div>
@@ -14772,9 +14923,19 @@
                     chartDailyAvg: '1日平均',
                     chartBest: '1日最長',
                     chartAvgLine: '平均',
-                    graphDaysLabel: '表示する日',
-                    graphDaysRecorded: '記録がある日のみ',
-                    graphDaysContinuous: '毎日(0の日も含む)',
+                    chartEmpty: 'この期間の記録はまだありません',
+                    chartRangeLabel: '表示期間',
+                    chartRangeWeek: '週',
+                    chartRangeMonth: '月',
+                    chartRangeYear: '年',
+                    chartRangeAll: '全期間',
+                    chartRangeWeekOpt: '週ごと',
+                    chartRangeMonthOpt: '月ごと',
+                    chartRangeYearOpt: '年ごと',
+                    chartRangeAllOpt: '全期間',
+                    chartRangeAllTitle: 'これまでのすべて',
+                    chartPrev: '前の期間',
+                    chartNext: '次の期間',
                     musicSettingsTitle: '音楽プレイヤー設定',
                     settingsSearchPlaceholder: '設定を検索',
                     settingsSearchEmpty: '一致する設定がありません',
@@ -14911,12 +15072,6 @@
                     graphLine: '折れ線グラフ',
                     graphArea: '面グラフ',
                     displayPeriod: '表示期間',
-                    period7days: '過去7日間',
-                    period14days: '過去14日間',
-                    period30days: '過去30日間',
-                    period90days: '過去90日間',
-                    period1year: '過去1年間',
-                    periodAll: 'すべての期間',
                     displayLocation: '表示場所',
                     locationList: 'リスト画面',
                     locationStats: '統計画面',
@@ -15571,9 +15726,19 @@
                     chartDailyAvg: 'Daily avg',
                     chartBest: 'Best day',
                     chartAvgLine: 'avg',
-                    graphDaysLabel: 'Days shown',
-                    graphDaysRecorded: 'Recorded days only',
-                    graphDaysContinuous: 'Every day (incl. zero)',
+                    chartEmpty: 'No records in this period yet',
+                    chartRangeLabel: 'Range',
+                    chartRangeWeek: 'Week',
+                    chartRangeMonth: 'Month',
+                    chartRangeYear: 'Year',
+                    chartRangeAll: 'All',
+                    chartRangeWeekOpt: 'By week',
+                    chartRangeMonthOpt: 'By month',
+                    chartRangeYearOpt: 'By year',
+                    chartRangeAllOpt: 'All time',
+                    chartRangeAllTitle: 'All time',
+                    chartPrev: 'Previous',
+                    chartNext: 'Next',
                     musicSettingsTitle: 'Music Player Settings',
                     settingsSearchPlaceholder: 'Search settings',
                     settingsSearchEmpty: 'No matching settings',
@@ -15680,12 +15845,6 @@
                     graphLine: 'Line Chart',
                     graphArea: 'Area Chart',
                     displayPeriod: 'Display Period',
-                    period7days: 'Last 7 Days',
-                    period14days: 'Last 14 Days',
-                    period30days: 'Last 30 Days',
-                    period90days: 'Last 90 Days',
-                    period1year: 'Last Year',
-                    periodAll: 'All Time',
                     displayLocation: 'Display Location',
                     locationList: 'List Screen',
                     locationStats: 'Stats Screen',
@@ -23335,7 +23494,6 @@
                 'graph_type',
                 'graph_period',
                 'graph_location',
-                'graph_days',
                 'todo_v2_enabled',
                 'todo_v2_prompt_shown',
                 'todo_priority_colors',
@@ -23761,8 +23919,8 @@
                 }
 
                 const importedGraphPeriod = String(settings.graph_period ?? legacy.graph_period ?? '').trim();
-                if (['7', '14', '30', '90', '365', 'all'].includes(importedGraphPeriod)) {
-                    saveData('graph_period', importedGraphPeriod);
+                if (['7', '14', '30', '90', '365', 'all', 'week', 'month', 'year'].includes(importedGraphPeriod)) {
+                    saveData('graph_period', normalizeGraphRange(importedGraphPeriod));
                 }
 
                 const importedGraphLocation = String(settings.graph_location ?? legacy.graph_location ?? '').trim();
@@ -25381,7 +25539,7 @@
                 if (rawGraphEnabled === null) {
                     saveData('graph_enabled', 'true');
                     saveData('graph_type', 'bar');
-                    saveData('graph_period', '30');
+                    saveData('graph_period', 'month');
                     saveData('graph_location', 'list');
                 }
 
@@ -25391,13 +25549,12 @@
                     document.getElementById('graphSettings').style.display = 'block';
 
                     const graphType = normalizeGraphType(getData('graph_type'));
-                    const graphPeriod = getData('graph_period') || '30';
+                    const graphPeriod = normalizeGraphRange(getData('graph_period'));
                     const graphLocation = getData('graph_location') || 'list';
 
                     document.getElementById('graphType').value = graphType;
                     document.getElementById('graphPeriod').value = graphPeriod;
                     document.getElementById('graphLocation').value = graphLocation;
-                    document.getElementById('graphDays').value = getData('graph_days') === 'continuous' ? 'continuous' : 'recorded';
 
                     setTimeout(() => updateGraphs(), 200);
                 } else {
@@ -25608,14 +25765,12 @@
 
             function saveGraphSettings() {
                 const type = document.getElementById('graphType').value;
-                const period = document.getElementById('graphPeriod').value;
+                const period = normalizeGraphRange(document.getElementById('graphPeriod').value);
                 const location = document.getElementById('graphLocation').value;
-                const days = document.getElementById('graphDays').value;
 
                 saveData('graph_type', type);
                 saveData('graph_period', period);
                 saveData('graph_location', location);
-                saveData('graph_days', days);
 
                 updateGraphs();
             }
@@ -25819,13 +25974,8 @@
                             },
                             {
                                 type: 'select', label: getText('editorModeGraphPeriod'), options: [
-                                    { v: '7', t: getText('period7days') }, { v: '14', t: getText('period14days') }, { v: '30', t: getText('period30days') }, { v: '90', t: getText('period90days') }, { v: '365', t: getText('period1year') }, { v: 'all', t: getText('periodAll') }
-                                ], key: 'graph_period', onChange: function (val) { saveData('graph_period', val); var el = document.getElementById('graphPeriod'); if (el) el.value = val; updateGraphs(); }
-                            },
-                            {
-                                type: 'select', label: getText('graphDaysLabel'), options: [
-                                    { v: 'recorded', t: getText('graphDaysRecorded') }, { v: 'continuous', t: getText('graphDaysContinuous') }
-                                ], key: 'graph_days', onChange: function (val) { saveData('graph_days', val); var el = document.getElementById('graphDays'); if (el) el.value = val; updateGraphs(); }
+                                    { v: 'week', t: getText('chartRangeWeekOpt') }, { v: 'month', t: getText('chartRangeMonthOpt') }, { v: 'year', t: getText('chartRangeYearOpt') }, { v: 'all', t: getText('chartRangeAllOpt') }
+                                ], key: 'graph_period', onChange: function (val) { setGraphRange(val); }
                             },
                             {
                                 type: 'select', label: getText('editorModeGraphLocation'), options: [
@@ -25908,13 +26058,8 @@
                             },
                             {
                                 type: 'select', label: getText('editorModeGraphPeriod'), options: [
-                                    { v: '7', t: getText('period7days') }, { v: '14', t: getText('period14days') }, { v: '30', t: getText('period30days') }, { v: '90', t: getText('period90days') }, { v: '365', t: getText('period1year') }, { v: 'all', t: getText('periodAll') }
-                                ], key: 'graph_period', onChange: function (val) { saveData('graph_period', val); var el = document.getElementById('graphPeriod'); if (el) el.value = val; updateGraphs(); }
-                            },
-                            {
-                                type: 'select', label: getText('graphDaysLabel'), options: [
-                                    { v: 'recorded', t: getText('graphDaysRecorded') }, { v: 'continuous', t: getText('graphDaysContinuous') }
-                                ], key: 'graph_days', onChange: function (val) { saveData('graph_days', val); var el = document.getElementById('graphDays'); if (el) el.value = val; updateGraphs(); }
+                                    { v: 'week', t: getText('chartRangeWeekOpt') }, { v: 'month', t: getText('chartRangeMonthOpt') }, { v: 'year', t: getText('chartRangeYearOpt') }, { v: 'all', t: getText('chartRangeAllOpt') }
+                                ], key: 'graph_period', onChange: function (val) { setGraphRange(val); }
                             },
                             {
                                 type: 'select', label: getText('editorModeGraphLocation'), options: [
@@ -25963,7 +26108,7 @@
                         html += '<div class="toggle-switch' + (isActive ? ' active' : '') + '" data-emm-toggle="' + i + '" onclick="editorMiniMenuToggle(' + i + ')">';
                         html += '<div class="toggle-slider"></div></div>';
                     } else if (row.type === 'select') {
-                        const selectDefaults = { music_resume_window_min: '5', focus_duration: '25', break_duration: '5', graph_type: 'bar', graph_period: '30', graph_location: 'list', graph_days: 'recorded', mini_player_auto_hide: '60', mini_player_position: 'top-right' };
+                        const selectDefaults = { music_resume_window_min: '5', focus_duration: '25', break_duration: '5', graph_type: 'bar', graph_period: 'month', graph_location: 'list', mini_player_auto_hide: '60', mini_player_position: 'top-right' };
                         const currentVal = getData(row.key) || selectDefaults[row.key] || row.options[0].v;
                         html += '<div class="custom-select" style="width:120px;">';
                         html += '<select data-emm-select="' + i + '" onchange="editorMiniMenuSelect(' + i + ', this.value)">';
@@ -26358,134 +26503,180 @@
                 return (v === 'bar' || v === 'line' || v === 'area') ? v : 'bar';
             }
 
-            function renderGraph(canvasId, chartVar) {
+            // 表示期間: 週(7日)/ 月(その月の毎日)/ 年(月ごと)/ 全期間(月ごと。長いときは年ごと)
+            // 古い保存値(7/14/30/90/365)は近いものに読み替える
+            function normalizeGraphRange(v) {
+                if (v === 'week' || v === 'month' || v === 'year' || v === 'all') return v;
+                if (v === '7' || v === '14') return 'week';
+                if (v === '90' || v === '365') return 'year';
+                return 'month';
+            }
+
+            const graphRangeOffsets = {}; // canvasId -> いくつ前の期間を見ているか(0 = 今)
+
+            function setGraphRange(range) {
+                range = normalizeGraphRange(range);
+                saveData('graph_period', range);
+                const sel = document.getElementById('graphPeriod');
+                if (sel) sel.value = range;
+                Object.keys(graphRangeOffsets).forEach(k => { graphRangeOffsets[k] = 0; });
+                updateGraphs();
+            }
+
+            function shiftGraphRange(canvasId, delta) {
+                graphRangeOffsets[canvasId] = Math.max(0, (graphRangeOffsets[canvasId] || 0) - delta);
+                renderGraph(canvasId);
+            }
+
+            function renderGraph(canvasId) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
 
                 const type = normalizeGraphType(getData('graph_type'));
-                const period = getData('graph_period') || '30';
+                const range = normalizeGraphRange(getData('graph_period'));
+                const offset = graphRangeOffsets[canvasId] || 0;
 
                 let history = getData('studyHistory');
-                history = history ? JSON.parse(history) : [];
-
-                if (history.length === 0) {
-                    console.log('No history data for graph');
-                    return;
-                }
+                try { history = history ? JSON.parse(history) : []; } catch (e) { history = []; }
 
                 const now = new Date();
-                let startDate = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+                const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+                const hoursOf = ms => ms / (1000 * 60 * 60);
+                const en = currentLanguage === 'en';
+                const dowNames = en ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['日', '月', '火', '水', '木', '金', '土'];
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const fmtMD = d => `${d.getMonth() + 1}/${d.getDate()}`;
+                const fmtYM = d => en ? `${monthNames[d.getMonth()]} ${d.getFullYear()}` : `${d.getFullYear()}年${d.getMonth() + 1}月`;
 
-                if (period === 'all') {
-                    startDate = new Date(0);
-                } else {
-                    startDate.setDate(now.getDate() - parseInt(period));
-                }
-
-                history = history.filter(item => {
-                    const itemDate = new Date(item.start);
-                    return itemDate >= startDate;
-                });
-
-                if (history.length === 0) {
-                    console.log('No history data after date filter');
-                    return;
-                }
-
-                const dailyData = {};
+                // 日ごとの合計
+                const daily = {};
                 let firstDay = null;
                 history.forEach(item => {
-                    const date = new Date(item.start);
-                    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    dailyData[dateKey] = (dailyData[dateKey] || 0) + item.duration;
-                    const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                    if (!firstDay || dayStart < firstDay) firstDay = dayStart;
+                    const t = new Date(item.start);
+                    if (isNaN(t)) return;
+                    const d = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+                    const k = dayKey(d);
+                    daily[k] = (daily[k] || 0) + hoursOf(item.duration || 0);
+                    if (!firstDay || d < firstDay) firstDay = d;
                 });
+                const dayValue = d => daily[dayKey(d)] || 0;
 
-                const msDay = 24 * 60 * 60 * 1000;
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const dowNames = currentLanguage === 'en'
-                    ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                    : ['日', '月', '火', '水', '木', '金', '土'];
-                const fmtMD = d => `${d.getMonth() + 1}/${d.getDate()}`;
-
-                // 表示モード: 'recorded'(デフォルト)= 記録がある日だけを並べて前回との比較をしやすく
-                //              'continuous' = 0の日も含む連続した日付軸(期間全体のペースを見る)
-                const daysMode = getData('graph_days') === 'continuous' ? 'continuous' : 'recorded';
-
-                let labels, values, tipLabels, todayIndex;
-                let totalHours, avgHours, bestHours;
-
-                if (daysMode === 'recorded') {
-                    const sortedDates = Object.keys(dailyData).sort();
-                    labels = []; tipLabels = []; values = [];
-                    const todayKey = `${todayStart.getFullYear()}-${String(todayStart.getMonth() + 1).padStart(2, '0')}-${String(todayStart.getDate()).padStart(2, '0')}`;
-                    todayIndex = -1;
-                    sortedDates.forEach((key, i) => {
-                        const d = new Date(key);
-                        labels.push(fmtMD(d));
-                        tipLabels.push(`${fmtMD(d)} (${dowNames[d.getDay()]})`);
-                        values.push(dailyData[key] / (1000 * 60 * 60));
-                        if (key === todayKey) todayIndex = i;
-                    });
-                    totalHours = values.reduce((a, b) => a + b, 0);
-                    bestHours = Math.max(0, ...values);
-                    avgHours = values.length ? totalHours / values.length : 0; // 記録がある日の平均
+                // 期間の始まり・終わり(終わりの日を含む)と、並べる列
+                let start, end, title;
+                const slots = []; // { from, to, label, tip }
+                if (range === 'week') {
+                    const thisMonday = addDays(today, -((today.getDay() + 6) % 7));
+                    start = addDays(thisMonday, -7 * offset);
+                    end = addDays(start, 6);
+                    for (let i = 0; i < 7; i++) {
+                        const d = addDays(start, i);
+                        slots.push({ from: d, to: d, label: dowNames[d.getDay()], tip: `${fmtMD(d)} (${dowNames[d.getDay()]})` });
+                    }
+                    const yearPrefix = start.getFullYear() !== today.getFullYear() ? `${start.getFullYear()}/` : '';
+                    title = `${yearPrefix}${fmtMD(start)} – ${fmtMD(end)}`;
+                } else if (range === 'month') {
+                    start = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+                    end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+                    for (let d = start; d <= end; d = addDays(d, 1)) {
+                        slots.push({ from: d, to: d, label: String(d.getDate()), tip: `${fmtMD(d)} (${dowNames[d.getDay()]})` });
+                    }
+                    title = fmtYM(start);
+                } else if (range === 'year') {
+                    start = new Date(today.getFullYear() - offset, 0, 1);
+                    end = new Date(start.getFullYear(), 11, 31);
+                    for (let m = 0; m < 12; m++) {
+                        const from = new Date(start.getFullYear(), m, 1);
+                        slots.push({ from, to: new Date(start.getFullYear(), m + 1, 0), label: en ? monthNames[m] : `${m + 1}月`, tip: fmtYM(from) });
+                    }
+                    title = en ? String(start.getFullYear()) : `${start.getFullYear()}年`;
                 } else {
-                    // 記録のない日も0として連続した日付軸を作る(日付の飛びをなくす)
-                    let rangeStart = period === 'all'
-                        ? firstDay
-                        : new Date(todayStart.getTime() - (parseInt(period) - 1) * msDay);
-                    if (firstDay > rangeStart) rangeStart = firstDay;
-                    const dayCount = Math.round((todayStart - rangeStart) / msDay) + 1;
-
-                    const dayValues = [];
-                    for (let i = 0; i < dayCount; i++) {
-                        const d = new Date(rangeStart.getTime() + i * msDay);
-                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        dayValues.push((dailyData[key] || 0) / (1000 * 60 * 60));
-                    }
-
-                    totalHours = dayValues.reduce((a, b) => a + b, 0);
-                    bestHours = Math.max(0, ...dayValues);
-                    avgHours = dayCount ? totalHours / dayCount : 0;
-
-                    // 90日を超える範囲は週単位に集計して読みやすくする
-                    if (dayCount > 90) {
-                        labels = []; values = []; tipLabels = [];
-                        for (let i = 0; i < dayCount; i += 7) {
-                            const end = Math.min(i + 6, dayCount - 1);
-                            let sum = 0;
-                            for (let j = i; j <= end; j++) sum += dayValues[j];
-                            const ds = new Date(rangeStart.getTime() + i * msDay);
-                            const de = new Date(rangeStart.getTime() + end * msDay);
-                            labels.push(fmtMD(ds) + '~');
-                            tipLabels.push(fmtMD(ds) + ' - ' + fmtMD(de));
-                            values.push(sum);
+                    const first = firstDay || today;
+                    start = new Date(first.getFullYear(), first.getMonth(), 1);
+                    end = today;
+                    const months = (today.getFullYear() - start.getFullYear()) * 12 + today.getMonth() - start.getMonth() + 1;
+                    if (months > 36) {
+                        // 3年を超えたら年ごと
+                        start = new Date(first.getFullYear(), 0, 1);
+                        for (let y = first.getFullYear(); y <= today.getFullYear(); y++) {
+                            slots.push({ from: new Date(y, 0, 1), to: new Date(y, 11, 31), label: String(y), tip: en ? String(y) : `${y}年` });
                         }
-                        todayIndex = values.length - 1;
                     } else {
-                        labels = []; tipLabels = [];
-                        values = dayValues;
-                        for (let i = 0; i < dayCount; i++) {
-                            const d = new Date(rangeStart.getTime() + i * msDay);
-                            labels.push(fmtMD(d));
-                            tipLabels.push(`${fmtMD(d)} (${dowNames[d.getDay()]})`);
+                        for (let i = 0; i < months; i++) {
+                            const from = new Date(start.getFullYear(), start.getMonth() + i, 1);
+                            const label = (i === 0 || from.getMonth() === 0)
+                                ? (en ? `${monthNames[from.getMonth()]} ${String(from.getFullYear()).slice(2)}` : `${from.getFullYear() % 100}/${from.getMonth() + 1}`)
+                                : (en ? monthNames[from.getMonth()] : `${from.getMonth() + 1}月`);
+                            slots.push({ from, to: new Date(from.getFullYear(), from.getMonth() + 1, 0), label, tip: fmtYM(from) });
                         }
-                        todayIndex = dayCount - 1;
                     }
+                    title = getText('chartRangeAllTitle');
                 }
 
-                renderChartSummary(canvas, { totalHours, avgHours, bestHours });
+                // 列ごとの合計(まだ来ていない日・月は null = 描かない)
+                const labels = [], values = [], tipLabels = [];
+                let todayIndex = -1;
+                slots.forEach((s, i) => {
+                    labels.push(s.label);
+                    tipLabels.push(s.tip);
+                    if (s.from > today) { values.push(null); return; }
+                    let sum = 0;
+                    for (let d = s.from; d <= s.to && d <= today; d = addDays(d, 1)) sum += dayValue(d);
+                    values.push(sum);
+                    if (today >= s.from && today <= s.to) todayIndex = i;
+                });
 
+                // 合計 / 1日平均(記録を始めた日〜今日のうち、この期間に入る日数で割る)/ 1日最長
+                let totalHours = 0, bestHours = 0, dayCount = 0;
+                if (firstDay) {
+                    const from = start > firstDay ? start : firstDay;
+                    const to = end < today ? end : today;
+                    for (let d = from; d <= to; d = addDays(d, 1)) {
+                        const v = dayValue(d);
+                        totalHours += v;
+                        if (v > bestHours) bestHours = v;
+                        dayCount++;
+                    }
+                }
+                const avgHours = dayCount ? totalHours / dayCount : 0;
+                const dailyBars = range === 'week' || range === 'month';
+
+                renderChartHead(canvas, {
+                    range,
+                    title,
+                    canPrev: range !== 'all' && !!firstDay && start > firstDay,
+                    canNext: range !== 'all' && offset > 0
+                });
+                const hasData = totalHours > 0;
+                renderChartSummary(canvas, hasData ? { totalHours, avgHours, bestHours, avgLine: dailyBars } : null);
                 renderCustomChart(canvas, {
-                    labels,
-                    values,
+                    labels: hasData ? labels : [],
+                    values: hasData ? values : [],
                     type,
                     tipLabels,
                     todayIndex,
-                    avgValue: values.length ? totalHours / values.length : 0
+                    avgValue: dailyBars ? avgHours : 0
                 });
+            }
+
+            // 見出し行(期間の切り替え)と、‹ 期間 › の行を更新する
+            function renderChartHead(canvas, h) {
+                const outer = ensureChartScrollWrap(canvas);
+                if (!outer) return;
+                outer.querySelectorAll('.chart-range-btn').forEach(btn => {
+                    const on = btn.dataset.range === h.range;
+                    btn.classList.toggle('active', on);
+                    btn.setAttribute('aria-pressed', String(on));
+                });
+                const nav = outer.querySelector('.chart-nav');
+                if (!nav) return;
+                nav.querySelector('.chart-nav-label').textContent = h.title;
+                const prev = nav.querySelector('.chart-nav-prev');
+                const next = nav.querySelector('.chart-nav-next');
+                prev.hidden = next.hidden = h.range === 'all';
+                prev.disabled = !h.canPrev;
+                next.disabled = !h.canNext;
             }
 
             // グラフ上部のサマリー(合計 / 1日平均 / 1日最長)
@@ -26499,13 +26690,17 @@
                     const wrap = outer.querySelector('.chart-scroll-wrap');
                     outer.insertBefore(sum, wrap);
                 }
+                sum.hidden = !s;
+                if (!s) return;
                 const items = [
                     [getText('chartTotal'), formatChartHours(s.totalHours)],
                     [getText('chartDailyAvg'), formatChartHours(s.avgHours)],
                     [getText('chartBest'), formatChartHours(s.bestHours)]
                 ];
-                sum.innerHTML = items.map(it =>
-                    '<div class="chart-stat"><span class="chart-stat-label">' + it[0] + '</span><span class="chart-stat-value">' + it[1] + '</span></div>'
+                sum.innerHTML = items.map((it, i) =>
+                    '<div class="chart-stat"><span class="chart-stat-label">' + it[0]
+                    + (i === 1 && s.avgLine ? '<span class="chart-avg-key" aria-hidden="true"></span>' : '')
+                    + '</span><span class="chart-stat-value">' + it[1] + '</span></div>'
                 ).join('');
             }
 
@@ -26513,15 +26708,20 @@
             const customCharts = {};      // canvasId -> 描画状態
             const customChartRafs = {};   // canvasId -> アニメーションフレームID
 
-            function chartColors() {
+            function chartColors(holder) {
                 const isDark = document.body.classList.contains('dark');
+                let primary = getPrimaryColor();
+                // 白テーマの色はライトの背景に溶けるので、グラフでは灰色にする
+                if (!isDark && primary.toLowerCase() === '#ededed') primary = '#a9a9a9';
+                const surface = holder ? getComputedStyle(holder).backgroundColor : (isDark ? '#22252d' : '#ffffff');
                 return {
                     isDark,
                     text: isDark ? '#e8e8e8' : '#323232',
-                    muted: isDark ? 'rgba(232,232,232,0.6)' : 'rgba(50,50,50,0.6)',
-                    grid: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                    primary: getPrimaryColor(),
-                    tooltipBg: isDark ? 'rgba(38,40,48,0.96)' : 'rgba(255,255,255,0.97)'
+                    muted: isDark ? 'rgba(232,232,232,0.55)' : 'rgba(50,50,50,0.55)',
+                    grid: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
+                    base: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.14)',
+                    primary,
+                    surface
                 };
             }
 
@@ -26533,12 +26733,17 @@
                 return h > 0 ? `${h}時間${m}分` : `${m}分`;
             }
 
+            // 目盛りの文字(短く。小数は使わない: 1.5 → 1h30m)
             function formatChartAxis(v) {
                 if (v === 0) return '0';
-                if (v < 1) return `${Math.round(v * 60)}m`;
-                return `${parseFloat(v.toFixed(2))}h`;
+                const totalM = Math.round(v * 60);
+                const h = Math.floor(totalM / 60);
+                const m = totalM % 60;
+                if (h === 0) return `${m}m`;
+                return m ? `${h}h${m}m` : `${h}h`;
             }
 
+            // 上の角だけ丸い棒
             function chartRoundRectPath(ctx, x, y, w, h, rTop) {
                 const r = Math.max(0, Math.min(rTop, w / 2, h));
                 ctx.beginPath();
@@ -26551,77 +26756,98 @@
                 ctx.closePath();
             }
 
-            function chartRoundRectPathAll(ctx, x, y, w, h, radius) {
-                const r = Math.max(0, Math.min(radius, w / 2, h / 2));
-                ctx.beginPath();
-                ctx.moveTo(x + r, y);
-                ctx.arcTo(x + w, y, x + w, y + h, r);
-                ctx.arcTo(x + w, y + h, x, y + h, r);
-                ctx.arcTo(x, y + h, x, y, r);
-                ctx.arcTo(x, y, x + w, y, r);
-                ctx.closePath();
+            // 値が上下に行き過ぎない、なめらかな線(単調3次補間)。0の日の線が0より下に潜らない
+            function chartMonotonePath(ctx, pts) {
+                const n = pts.length;
+                ctx.moveTo(pts[0].x, pts[0].y);
+                if (n < 2) return;
+                const dx = [], slope = [], tan = [];
+                for (let i = 0; i < n - 1; i++) {
+                    dx.push(pts[i + 1].x - pts[i].x);
+                    slope.push((pts[i + 1].y - pts[i].y) / (dx[i] || 1));
+                }
+                tan.push(slope[0]);
+                for (let i = 1; i < n - 1; i++) tan.push(slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2);
+                tan.push(slope[n - 2]);
+                for (let i = 0; i < n - 1; i++) {
+                    if (slope[i] === 0) { tan[i] = 0; tan[i + 1] = 0; continue; }
+                    const a = tan[i] / slope[i], b = tan[i + 1] / slope[i], s = a * a + b * b;
+                    if (s > 9) { const t = 3 / Math.sqrt(s); tan[i] = t * a * slope[i]; tan[i + 1] = t * b * slope[i]; }
+                }
+                for (let i = 0; i < n - 1; i++) {
+                    const h = dx[i] / 3;
+                    ctx.bezierCurveTo(pts[i].x + h, pts[i].y + tan[i] * h, pts[i + 1].x - h, pts[i + 1].y - tan[i + 1] * h, pts[i + 1].x, pts[i + 1].y);
+                }
             }
 
             function renderCustomChart(canvas, opts) {
                 const id = canvas.id;
+                const prev = customCharts[id];
                 const state = customCharts[id] = {
                     canvas,
                     labels: opts.labels,
                     values: opts.values,
                     type: opts.type,
+                    weekly: !!opts.weekly,
                     tipLabels: opts.tipLabels || opts.labels,
                     todayIndex: (opts.todayIndex != null) ? opts.todayIndex : -1,
                     avgValue: Number.isFinite(opts.avgValue) ? opts.avgValue : 0,
-                    hoverIndex: (customCharts[id] && customCharts[id].hoverIndex) || -1,
-                    pendingScrollRight: true // 描画後、最新(右端)が見える位置までスクロールする
+                    hoverIndex: -1
                 };
 
-                // ホバー処理は要素ごとに1回だけバインド
+                // 指している列を出す(マウスは乗せるだけ、タッチは押した所。外を押すと消える)
                 if (!canvas.dataset.chartBound) {
                     canvas.dataset.chartBound = '1';
-                    canvas.addEventListener('mousemove', (e) => {
+                    const pick = (e) => {
                         const st = customCharts[canvas.id];
-                        if (!st || !st.geom) return;
+                        if (!st || !st.geom || !st.labels.length) return;
                         const rect = canvas.getBoundingClientRect();
                         const x = e.clientX - rect.left;
-                        let idx = -1;
-                        if (st.labels.length && x >= st.geom.plotX && x <= st.geom.plotX + st.geom.plotW) {
-                            idx = Math.min(st.labels.length - 1, Math.max(0,
-                                Math.floor((x - st.geom.plotX) / (st.geom.plotW / st.labels.length))));
-                        }
+                        const g = st.geom;
+                        let idx = Math.min(st.labels.length - 1, Math.max(0, Math.floor((x - g.plotX) / (g.plotW / st.labels.length))));
+                        if (st.values[idx] == null) idx = -1; // まだ来ていない日
                         if (idx !== st.hoverIndex) {
                             st.hoverIndex = idx;
                             drawCustomChart(st, 1);
                         }
-                    });
-                    canvas.addEventListener('mouseleave', () => {
+                    };
+                    const clear = () => {
                         const st = customCharts[canvas.id];
                         if (st && st.hoverIndex !== -1) {
                             st.hoverIndex = -1;
                             drawCustomChart(st, 1);
                         }
-                    });
+                    };
+                    canvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') pick(e); });
+                    canvas.addEventListener('pointerdown', pick);
+                    canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') clear(); });
+                    document.addEventListener('pointerdown', (e) => { if (e.target !== canvas) clear(); });
                 }
 
                 if (customChartRafs[id]) {
                     cancelAnimationFrame(customChartRafs[id]);
                     customChartRafs[id] = null;
                 }
-                if (opts.animate) {
+                // 初めて出すときと、中身が変わったときだけ下から伸ばす
+                const changed = !prev || prev.type !== state.type || prev.labels.join() !== state.labels.join() || prev.values.length !== state.values.length
+                    || prev.values.some((v, i) => v !== state.values[i]);
+                const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (changed && !reduceMotion && state.values.length) {
                     const start = performance.now();
-                    const dur = 550;
+                    const dur = 520;
                     const step = (now) => {
                         const t = Math.min(1, (now - start) / dur);
-                        drawCustomChart(state, t);
+                        drawCustomChart(state, 1 - Math.pow(1 - t, 3));
                         customChartRafs[id] = t < 1 ? requestAnimationFrame(step) : null;
                     };
+                    drawCustomChart(state, 0);
                     customChartRafs[id] = requestAnimationFrame(step);
                 } else {
                     drawCustomChart(state, 1);
                 }
             }
 
-            // canvasをスクロール可能なラッパーで一度だけ包む(全項目分の日付ラベルを横スクロールで確保するため)
+            // canvasを包む要素を一度だけ作る(値の吹き出しをcanvasの上に重ねるため)
             function ensureChartScrollWrap(canvas) {
                 const parent = canvas.parentElement;
                 if (parent && parent.classList && parent.classList.contains('chart-scroll-wrap')) {
@@ -26639,68 +26865,15 @@
                 const canvas = state.canvas;
                 if (!canvas || !canvas.isConnected) return;
                 const outerHolder = ensureChartScrollWrap(canvas);
-                let holderInnerWidth = 400;
-                if (outerHolder) {
-                    const holderStyle = getComputedStyle(outerHolder);
-                    const padL0 = parseFloat(holderStyle.paddingLeft) || 0;
-                    const padR0 = parseFloat(holderStyle.paddingRight) || 0;
-                    holderInnerWidth = outerHolder.clientWidth - padL0 - padR0;
-                }
-                const fitCssW = Math.max(200, Math.min(holderInnerWidth, 900));
-                const cssH = Math.max(150, Math.min(300, Math.round(fitCssW * 0.48)));
+                const wrap = canvas.parentElement;
+                const cssW = Math.max(200, Math.floor(wrap.clientWidth || 400));
+                const cssH = cssW < 480 ? 200 : 240;
                 const ctx = canvas.getContext('2d');
-
-                const col = chartColors();
+                const col = chartColors(outerHolder);
                 const values = state.values;
                 const labels = state.labels;
                 const n = values.length;
-                if (!n) return;
-                const maxVal = Math.max(0.0001, ...values);
-
-                // Yスケールと目盛り
-                let yMax;
-                const ticks = [];
-                {
-                    const steps = [0.25, 0.5, 1, 2, 3, 4, 6, 12, 24, 48];
-                    let step = steps[steps.length - 1];
-                    for (const s of steps) { if (maxVal / s <= 5) { step = s; break; } }
-                    yMax = Math.max(step, Math.ceil(maxVal / step - 1e-9) * step);
-                    for (let v = 0; v <= yMax + 1e-9; v += step) ticks.push(v);
-                }
-
                 const fontFamily = getComputedStyle(document.body).fontFamily || 'sans-serif';
-                ctx.font = `11px ${fontFamily}`;
-                let yLabelW = 0;
-                for (const t of ticks) yLabelW = Math.max(yLabelW, ctx.measureText(formatChartAxis(t)).width);
-                // Y軸ラベルは右側(最新データのすぐ横)に置き、右端を見ながら値を読めるようにする
-                const padL = 18;
-                const padR = Math.ceil(yLabelW) + 14;
-                const padT = 18;
-
-                // 全項目に日付ラベルを付けるため、横に収まらない場合は斜めにし、
-                // それでも収まらない場合はcanvas自体を横に広げてスクロールで見られるようにする
-                let maxLabelW = 0;
-                for (const l of labels) maxLabelW = Math.max(maxLabelW, ctx.measureText(l).width);
-                const fitPlotW = fitCssW - padL - padR;
-                const cellFit = fitPlotW / n;
-                const horizontalNeed = maxLabelW + 8;
-                const rotateAngle = 50 * Math.PI / 180;
-                const rotatedNeed = maxLabelW * Math.cos(rotateAngle) + 11 * Math.sin(rotateAngle) + 6;
-
-                let labelMode, cssW, padB;
-                if (cellFit >= horizontalNeed) {
-                    labelMode = 'horizontal';
-                    cssW = fitCssW;
-                    padB = 24;
-                } else if (cellFit >= rotatedNeed) {
-                    labelMode = 'rotated';
-                    cssW = fitCssW;
-                    padB = 34;
-                } else {
-                    labelMode = 'rotated';
-                    cssW = Math.max(fitCssW, Math.ceil(n * rotatedNeed) + padL + padR);
-                    padB = 34;
-                }
 
                 const dpr = window.devicePixelRatio || 1;
                 canvas.width = Math.round(cssW * dpr);
@@ -26709,214 +26882,189 @@
                 canvas.style.height = cssH + 'px';
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                 ctx.clearRect(0, 0, cssW, cssH);
-                ctx.font = `11px ${fontFamily}`;
 
-                // 初回描画時は最新データ(右端)が見える位置から始める
-                if (state.pendingScrollRight) {
-                    state.pendingScrollRight = false;
-                    const wrap = canvas.parentElement;
-                    if (wrap && wrap.classList && wrap.classList.contains('chart-scroll-wrap')) {
-                        wrap.scrollLeft = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
-                    }
+                let tip = wrap.querySelector('.chart-tip');
+                if (!tip) {
+                    tip = document.createElement('div');
+                    tip.className = 'chart-tip';
+                    tip.setAttribute('aria-hidden', 'true');
+                    wrap.appendChild(tip);
                 }
+                tip.classList.remove('show');
 
+                // 記録がないとき
+                if (!n) {
+                    state.geom = null;
+                    ctx.font = `13px ${fontFamily}`;
+                    ctx.fillStyle = col.muted;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(getText('chartEmpty'), cssW / 2, cssH / 2);
+                    canvas.setAttribute('aria-label', getText('chartEmpty'));
+                    return;
+                }
+                canvas.setAttribute('role', 'img');
+                canvas.setAttribute('aria-label', `${getText('graphTitle')}: ${getText('chartTotal')} ${formatChartHours(values.reduce((a, b) => a + (b || 0), 0))}`);
+
+                const maxVal = Math.max(0.0001, ...values.filter(v => v != null));
+
+                // 目盛りは0を含めて3〜5本。きりのよい間隔にする
+                const steps = [0.25, 0.5, 1, 2, 3, 4, 6, 12, 24, 48, 96, 168];
+                let stepV = steps[steps.length - 1];
+                for (const s of steps) { if (maxVal / s <= 4) { stepV = s; break; } }
+                const yMax = Math.max(stepV, Math.ceil(maxVal / stepV - 1e-9) * stepV);
+                const ticks = [];
+                for (let v = 0; v <= yMax + 1e-9; v += stepV) ticks.push(v);
+
+                ctx.font = `11px ${fontFamily}`;
+                let yLabelW = 0;
+                for (const t of ticks) yLabelW = Math.max(yLabelW, ctx.measureText(formatChartAxis(t)).width);
+                const padL = Math.ceil(yLabelW) + 10;
+                const padR = 4;
+                const padT = 12;
+                const padB = 24;
                 const plotX = padL;
                 const plotY = padT;
                 const plotW = cssW - padL - padR;
                 const plotH = cssH - padT - padB;
+                const cell = plotW / n;
                 state.geom = { plotX, plotY, plotW, plotH };
-                const xFor = i => plotX + (i + 0.5) * (plotW / n);
+                const xFor = i => plotX + (i + 0.5) * cell;
                 const yFor = v => plotY + plotH - (v / yMax) * plotH;
 
-                // グリッドとY軸ラベル(控えめに)
+                // 横の線と目盛り(左側、控えめに)
                 ctx.lineWidth = 1;
-                ctx.strokeStyle = col.grid;
-                ctx.fillStyle = col.muted;
-                ctx.textAlign = 'left';
+                ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
                 for (const t of ticks) {
                     const y = Math.round(yFor(t)) + 0.5;
+                    ctx.strokeStyle = t === 0 ? col.base : col.grid;
                     ctx.beginPath();
                     ctx.moveTo(plotX, y);
                     ctx.lineTo(plotX + plotW, y);
                     ctx.stroke();
-                    ctx.fillText(formatChartAxis(t), plotX + plotW + 6, y);
+                    ctx.fillStyle = col.muted;
+                    ctx.fillText(formatChartAxis(t), plotX - 8, y);
                 }
 
-                // ベースライン(0の線)はグリッドよりわずかに強くして接地感を出す
+                // 日付: 横書きのまま、重ならない間隔に間引く(左の列から数える)
                 {
-                    const y0 = Math.round(yFor(0)) + 0.5;
-                    ctx.strokeStyle = col.isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.16)';
-                    ctx.beginPath();
-                    ctx.moveTo(plotX, y0);
-                    ctx.lineTo(plotX + plotW, y0);
-                    ctx.stroke();
-                }
-
-                // ホバー中の列の背景帯(どの列を指しているか分かりやすく)
-                if (state.hoverIndex >= 0 && state.hoverIndex < n) {
-                    const cw = plotW / n;
-                    ctx.fillStyle = col.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-                    ctx.fillRect(plotX + state.hoverIndex * cw, plotY, cw, plotH);
-                }
-
-                // X軸ラベル(ホバーできない環境でも判別できるよう、全項目に付ける)
-                for (let i = 0; i < n; i++) {
-                    // 今日のラベルはテーマ色で強調
-                    ctx.fillStyle = (i === state.todayIndex) ? col.primary : col.muted;
-                    ctx.font = (i === state.todayIndex) ? `bold 11px ${fontFamily}` : `11px ${fontFamily}`;
-                    if (labelMode === 'horizontal') {
+                    let maxLabelW = 0;
+                    for (const l of labels) maxLabelW = Math.max(maxLabelW, ctx.measureText(l).width);
+                    const every = Math.max(1, Math.ceil((maxLabelW + 14) / cell));
+                    ctx.textBaseline = 'top';
+                    for (let i = 0; i < n; i += every) {
+                        const isToday = i === state.todayIndex;
+                        ctx.font = isToday ? `600 11px ${fontFamily}` : `11px ${fontFamily}`;
+                        ctx.fillStyle = isToday ? col.text : col.muted;
+                        const x = xFor(i);
+                        const w = ctx.measureText(labels[i]).width;
+                        // 端ではみ出さないように寄せる
                         ctx.textAlign = 'center';
-                        ctx.textBaseline = 'top';
-                        ctx.fillText(labels[i], xFor(i), plotY + plotH + 6);
-                    } else {
-                        ctx.save();
-                        ctx.translate(xFor(i), plotY + plotH + 8);
-                        ctx.rotate(-rotateAngle);
-                        ctx.textAlign = 'right';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(labels[i], 0, 0);
-                        ctx.restore();
+                        let lx = x;
+                        if (x - w / 2 < plotX - padL + 2) lx = plotX - padL + 2 + w / 2;
+                        if (x + w / 2 > cssW - 1) lx = cssW - 1 - w / 2;
+                        ctx.fillText(labels[i], lx, plotY + plotH + 8);
                     }
+                    ctx.font = `11px ${fontFamily}`;
                 }
-                ctx.font = `11px ${fontFamily}`;
+
+                const hv = state.hoverIndex;
+                const hasHover = hv >= 0 && hv < n;
 
                 if (state.type === 'bar') {
-                    const bw = Math.max(2, Math.min(38, (plotW / n) * 0.62));
+                    const bw = Math.max(2, Math.min(32, cell * 0.62));
+                    const radius = Math.min(6, bw / 2);
                     for (let i = 0; i < n; i++) {
-                        const v = values[i];
-                        if (v <= 0) continue;
-                        const y = yFor(v);
-                        const h = plotY + plotH - y;
-                        chartRoundRectPath(ctx, xFor(i) - bw / 2, y, bw, h, 8);
-                        ctx.fillStyle = col.primary;
+                        const v = values[i] * animT;
+                        if (values[i] <= 0) continue;
+                        const hgt = Math.max(2, plotY + plotH - yFor(v));
+                        chartRoundRectPath(ctx, xFor(i) - bw / 2, plotY + plotH - hgt, bw, hgt, radius);
+                        // 指している棒以外は少し薄くして、どれを見ているか分かるように
+                        ctx.fillStyle = (hasHover && i !== hv) ? hexToRgba(col.primary, 0.4) : col.primary;
                         ctx.fill();
-                        if (i === state.hoverIndex) {
-                            ctx.fillStyle = col.isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.35)';
-                            ctx.fill();
-                        }
                     }
-                } else if (state.type === 'line' || state.type === 'area') {
-                    const pts = values.map((v, i) => ({ x: xFor(i), y: yFor(v) }));
-                    const drawSmooth = () => {
-                        ctx.moveTo(pts[0].x, pts[0].y);
-                        for (let i = 0; i < pts.length - 1; i++) {
-                            const p0 = pts[i - 1] || pts[i];
-                            const p1 = pts[i];
-                            const p2 = pts[i + 1];
-                            const p3 = pts[i + 2] || p2;
-                            ctx.bezierCurveTo(
-                                p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6,
-                                p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6,
-                                p2.x, p2.y
-                            );
-                        }
-                    };
-                    if (state.type === 'area') {
+                } else {
+                    // 線は今日(最後に値がある列)まで
+                    const pts = [];
+                    for (let i = 0; i < n && values[i] != null; i++) pts.push({ x: xFor(i), y: yFor(values[i] * animT) });
+                    const np = pts.length;
+                    if (np === 1) {
                         ctx.beginPath();
-                        drawSmooth();
-                        ctx.lineTo(pts[pts.length - 1].x, plotY + plotH);
-                        ctx.lineTo(pts[0].x, plotY + plotH);
-                        ctx.closePath();
-                        ctx.fillStyle = col.primary + '38';
-                        ctx.fill();
-                    }
-                    ctx.beginPath();
-                    drawSmooth();
-                    ctx.strokeStyle = col.primary;
-                    ctx.lineWidth = 2;
-                    ctx.lineJoin = 'round';
-                    ctx.stroke();
-                    // 点は本数が少ないときだけ描く(多いとノイズになる)
-                    if (n <= 31) {
+                        ctx.arc(pts[0].x, pts[0].y, 4, 0, Math.PI * 2);
                         ctx.fillStyle = col.primary;
-                        for (const p of pts) {
+                        ctx.fill();
+                    } else {
+                        if (state.type === 'area') {
                             ctx.beginPath();
-                            ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                            chartMonotonePath(ctx, pts);
+                            ctx.lineTo(pts[np - 1].x, plotY + plotH);
+                            ctx.lineTo(pts[0].x, plotY + plotH);
+                            ctx.closePath();
+                            const grad = ctx.createLinearGradient(0, plotY, 0, plotY + plotH);
+                            grad.addColorStop(0, hexToRgba(col.primary, col.isDark ? 0.4 : 0.45));
+                            grad.addColorStop(1, hexToRgba(col.primary, 0.04));
+                            ctx.fillStyle = grad;
                             ctx.fill();
                         }
+                        ctx.beginPath();
+                        chartMonotonePath(ctx, pts);
+                        ctx.strokeStyle = col.primary;
+                        ctx.lineWidth = 2;
+                        ctx.lineJoin = 'round';
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
                     }
-                    // ホバー: クロスヘア+強調点
-                    if (state.hoverIndex >= 0 && state.hoverIndex < n) {
-                        const p = pts[state.hoverIndex];
-                        ctx.strokeStyle = col.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
+                    // 指している所に縦線と点
+                    if (hasHover && hv < np) {
+                        const p = pts[hv];
+                        ctx.strokeStyle = col.base;
                         ctx.lineWidth = 1;
                         ctx.beginPath();
                         ctx.moveTo(Math.round(p.x) + 0.5, plotY);
                         ctx.lineTo(Math.round(p.x) + 0.5, plotY + plotH);
                         ctx.stroke();
+                    }
+                    // 今日(最新)と指している所だけ点を打つ。まわりに背景色の輪を付けて線から浮かせる
+                    const dots = new Set();
+                    if (state.todayIndex >= 0 && state.todayIndex < np) dots.add(state.todayIndex);
+                    if (hasHover && hv < np) dots.add(hv);
+                    dots.forEach(i => {
                         ctx.beginPath();
-                        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
-                        ctx.fillStyle = col.tooltipBg;
+                        ctx.arc(pts[i].x, pts[i].y, 5.5, 0, Math.PI * 2);
+                        ctx.fillStyle = col.surface;
                         ctx.fill();
                         ctx.beginPath();
-                        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                        ctx.arc(pts[i].x, pts[i].y, 3.5, 0, Math.PI * 2);
                         ctx.fillStyle = col.primary;
                         ctx.fill();
-                    }
+                    });
                 }
 
-                // 平均の破線(1本だけ/控えめに)
-                if (Number.isFinite(state.avgValue) && state.avgValue > 0 && state.avgValue <= yMax) {
+                // 1日平均の点線(何の線かは、上の「1日平均」の横の印で示す。週ごとのときは引かない)
+                if (animT >= 1 && !state.weekly && state.avgValue > 0 && state.avgValue <= yMax) {
                     const yAvg = Math.round(yFor(state.avgValue)) + 0.5;
                     ctx.save();
-                    ctx.setLineDash([7, 5]);
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.strokeStyle = hexToRgba(col.primary, col.isDark ? 0.42 : 0.38);
-                    ctx.lineWidth = 1.8;
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = col.muted;
+                    ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.moveTo(plotX, yAvg);
                     ctx.lineTo(plotX + plotW, yAvg);
                     ctx.stroke();
                     ctx.restore();
-                    // ラベルは右側に寄せて、線の右端に合わせて見せる
-                    ctx.font = `10px ${fontFamily}`;
-                    ctx.textAlign = 'right';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillStyle = hexToRgba(col.primary, col.isDark ? 0.78 : 0.7);
-                    ctx.fillText(`${getText('chartAvgLine')} ${formatChartAxis(state.avgValue)}`, plotX + plotW - 4, yAvg - 3);
-                    ctx.font = `11px ${fontFamily}`;
                 }
 
-                // 最大値の点だけ直接ラベル(すべての点に数字は付けない)
-                {
-                    let maxIdx = -1, maxV = 0;
-                    for (let i = 0; i < n; i++) if (values[i] > maxV) { maxV = values[i]; maxIdx = i; }
-                    if (maxIdx >= 0 && maxIdx !== state.hoverIndex) {
-                        ctx.font = `10px ${fontFamily}`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'bottom';
-                        ctx.fillStyle = col.muted;
-                        ctx.fillText(formatChartAxis(maxV), xFor(maxIdx), yFor(maxV) - 5);
-                        ctx.font = `11px ${fontFamily}`;
-                    }
-                }
-
-                // ツールチップ(アニメ完了後のみ)
-                if (animT >= 1 && state.hoverIndex >= 0 && state.hoverIndex < n) {
-                    const i = state.hoverIndex;
-                    const tipLabel = (state.tipLabels && state.tipLabels[i]) || labels[i];
-                    let valueText = formatChartHours(values[i]);
-                    ctx.font = `11px ${fontFamily}`;
-                    const w = Math.max(ctx.measureText(tipLabel).width, ctx.measureText(valueText).width) + 20;
-                    const hBox = 40;
-                    let bx = xFor(i) - w / 2;
-                    bx = Math.max(plotX, Math.min(plotX + plotW - w, bx));
-                    const topOfCol = yFor(Math.max(0, values[i]));
-                    let by = topOfCol - hBox - 8;
-                    if (by < 2) by = Math.min(plotY + plotH - hBox, topOfCol + 10);
-                    chartRoundRectPathAll(ctx, bx, by, w, hBox, 8);
-                    ctx.fillStyle = col.tooltipBg;
-                    ctx.fill();
-                    ctx.strokeStyle = col.grid;
-                    ctx.stroke();
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'top';
-                    ctx.fillStyle = col.muted;
-                    ctx.fillText(tipLabel, bx + 10, by + 7);
-                    ctx.fillStyle = col.text;
-                    ctx.fillText(valueText, bx + 10, by + 22);
+                // 値の吹き出し(HTML。日付と時間を1行で)
+                if (animT >= 1 && hasHover) {
+                    tip.innerHTML = `<span class="chart-tip-date">${escapeHtml((state.tipLabels && state.tipLabels[hv]) || labels[hv])}</span><span class="chart-tip-value">${escapeHtml(formatChartHours(values[hv]))}</span>`;
+                    tip.classList.add('show');
+                    const tw = tip.offsetWidth, th = tip.offsetHeight;
+                    const left = Math.max(0, Math.min(cssW - tw, xFor(hv) - tw / 2));
+                    let top = yFor(values[hv]) - th - 10;
+                    if (top < 0) top = 0;
+                    tip.style.left = left + 'px';
+                    tip.style.top = top + 'px';
                 }
             }
 
