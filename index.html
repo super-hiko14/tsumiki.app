@@ -22,6 +22,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-v2-32x.png?v=2">
     <link rel="icon" type="image/png" sizes="48x48" href="favicon-v2-48x.png?v=2">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png?v=2">
+    <!-- ホーム画面に追加/インストールしたとき、アドレスバーのないアプリとして開く -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#f8f9fb" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#17181d" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ツミキapp">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="description" content="タイマーで記録、グラフで可視化、音楽で集中、ToDoで管理。勉強のすべてがこの1ページに。テーマ7色のカスタマイズも。">
     <link
         href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@300;400&family=Hina+Mincho&family=JetBrains+Mono:wght@300;400&family=Jost:wght@300;400&family=Klee+One:wght@300;400&family=Lora:wght@400&family=Montserrat:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Quicksand:wght@300;400&family=Sawarabi+Gothic&family=Zen+Kaku+Gothic+Antique:wght@300;400;500;700&family=Zen+Maru+Gothic:wght@300;400&display=swap"
@@ -453,6 +461,10 @@
         /* 日別タイムライン(統計ページ上部) */
         .daily-timeline-section {
             margin-bottom: 28px;
+        }
+
+        .daily-timeline-section[hidden] {
+            display: none;
         }
 
         .daily-timeline-header {
@@ -1325,7 +1337,7 @@
             opacity: 0.45;
         }
 
-        /* グループ統計: 1枚のカードに名前・時間・比べる棒 */
+        /* グループ統計: 1枚のカードに名前･時間･比べる棒 */
         #groupStatsSelector h2 {
             font-size: 0.95rem;
             font-weight: 400;
@@ -4853,7 +4865,7 @@
             text-align: center;
         }
 
-        /* ===== グループ管理(1行に「名前・記録数」と「変更・削除」) ===== */
+        /* ===== グループ管理(1行に「名前･記録数」と「変更･削除」) ===== */
         .group-add-row {
             margin-top: 0;
         }
@@ -5251,7 +5263,7 @@
             background: var(--panel-dark-2);
         }
 
-        /* 上の段: 進み具合の点・数・スキップ */
+        /* 上の段: 進み具合の点･数･スキップ */
         .tutorial-head {
             display: flex;
             align-items: center;
@@ -7083,7 +7095,7 @@
             margin-top: auto;
         }
 
-        /* 予定あり(○)・すべて完了(✓)・期限切れ(!)はどれも同じ大きさの円で表す */
+        /* 予定あり(○)･すべて完了(✓)･期限切れ(!)はどれも同じ大きさの円で表す */
         .calendar-todo-indicator {
             display: block;
             width: 14px;
@@ -8807,41 +8819,61 @@
             color: white;
         }
 
-        /* 非表示の要素: 目のアイコン。隠れているものがあれば数を添える */
+        /* 非表示の要素: 斜線の目と「非表示」の文字。隠れているものがあれば数のバッジを添える */
         .editor-exit-bar button.eeb-add {
             width: auto;
             min-width: 30px;
-            padding: 0 8px;
-            gap: 4px;
-            background: transparent;
+            padding: 0 6px 0 10px;
+            gap: 5px;
+            background: rgba(128, 128, 128, 0.14);
             color: inherit;
-            border: 2px solid transparent;
+            border: none;
+            font: inherit;
+            font-size: 0.78rem;
+        }
+
+        .editor-exit-bar button.eeb-add:has(.eeb-add-count:empty) {
+            padding-right: 10px;
         }
 
         .editor-exit-bar button.eeb-add svg {
-            width: 17px;
-            height: 17px;
-            opacity: 0.8;
+            width: 15px;
+            height: 15px;
+        }
+
+        .editor-exit-bar .eeb-add-text {
+            white-space: nowrap;
         }
 
         .editor-exit-bar .eeb-add-count {
-            font-size: 0.78rem;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            box-sizing: border-box;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            line-height: 18px;
+            text-align: center;
             font-variant-numeric: tabular-nums;
-            opacity: 0.8;
+            color: #fff;
+        }
+
+        .light .editor-exit-bar .eeb-add-count {
+            background: var(--primary-color);
+        }
+
+        .dark .editor-exit-bar .eeb-add-count {
+            background: var(--primary-color-dark);
         }
 
         .editor-exit-bar .eeb-add-count:empty {
             display: none;
         }
 
-        .light .editor-exit-bar button.eeb-add:hover,
-        .light .editor-exit-bar button.eeb-add.open {
-            border-color: var(--primary-color);
-        }
-
-        .dark .editor-exit-bar button.eeb-add:hover,
-        .dark .editor-exit-bar button.eeb-add.open {
-            border-color: var(--primary-color-dark);
+        .editor-exit-bar button.eeb-add:hover,
+        .editor-exit-bar button.eeb-add.open {
+            background: rgba(128, 128, 128, 0.24);
         }
 
         .editor-exit-bar button:hover {
@@ -12117,45 +12149,142 @@
             padding: 0;
         }
 
-        /* ── セーフティサポート案内バナー ── */
+        /* ── 1日の目標: タイマーの下の小さな1行 ── */
+        .goal-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: -6px 0 18px;
+            font-size: 0.78rem;
+            opacity: 0.55;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .goal-line[hidden] {
+            display: none;
+        }
+
+        .goal-line-bar {
+            width: 56px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.28);
+            overflow: hidden;
+        }
+
+        .goal-line-bar > span {
+            display: block;
+            height: 100%;
+            width: var(--goal, 0%);
+            border-radius: 999px;
+            background: currentColor;
+            transition: width 0.4s ease;
+        }
+
+        .goal-setting-body[hidden] {
+            display: none;
+        }
+
+        .goal-setting-body {
+            margin: 4px 0 8px;
+        }
+
+        .goal-stepper-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── 記録を消えにくくする ── */
+        .storage-persist-row {
+            align-items: center;
+        }
+
+        .storage-persist-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+
+        .storage-persist-status {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .storage-persist-status.on {
+            opacity: 0.8;
+        }
+
+        .storage-persist-btn {
+            flex-shrink: 0;
+            height: var(--field-h-sm, 36px);
+            padding: 0 16px;
+            border: none;
+            border-radius: 999px;
+            font: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .storage-persist-btn[hidden] {
+            display: none;
+        }
+
+        .light .storage-persist-btn {
+            background: var(--primary-color);
+        }
+
+        .dark .storage-persist-btn {
+            background: var(--primary-color-dark);
+        }
+
+        /* ── セーフティサポート: 相談窓口の案内 ── */
         .safety-support-banner {
             position: fixed;
-            bottom: 24px;
+            bottom: 20px;
             left: 50%;
-            transform: translateX(-50%) translateY(120px);
-            width: min(calc(100vw - 32px), 520px);
+            transform: translateX(-50%) translateY(24px);
+            width: min(calc(100vw - 24px), 440px);
             z-index: 9999;
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0s linear 0.35s;
         }
 
         .safety-support-banner.visible {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0s;
+        }
+
+        body.menu-mode-bottom .safety-support-banner {
+            bottom: calc(var(--bottom-menu-h, 56px) + 16px);
         }
 
         .safety-banner-content {
-            padding: 16px 18px;
+            padding: 16px;
             border-radius: 24px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
             gap: 12px;
+            max-height: calc(100dvh - 120px);
+            overflow-y: auto;
         }
 
         .light .safety-banner-content {
-            background-color: color-mix(in srgb, var(--panel-light) 94%, white);
-            color: inherit;
-            border-color: var(--panel-light-border);
+            background: var(--bg-light);
+            color: #323232;
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .dark .safety-banner-content {
-            background-color: color-mix(in srgb, var(--panel-dark) 94%, black);
-            color: inherit;
-            border-color: var(--panel-dark-2);
+            background: var(--panel-dark-2);
+            color: #e8e8e8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .safety-banner-header {
@@ -12167,25 +12296,26 @@
         .safety-banner-icon {
             width: 34px;
             height: 34px;
-            min-width: 34px;
             border-radius: 50%;
-            background: color-mix(in srgb, var(--primary-color) 15%, transparent);
-            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-top: 2px;
+        }
+
+        .light .safety-banner-icon {
+            background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+            color: var(--primary-color);
         }
 
         .dark .safety-banner-icon {
-            background: color-mix(in srgb, var(--primary-color-dark) 22%, transparent);
+            background: color-mix(in srgb, var(--primary-color-dark) 28%, transparent);
             color: var(--primary-color-dark);
         }
 
         .safety-banner-icon svg {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
         }
 
         .safety-banner-text-wrap {
@@ -12195,32 +12325,26 @@
         }
 
         .safety-banner-title {
-            font-size: 1rem;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            margin-bottom: 3px;
-            color: var(--primary-color);
-        }
-
-        .dark .safety-banner-title {
-            color: var(--primary-color-dark);
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 6px 0 4px;
         }
 
         .safety-banner-message {
             font-size: 0.8rem;
-            line-height: 1.45;
-            opacity: 0.85;
+            line-height: 1.55;
+            opacity: 0.75;
         }
 
         .safety-banner-close {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             padding: 0;
             border: none;
             border-radius: 50%;
             background: transparent;
             color: inherit;
-            opacity: 0.5;
+            opacity: 0.55;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -12239,96 +12363,108 @@
             height: 16px;
         }
 
+        /* 窓口: 名前と一言、右に番号 */
         .safety-banner-links {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
+            flex-direction: column;
+            gap: 6px;
         }
 
-        .safety-banner-btn {
-            width: 100%;
-            display: inline-flex;
+        .safety-link {
+            display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 0px 14px;
+            gap: 12px;
+            min-height: 52px;
+            padding: 8px 16px;
+            box-sizing: border-box;
             border-radius: 24px;
-            font-size: 0.7rem;
-            line-height: 1.35;
             text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            min-height: 42px;
+            color: inherit;
+            text-align: left;
+            transition: background 0.15s;
         }
 
-        .safety-banner-btn svg {
+        .safety-link[hidden] {
+            display: none;
+        }
+
+        .light .safety-link {
+            background: var(--panel-light);
+        }
+
+        .dark .safety-link {
+            background: var(--panel-dark);
+        }
+
+        .safety-link:hover {
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .safety-link > svg {
             width: 16px;
             height: 16px;
-            min-width: 16px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .safety-link-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .safety-link-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* 2行目: 電話番号と一言 */
+        .safety-link-sub {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0 8px;
+            font-size: 0.72rem;
+        }
+
+        .safety-link-sub > span:not(.safety-link-meta),
+        .safety-link-sub:not(:has(.safety-link-meta)) {
+            opacity: 0.6;
+        }
+
+        .safety-link-meta {
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .safety-link > svg.safety-link-ext {
+            width: 14px;
+            height: 14px;
+            opacity: 0.5;
+        }
+
+        /* 設定の「相談窓口を見る」 */
+        .toggle-item.safety-open-row {
+            width: 100%;
+            border: none;
+            font: inherit;
+            color: inherit;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .toggle-item.safety-open-row svg {
+            opacity: 0.5;
             flex-shrink: 0;
         }
 
-        .light .safety-banner-btn {
-            background: color-mix(in srgb, var(--panel-light-hover) 80%, transparent);
-            color: inherit;
-        }
-
-        .dark .safety-banner-btn {
-            background: color-mix(in srgb, var(--panel-dark-2) 80%, transparent);
-            color: inherit;
-        }
-
-        .safety-banner-btn:hover {
-            transform: translateY(-1px);
-            opacity: 0.92;
-        }
-
-        .light .safety-banner-btn.safety-chat-btn {
-            background: color-mix(in srgb, var(--primary-color) 15%, var(--panel-light));
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        .dark .safety-banner-btn.safety-chat-btn {
-            background: color-mix(in srgb, var(--primary-color-dark) 22%, var(--panel-dark));
-            color: var(--primary-color-dark);
-            font-weight: 500;
-        }
-
-        @media (max-width: 600px) {
-            .safety-support-banner {
-                bottom: 16px;
-                width: calc(100vw - 20px);
-            }
-
-            .safety-banner-content {
-                padding: 14px;
-                gap: 10px;
-            }
-
-            .safety-banner-links {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .safety-banner-btn {
-                width: 100%;
-                justify-content: flex-start;
-                padding: 2px 16px;
-                font-size: 0.8rem;
-                min-height: 46px;
-            }
-
-            .safety-banner-btn svg {
-                width: 12px;
-                height: 12px;
-                min-width: 12px;
-            }
-        }
-
         /* ═══ 入力欄の高さをアプリ全体でそろえる ═══
-           ・ふつうの入力欄(単独で置くもの)… 48px
-           ・設定の行の右端などに置く小さな入力欄 … 36px
+           ･ふつうの入力欄(単独で置くもの)… 48px
+           ･設定の行の右端などに置く小さな入力欄 … 36px
            高さは height で決め、上下の padding は 0 にして中身の大きさに左右されないようにする */
         :root {
             --field-h: 48px;
@@ -12377,7 +12513,7 @@
             box-sizing: border-box;
         }
 
-        /* 行の中の小さな入力欄(設定の行・エディターのミニメニュー) */
+        /* 行の中の小さな入力欄(設定の行･エディターのミニメニュー) */
         .toggle-item .custom-select select,
         .editor-mini-menu .emm-row .custom-select select,
         .auto-stop-presets-input,
@@ -12398,7 +12534,7 @@
             padding-bottom: 10px;
         }
 
-        /* ═══ 浮かぶメニューの見た目をそろえる(… メニュー・音楽の追加・グループ・右クリック) ═══ */
+        /* ═══ 浮かぶメニューの見た目をそろえる(… メニュー･音楽の追加･グループ･右クリック) ═══ */
         .file-dropdown-menu,
         .timer-group-dropdown-menu,
         .move-group-dropdown-menu,
@@ -12988,7 +13124,7 @@
         </div>
     </div>
 
-    <!-- 名前の入力ポップアップ(曲名・プレイリスト名の変更、グループの追加で共通) -->
+    <!-- 名前の入力ポップアップ(曲名･プレイリスト名の変更、グループの追加で共通) -->
     <div class="custom-confirm-overlay" id="textPromptOverlay" aria-hidden="true">
         <div class="custom-confirm-dialog text-prompt" role="dialog" aria-modal="true" aria-labelledby="textPromptTitle">
             <div class="custom-confirm-title" id="textPromptTitle"></div>
@@ -13076,7 +13212,7 @@
     <div class="date-picker-overlay" id="datePickerOverlay" onclick="closeAllDatePickers()"></div>
     <div class="date-picker-dropdown" id="commonDatePicker"></div>
 
-    <!-- ToDoの設定モーダル(繰り返し・通知・優先度) -->
+    <!-- ToDoの設定モーダル(繰り返し･通知･優先度) -->
     <div class="custom-confirm-overlay" id="todoEditOverlay">
         <div class="custom-confirm-dialog" style="max-width: 520px; width: min(92vw, 520px);">
             <div class="custom-confirm-title" data-i18n="todoEditTitle">ToDoの設定</div>
@@ -13114,12 +13250,12 @@
         </div>
     </div>
 
-    <!-- セーフティサポート窓口案内バナー（控えめな浮遊カード/通知） -->
-    <div id="safetySupportBanner" class="safety-support-banner" aria-live="polite" role="region"
-        aria-label="サポート窓口のご案内">
+    <!-- セーフティサポート: 相談窓口の案内(控えめな浮かぶカード) -->
+    <div id="safetySupportBanner" class="safety-support-banner" role="region" aria-label="相談窓口のご案内"
+        data-i18n-aria="safetyNoticeAria">
         <div class="safety-banner-content">
             <div class="safety-banner-header">
-                <div class="safety-banner-icon">
+                <div class="safety-banner-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path
@@ -13127,47 +13263,40 @@
                     </svg>
                 </div>
                 <div class="safety-banner-text-wrap">
-                    <div class="safety-banner-title" data-i18n="safetyNoticeTitle">ひとりでお悩みを抱えていませんか?</div>
-                    <div class="safety-banner-message" data-i18n="safetyNoticeMessage">
-                        大丈夫ですか?ひとりで抱え込み、悩まないでください。つらい気持ちや、不安が強い、なにかしら困難な状況であるならば、無理せず相談してみてください。
-                    </div>
+                    <div class="safety-banner-title" data-i18n="safetyNoticeTitle">ひとりで抱えこまないでください</div>
+                    <div class="safety-banner-message" data-i18n="safetyNoticeMessage">話すだけでも、気持ちが少し軽くなることがあります。名前を言わずに相談できます。</div>
                 </div>
                 <button type="button" class="safety-banner-close" onclick="closeSafetySupportBanner()" aria-label="閉じる"
                     data-i18n-aria="safetyNoticeClose">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
+                        stroke-linejoin="round" aria-hidden="true">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                 </button>
             </div>
             <div class="safety-banner-links">
-                <a href="tel:0570064556" class="safety-banner-btn safety-phone-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path
-                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
-                    <span data-i18n="safetyNoticePhoneLabel">こころの健康相談: 0570-064-556</span>
+                <a href="https://findahelpline.com/" target="_blank" rel="noopener noreferrer" class="safety-link" id="safetyIntlLink" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                    <span class="safety-link-text"><span class="safety-link-name" data-i18n="safetyIntlName">Find a helpline near you</span><span class="safety-link-sub" data-i18n="safetyIntlSub">Free, confidential support worldwide</span></span>
+                    <svg class="safety-link-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7" /><path d="M8 7h9v9" /></svg>
                 </a>
-                <a href="tel:0120279338" class="safety-banner-btn safety-phone-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path
-                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
-                    <span data-i18n="safetyNoticeYorisoiLabel">よりそいホットライン: 0120-279-338</span>
+                <a href="tel:0120279338" class="safety-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                    <span class="safety-link-text"><span class="safety-link-name" data-i18n="safetyYorisoiName">よりそいホットライン</span><span class="safety-link-sub"><span class="safety-link-meta">0120-279-338</span><span data-i18n="safetyYorisoiSub">24時間･通話無料</span></span></span>
                 </a>
-                <a href="https://www.mhlw.go.jp/mamorouyokokoro/soudan/" target="_blank" rel="noopener noreferrer"
-                    class="safety-banner-btn safety-chat-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span data-i18n="safetyNoticeChatLabel">Web/SNSチャット相談窓口一覧</span>
+                <a href="tel:0570064556" class="safety-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                    <span class="safety-link-text"><span class="safety-link-name" data-i18n="safetyKokoroName">こころの健康相談統一ダイヤル</span><span class="safety-link-sub"><span class="safety-link-meta">0570-064-556</span><span data-i18n="safetyKokoroSub">お住まいの都道府県の窓口につながります</span></span></span>
+                </a>
+                <a href="https://www.mhlw.go.jp/mamorouyokokoro/soudan/" target="_blank" rel="noopener noreferrer" class="safety-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                    <span class="safety-link-text"><span class="safety-link-name" data-i18n="safetyChatName">SNS･チャットで相談</span><span class="safety-link-sub" data-i18n="safetyChatSub">文字でやりとりできる窓口の一覧(厚生労働省)</span></span>
+                    <svg class="safety-link-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7" /><path d="M8 7h9v9" /></svg>
                 </a>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- チュートリアル -->
@@ -13225,9 +13354,12 @@
             data-i18n-aria="editorAddHiddenAria" data-i18n-title="editorAddHiddenTitle" title="非表示の要素">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" aria-hidden="true">
-                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
-                <circle cx="12" cy="12" r="3" />
+                <path d="M10.7 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.2 3.1" />
+                <path d="M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6" />
+                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                <line x1="2" y1="2" x2="22" y2="22" />
             </svg>
+            <span class="eeb-add-text" data-i18n="editorAddHiddenBtn">非表示</span>
             <span class="eeb-add-count" id="editorAddCount"></span>
         </button>
         <button type="button" class="eeb-exit" onclick="exitEditorMode()" aria-label="終了" data-i18n-aria="editorModeExit">
@@ -13369,7 +13501,7 @@
 
         <div id="timerPage" class="page active">
             <div class="timer-wrapper" style="position: relative; display: block; width: 100%;">
-                <!-- 集中/休憩・一時停止中などの状態(必要なときだけ表示) -->
+                <!-- 集中/休憩･一時停止中などの状態(必要なときだけ表示) -->
                 <div class="timer-phase" id="focusPhaseLabel" aria-live="polite"></div>
                 <div class="timer" id="timer" style="font-weight: 300;" data-editor-target="timer">00:00:00</div>
                 <button id="fullscreenTimerBtn" onclick="toggleFullscreenTimer()" aria-label="フルスクリーン"
@@ -13385,6 +13517,11 @@
                 <div class="focus-progress-fill" id="mainFocusProgressFill"></div>
             </div>
             <div class="timer-display-sub" id="totalTimerDisplay" style="display: none;">00:00:00</div>
+            <!-- 1日の目標(設定で決めたときだけ。小さく控えめに) -->
+            <div class="goal-line" id="timerGoalLine" hidden>
+                <span class="goal-line-bar" aria-hidden="true"><span></span></span>
+                <span class="goal-line-text" id="timerGoalText"></span>
+            </div>
             <div id="focusModeToggleContainer" style="display: none;"
                 data-editor-target="focusMode">
                 <div class="focus-mode-segment" id="toggleFocusModeMain" role="group" aria-label="フォーカスモード"
@@ -13533,7 +13670,7 @@
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    <input type="text" id="searchInput" placeholder="日付・時刻・グループで検索"
+                    <input type="text" id="searchInput" placeholder="日付･時刻･グループで検索"
                         data-i18n="searchPlaceholder" autocomplete="off" enterkeyhint="search"
                         oninput="loadHistory()" onfocus="setListSearchHints(true)" onblur="setListSearchHints(false)">
                     <button type="button" class="list-search-clear" id="listSearchClear" onclick="clearListSearch()"
@@ -14168,11 +14305,29 @@
             </div>
 
             <div class="settings-panel" data-settings-tab="records">
+            <div class="settings-section" id="goalSettingsSection">
+                <h2 data-i18n="goalSettingTitle">1日の目標</h2>
+                <div class="toggle-item">
+                    <span data-i18n="goalSettingToggle">目標を決める</span>
+                    <div class="toggle-switch" id="toggleGoal" onclick="toggleGoalSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="goal-setting-body" id="goalSettingBody" hidden>
+                    <div class="focus-stepper goal-stepper">
+                        <button type="button" class="stepper-btn" id="goalMinusBtn" onclick="stepGoalMinutes(-1)" aria-label="目標を15分減らす" data-i18n-aria="goalMinusAria"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+                        <span class="stepper-value goal-stepper-value" id="goalValue" aria-live="polite"></span>
+                        <button type="button" class="stepper-btn" id="goalPlusBtn" onclick="stepGoalMinutes(1)" aria-label="目標を15分増やす" data-i18n-aria="goalPlusAria"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="goalSettingNote">タイマーの下に今日の進み具合を小さく出し、グラフ(週・月)に目標の線を引きます。届かない日があっても大丈夫です。</div>
+            </div>
+
                 <div class="settings-panel-title" data-i18n="settingsTabRecords">記録</div>
             <div class="settings-section">
                 <h2 data-i18n="settingsHistory">履歴</h2>
                 <div class="toggle-item">
-                    <span data-i18n="historyTimelineToggle">履歴カードのタイムラインバー表示</span>
+                    <span data-i18n="historyTimelineToggle">タイムラインバー表示(履歴カード･統計の日別)</span>
                     <div class="toggle-switch" id="toggleHistoryTimeline" onclick="toggleHistoryTimeline()">
                         <div class="toggle-slider"></div>
                     </div>
@@ -14236,7 +14391,7 @@
             </div>
             <div class="settings-section group-management-section">
                 <h2 data-i18n="groupManagement">グループ管理</h2>
-                <!-- 追加は上の入力欄、名前の変更・削除は各行のボタンで行う -->
+                <!-- 追加は上の入力欄、名前の変更･削除は各行のボタンで行う -->
                 <div class="group-management-controls group-add-row">
                     <input type="text" id="groupAddInput" placeholder="新しいグループ名" data-i18n="groupAddPlaceholder"
                         onkeydown="if (event.key === 'Enter') { event.preventDefault(); addManagedGroup(); }">
@@ -14453,6 +14608,15 @@
                     <input type="file" id="importFile" accept=".json" style="display:none;"
                         onchange="importData(event)">
                 </div>
+                <div class="setting-note" id="lastBackupNote" style="margin: 10px 0 14px;"></div>
+                <div class="toggle-item storage-persist-row">
+                    <span class="storage-persist-text">
+                        <span data-i18n="storagePersistTitle">記録を消えにくくする</span>
+                        <span class="storage-persist-status" id="storagePersistStatus"></span>
+                    </span>
+                    <button type="button" class="storage-persist-btn" id="storagePersistBtn" onclick="onStoragePersistClick()" data-i18n="storagePersistBtn" hidden>有効にする</button>
+                </div>
+                <div class="setting-note" data-i18n="storagePersistNote">空き容量が足りないときなどに、ブラウザが記録を消してしまうのを防ぎます。ホーム画面に追加して使っている場合は、もともと消えにくくなっています。</div>
             </div>
 
             <div class="settings-section">
@@ -14464,8 +14628,12 @@
                     </div>
                 </div>
                 <div class="setting-note" style="margin-top: -5px; margin-bottom: 10px;" data-i18n="safetyFilterNote">
-                    悲観的/ストレスフルな検索/入力時に、サポート窓口案内を控えめに表示します。
+                    つらい気持ちを表す言葉を入力したとき、相談窓口の案内を控えめに表示します。入力した内容はこの端末の中だけで確かめ、どこにも送りません。
                 </div>
+                <button type="button" class="toggle-item safety-open-row" onclick="openSafetySupportBanner()">
+                    <span data-i18n="safetyOpenNow">相談窓口を見る</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
             </div>
 
             <div class="settings-section">
@@ -14573,7 +14741,7 @@
             </div>
         </div>
 
-        <!-- 暗記カード: 学習画面(タップでめくる・スワイプで次へ) -->
+        <!-- 暗記カード: 学習画面(タップでめくる･スワイプで次へ) -->
         <div class="fc-viewer-overlay fcx-study" id="fcViewerOverlay" role="dialog" aria-modal="true">
             <div class="fc-viewer-header">
                 <button type="button" onclick="closeFlashcardViewer()" id="fcViewerCloseBtn" data-i18n="fcClose">閉じる</button>
@@ -14737,12 +14905,19 @@
 
                     // セーフティフィルター
                     safetyFilter: 'セーフティフィルターを有効にする',
-                    safetyFilterNote: '悲観的/ストレスフルな検索/入力時に、サポート窓口案内を控えめに表示します。',
-                    safetyNoticeTitle: 'ひとりでお悩みを抱えていませんか?',
-                    safetyNoticeMessage: '大丈夫ですか?ひとりで抱え込み、悩まないでください。つらい気持ちや、不安が強い、なにかしら困難な状況であるならば、無理せず相談してみてください。',
-                    safetyNoticePhoneLabel: 'こころの健康相談: 0570-064-556',
-                    safetyNoticeYorisoiLabel: 'よりそいホットライン: 0120-279-338',
-                    safetyNoticeChatLabel: 'Web/SNSチャット相談窓口一覧',
+                    safetyFilterNote: 'つらい気持ちを表す言葉を入力したとき、相談窓口の案内を控えめに表示します。入力した内容はこの端末の中だけで確かめ、どこにも送りません。',
+                    safetyOpenNow: '相談窓口を見る',
+                    safetyNoticeAria: '相談窓口のご案内',
+                    safetyNoticeTitle: 'ひとりで抱えこまないでください',
+                    safetyNoticeMessage: '話すだけでも、気持ちが少し軽くなることがあります。名前を言わずに相談できます。',
+                    safetyIntlName: '近くの相談窓口を探す',
+                    safetyIntlSub: '世界中の無料･秘密厳守の窓口',
+                    safetyYorisoiName: 'よりそいホットライン',
+                    safetyYorisoiSub: '24時間･通話無料',
+                    safetyKokoroName: 'こころの健康相談統一ダイヤル',
+                    safetyKokoroSub: 'お住まいの都道府県の窓口につながります',
+                    safetyChatName: 'SNS･チャットで相談',
+                    safetyChatSub: '文字でやりとりできる窓口の一覧(厚生労働省)',
                     safetyNoticeClose: '閉じる',
 
                     // タイマーページ
@@ -14776,12 +14951,12 @@
 
                     // リストページ
                     allGroupsFilter: 'すべてのグループ',
-                    searchPlaceholder: '日付・時刻・グループで検索',
+                    searchPlaceholder: '日付･時刻･グループで検索',
                     searchClear: '検索を消す',
                     searchSummary: '{n}件 · 合計 {t}',
                     searchHintPeriod: '期間',
                     searchHintExamplesLabel: 'こんな書き方もできます',
-                    searchHintExamples: '10/20 ・ 2025/12 ・ 10月 ・ 14:30 ・ 14時 ・ グループ名<br>スペースで区切ると、すべてに当てはまる記録だけ(例: 数学 先週)',
+                    searchHintExamples: '10/20 ･ 2025/12 ･ 10月 ･ 14:30 ･ 14時 ･ グループ名<br>スペースで区切ると、すべてに当てはまる記録だけ(例: 数学 先週)',
                     searchWord_today: '今日',
                     searchWord_yesterday: '昨日',
                     searchWord_thisweek: '今週',
@@ -15022,6 +15197,7 @@
                     editorModeExit: '終了',
                     editorModeActive: 'エディターモード',
                     editorAddHiddenAria: '非表示の要素を再表示',
+                    editorAddHiddenBtn: '非表示',
                     editorAddHiddenTitle: '非表示の要素',
                     editorModeHint: '点線で囲まれた部分を押すと、その場で設定できます',
                     editorAddHiddenEmpty: 'すべて表示されています',
@@ -15068,7 +15244,7 @@
                     posBottomRight: '右下',
                     posBottomLeft: '左下',
                     seconds: '秒',
-                    historyTimelineToggle: '履歴カードのタイムラインバー表示',
+                    historyTimelineToggle: 'タイムラインバー表示(履歴カード･統計の日別)',
                     historyTimelineLegacyNote: '一時停止データがない履歴ではタイムラインバーは表示されません。4月22日より前の記録は表示されません。',
                     graphDisplay: 'グラフ表示',
                     studyGraph: '勉強時間のグラフ表示',
@@ -15082,6 +15258,25 @@
                     locationStats: '統計画面',
                     locationBoth: '両方',
                     dataManagement: 'データ管理',
+                    goalSettingTitle: '1日の目標',
+                    goalSettingToggle: '目標を決める',
+                    goalSettingNote: 'タイマーの下に今日の進み具合を小さく出し、グラフ(週・月)に目標の線を引きます。届かない日があっても大丈夫です。',
+                    goalMinusAria: '目標を15分減らす',
+                    goalPlusAria: '目標を15分増やす',
+                    goalProgress: '今日 {t} / 目標 {g}',
+                    goalReached: '今日 {t} · 目標達成',
+                    goalChartLabel: '目標',
+                    storagePersistTitle: '記録を消えにくくする',
+                    storagePersistBtn: '有効にする',
+                    storagePersistOn: '有効になっています',
+                    storagePersistOff: 'まだ有効になっていません',
+                    storagePersistRefused: 'このブラウザでは今は有効にできませんでした',
+                    storagePersistUnsupported: 'このブラウザには対応していません',
+                    storagePersistNote: '空き容量が足りないときなどに、ブラウザが記録を消してしまうのを防ぎます。ホーム画面に追加して使っている場合は、もともと消えにくくなっています。',
+                    lastBackupNever: 'まだバックアップしていません',
+                    lastBackupAt: '最後のバックアップ: {d}({n})',
+                    lastBackupToday: '今日',
+                    lastBackupDaysAgo: '{n}日前',
                     groupManagement: 'グループ管理',
                     groupManagementAria: '管理対象グループ',
                     groupRenamePlaceholder: 'グループ名を入力',
@@ -15349,7 +15544,7 @@
                     repeatScheduleMonthDay: '日にち',
                     repeatScheduleMonthDayNote: 'その月にない日付は月末になります',
                     repeatScheduleDayOfMonth: '{d}日',
-                    repeatScheduleWeekdaySep: '・',
+                    repeatScheduleWeekdaySep: '･',
                     todoRepeatCalendarSetting: '繰り返しToDoをカレンダーに表示',
                     showDetails: '詳細を表示',
                     hideDetails: '詳細を隠す',
@@ -15521,12 +15716,19 @@
 
                     // Safety Filter
                     safetyFilter: 'Enable Safety Filter',
-                    safetyFilterNote: 'Discreetly displays support helpline contacts when pessimistic or stressful text is entered.',
-                    safetyNoticeTitle: 'Are you going through a difficult time?',
-                    safetyNoticeMessage: 'Are you okay? Please don’t try to handle everything on your own or worry too much. If you’re feeling distressed, anxious, or facing any kind of difficult situation, please don’t hesitate to reach out for help.',
-                    safetyNoticePhoneLabel: 'Mental Health Helpline: 0570-064-556',
-                    safetyNoticeYorisoiLabel: 'Yorisoi Hotline: 0120-279-338',
-                    safetyNoticeChatLabel: 'Online & SNS Consultation Directory',
+                    safetyFilterNote: 'Quietly shows where to get support when you type words that suggest you are struggling. What you type is checked only on this device and never sent anywhere.',
+                    safetyOpenNow: 'View support contacts',
+                    safetyNoticeAria: 'Support contacts',
+                    safetyNoticeTitle: 'You don’t have to carry it alone',
+                    safetyNoticeMessage: 'Talking to someone can make things feel a little lighter. You don’t have to give your name.',
+                    safetyIntlName: 'Find a helpline near you',
+                    safetyIntlSub: 'Free, confidential support worldwide',
+                    safetyYorisoiName: 'Yorisoi Hotline (Japan)',
+                    safetyYorisoiSub: '24 hours, toll-free',
+                    safetyKokoroName: 'Mental health line (Japan)',
+                    safetyKokoroSub: 'Connects to your prefecture’s center',
+                    safetyChatName: 'Chat & SNS support (Japan)',
+                    safetyChatSub: 'List of text-based services (MHLW)',
                     safetyNoticeClose: 'Close',
 
                     // Main Menu
@@ -15795,6 +15997,7 @@
                     editorModeExit: 'Exit',
                     editorModeActive: 'Editor Mode',
                     editorAddHiddenAria: 'Show hidden elements',
+                    editorAddHiddenBtn: 'Hidden',
                     editorAddHiddenTitle: 'Hidden elements',
                     editorModeHint: 'Tap any outlined part to change its settings right there',
                     editorAddHiddenEmpty: 'Everything is already shown',
@@ -15841,7 +16044,7 @@
                     posBottomRight: 'Bottom Right',
                     posBottomLeft: 'Bottom Left',
                     seconds: 'sec',
-                    historyTimelineToggle: 'Show timeline bar on history cards',
+                    historyTimelineToggle: 'Show timeline bars (history cards & daily stats)',
                     historyTimelineLegacyNote: 'Timeline bars are hidden for records without pause data. Records before 4/22 are not shown in this bar feature.',
                     graphDisplay: 'Graph Display',
                     studyGraph: 'Show Study Time Graph',
@@ -15855,6 +16058,25 @@
                     locationStats: 'Stats Screen',
                     locationBoth: 'Both',
                     dataManagement: 'Data Management',
+                    goalSettingTitle: 'Daily goal',
+                    goalSettingToggle: 'Set a goal',
+                    goalSettingNote: 'Shows today’s progress in a small line under the timer and draws a goal line on the graph (week/month). It’s fine to miss it some days.',
+                    goalMinusAria: 'Decrease goal by 15 minutes',
+                    goalPlusAria: 'Increase goal by 15 minutes',
+                    goalProgress: 'Today {t} / goal {g}',
+                    goalReached: 'Today {t} · goal reached',
+                    goalChartLabel: 'Goal',
+                    storagePersistTitle: 'Protect my records',
+                    storagePersistBtn: 'Turn on',
+                    storagePersistOn: 'On',
+                    storagePersistOff: 'Not on yet',
+                    storagePersistRefused: 'This browser didn’t allow it right now',
+                    storagePersistUnsupported: 'Not supported in this browser',
+                    storagePersistNote: 'Keeps the browser from clearing your records when storage runs low. If you use the app from your home screen, it is already better protected.',
+                    lastBackupNever: 'No backup yet',
+                    lastBackupAt: 'Last backup: {d} ({n})',
+                    lastBackupToday: 'today',
+                    lastBackupDaysAgo: '{n} days ago',
                     groupManagement: 'Group Management',
                     groupManagementAria: 'Target groups for bulk action',
                     groupRenamePlaceholder: 'Enter group name',
@@ -16740,10 +16962,6 @@
             function saveData(key, value) {
                 try {
                     localStorage.setItem(key, value);
-                    if (key === 'theme') {
-                        console.log('[DEBUG] saveData theme ->', value);
-                        console.trace();
-                    }
                     // 古いCookieデータを削除して容量を確保/競合を防止
                     // 複数の path パターンで削除を試みる
                     document.cookie = `${key}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
@@ -17307,6 +17525,7 @@
                 }
 
                 loadHistory();
+                renderDailyTimeline();
             }
 
             function isTodoRepeatCalendarEnabled() {
@@ -17320,6 +17539,157 @@
                 toggle.classList.toggle('active', nextState);
                 saveData('feature_todo_repeat_calendar', nextState ? 'true' : 'false');
                 renderCalendar(calendarYear, calendarMonth);
+            }
+
+            // ── 1日の目標(決めるかどうかは自由。ふだんは目立たせない) ──
+            const GOAL_STEP_MIN = 15;
+            const GOAL_RANGE = { min: 15, max: 720 };
+            let goalLiveMs = 0;          // 計測中のセッションの学習時間
+            let goalLastUpdateAt = 0;
+            let goalTodayCache = { key: '', ms: 0 };
+
+            function isGoalEnabled() {
+                return getData('goal_enabled') === 'true';
+            }
+
+            function getGoalMinutes() {
+                const v = parseInt(getData('goal_minutes'), 10);
+                return Number.isFinite(v) ? Math.max(GOAL_RANGE.min, Math.min(GOAL_RANGE.max, v)) : 120;
+            }
+
+            function applyGoalSettingUI() {
+                const on = isGoalEnabled();
+                const toggle = document.getElementById('toggleGoal');
+                if (toggle) toggle.classList.toggle('active', on);
+                const body = document.getElementById('goalSettingBody');
+                if (body) body.hidden = !on;
+                const min = getGoalMinutes();
+                const valueEl = document.getElementById('goalValue');
+                if (valueEl) valueEl.textContent = formatChartHours(min / 60);
+                const minus = document.getElementById('goalMinusBtn');
+                const plus = document.getElementById('goalPlusBtn');
+                if (minus) minus.disabled = min <= GOAL_RANGE.min;
+                if (plus) plus.disabled = min >= GOAL_RANGE.max;
+            }
+
+            function onGoalChanged() {
+                applyGoalSettingUI();
+                updateGoalLine(true);
+                if (getData('graph_enabled') === 'true') updateGraphs();
+            }
+
+            function toggleGoalSetting() {
+                saveData('goal_enabled', isGoalEnabled() ? 'false' : 'true');
+                onGoalChanged();
+            }
+
+            function stepGoalMinutes(dir) {
+                const next = Math.max(GOAL_RANGE.min, Math.min(GOAL_RANGE.max, getGoalMinutes() + dir * GOAL_STEP_MIN));
+                saveData('goal_minutes', String(next));
+                onGoalChanged();
+            }
+
+            // 今日すでに記録した時間(履歴が変わったときだけ数え直す)
+            function getTodayRecordedMs() {
+                const raw = getData('studyHistory') || '[]';
+                const now = new Date();
+                const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                const key = dayStart + ':' + raw.length;
+                if (goalTodayCache.key === key) return goalTodayCache.ms;
+                let ms = 0;
+                try {
+                    JSON.parse(raw).forEach(it => {
+                        if (new Date(it.start).getTime() >= dayStart) ms += it.duration || 0;
+                    });
+                } catch (e) { }
+                goalTodayCache = { key, ms };
+                return ms;
+            }
+
+            // タイマーの下の「今日 1時間20分 / 目標 2時間」。数秒おきに更新すれば十分
+            function updateGoalLine(force) {
+                const el = document.getElementById('timerGoalLine');
+                if (!el) return;
+                const now = Date.now();
+                if (!force && now - goalLastUpdateAt < 5000) return;
+                goalLastUpdateAt = now;
+                if (!isGoalEnabled()) {
+                    el.hidden = true;
+                    return;
+                }
+                const goalMs = getGoalMinutes() * 60000;
+                const done = getTodayRecordedMs() + goalLiveMs;
+                const reached = done >= goalMs;
+                el.hidden = false;
+                el.classList.toggle('reached', reached);
+                el.style.setProperty('--goal', (Math.min(1, done / goalMs) * 100).toFixed(1) + '%');
+                const text = document.getElementById('timerGoalText');
+                if (text) {
+                    text.textContent = getText(reached ? 'goalReached' : 'goalProgress')
+                        .replace('{t}', formatChartHours(done / 3600000))
+                        .replace('{g}', formatChartHours(goalMs / 3600000));
+                }
+            }
+            setInterval(() => updateGoalLine(), 30000); // 日付が変わったときなど
+
+            // ── 記録を消えにくくする(ブラウザに「この保存領域は消さないで」と頼む) ──
+            const canPersistStorage = !!(navigator.storage && navigator.storage.persist && navigator.storage.persisted);
+            // 確認のポップアップが出るのは Firefox だけ。そこでは自動では頼まず、設定のボタンから頼む
+            const persistNeedsPrompt = /firefox|fxios/i.test(navigator.userAgent);
+            let storagePersistTried = false;
+
+            async function requestStoragePersist(fromUser) {
+                if (!canPersistStorage) return false;
+                try {
+                    if (await navigator.storage.persisted()) return true;
+                    if (!fromUser && persistNeedsPrompt) return false;
+                    return await navigator.storage.persist();
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            async function refreshStoragePersistUI() {
+                const status = document.getElementById('storagePersistStatus');
+                const btn = document.getElementById('storagePersistBtn');
+                if (!status || !btn) return;
+                let persisted = false;
+                if (canPersistStorage) {
+                    try { persisted = await navigator.storage.persisted(); } catch (e) { }
+                }
+                btn.hidden = persisted || !canPersistStorage;
+                status.textContent = persisted ? getText('storagePersistOn')
+                    : !canPersistStorage ? getText('storagePersistUnsupported')
+                    : storagePersistTried ? getText('storagePersistRefused')
+                    : getText('storagePersistOff');
+                status.classList.toggle('on', persisted);
+            }
+
+            async function onStoragePersistClick() {
+                storagePersistTried = true;
+                await requestStoragePersist(true);
+                refreshStoragePersistUI();
+            }
+
+            // ── 最後のバックアップ(設定のデータ管理に表示するだけ) ──
+            function getLastBackupAt() {
+                const v = parseInt(getData('last_backup_at'), 10);
+                return Number.isFinite(v) ? v : 0;
+            }
+
+            function applyBackupSettingUI() {
+                const note = document.getElementById('lastBackupNote');
+                if (!note) return;
+                const last = getLastBackupAt();
+                if (!last) {
+                    note.textContent = getText('lastBackupNever');
+                } else {
+                    const days = Math.floor((Date.now() - last) / 86400000);
+                    const d = new Date(last);
+                    note.textContent = getText('lastBackupAt')
+                        .replace('{d}', `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`)
+                        .replace('{n}', days <= 0 ? getText('lastBackupToday') : getText('lastBackupDaysAgo').replace('{n}', String(days)));
+                }
             }
 
             // ── セーフティフィルター機能 ──
@@ -17339,72 +17709,85 @@
                 saveData('feature_safety_filter', nextState);
                 syncSafetyFilterToggle();
                 if (nextState === 'false') {
-                    hideSafetySupportBanner();
+                    if (!safetyBannerManual) hideSafetySupportBanner();
                 } else {
                     checkAllActiveInputsForSafety();
                 }
             }
 
-            const SAFETY_KEYWORDS_REGEX = /(自殺|死にたい|しにたい|消えたい|きえたい|生きるのがつらい|生きるのが辛い|生きてる意味|自傷|リスカ|リストカット|鬱|うつ|うつ病|絶望|助けて|苦しい|逃げたい|消えちゃいたい|死にそう|もう無理|限界|孤独|誰も助けてくれない|メンタルヘルス|発狂|頭おかしくなりそう|死にたくなる|生きてたくない|42たい|4にたい|suicide|want to die|depressed|end my life)/i;
+            // 判定する前に表記をそろえる(全角/半角･大文字/小文字･カタカナ/ひらがな･空白)
+            function normalizeSafetyText(text) {
+                return String(text).normalize('NFKC').toLowerCase()
+                    .replace(/[\s\u3000]+/g, '')
+                    .replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+            }
+
+            // はっきりとつらさを表す言葉だけにする。
+            // 「うつ(写す･打つ)」「限界」「苦しい」「助けて」「孤独」などは勉強や日常でもよく使うので、ここには入れない
+            const SAFETY_PATTERNS = [
+                /自殺/, /自死/, /自傷/, /りすか/, /りすとかっと/,
+                /(死|し|4)にたい(?!して|する|し)/, /42たい/, /(死|し)にたく/, /(死|し)んでしまいたい/, /(死|し)んじゃいたい/, /(死|し)のうかな/,
+                /(消|き)えたい/, /(消|き)えてしまいたい/, /(消|き)えちゃいたい/, /いなくなりたい/,
+                /(生|い)きて(い)?たくない/, /(生|い)きるのが(つらい|辛い|しんどい|苦しい|くるしい)/,
+                /(生|い)きて(る|いる)?意味(が|も)?(ない|なし|わからない|分からない)/, /(生|い)きる意味(が|も)?(ない|なし|わからない|分からない)/,
+                /誰も助けてくれない/, /だれもたすけてくれない/, /うつ病/, /うつびょう/, /鬱(?!陶)/,
+                /suicid/, /killmyself/, /wanttodie/, /endmylife/, /selfharm/, /don'?twanttolive/, /nowanttolive/
+            ];
 
             function checkTextForSafety(text) {
                 if (!text || typeof text !== 'string') return false;
-                return SAFETY_KEYWORDS_REGEX.test(text);
+                const t = normalizeSafetyText(text);
+                return SAFETY_PATTERNS.some(re => re.test(t));
             }
 
-            function showSafetySupportBanner() {
-                if (!isSafetyFilterEnabled() || isSafetyBannerDismissed) return;
+            let safetyBannerManual = false; // 設定から開いたとき(言葉と関係なく出している)
+
+            function showSafetySupportBanner(manual = false) {
+                if (!manual && (!isSafetyFilterEnabled() || isSafetyBannerDismissed)) return;
                 const banner = document.getElementById('safetySupportBanner');
-                if (banner) {
-                    banner.classList.add('visible');
-                }
+                if (!banner) return;
+                safetyBannerManual = manual;
+                // 英語のときは、国を問わない窓口の検索を先頭に出す(下の番号は日本の窓口)
+                const intl = document.getElementById('safetyIntlLink');
+                if (intl) intl.hidden = currentLanguage !== 'en';
+                banner.classList.add('visible');
             }
 
             function hideSafetySupportBanner() {
                 const banner = document.getElementById('safetySupportBanner');
-                if (banner) {
-                    banner.classList.remove('visible');
-                }
+                if (banner) banner.classList.remove('visible');
+                safetyBannerManual = false;
             }
 
+            // 閉じたら、このページを開いている間はもう自動では出さない
             function closeSafetySupportBanner() {
-                isSafetyBannerDismissed = true;
+                if (!safetyBannerManual) isSafetyBannerDismissed = true;
                 hideSafetySupportBanner();
             }
 
+            function openSafetySupportBanner() {
+                showSafetySupportBanner(true);
+            }
+
             function checkAllActiveInputsForSafety() {
+                if (safetyBannerManual) return;
                 if (!isSafetyFilterEnabled()) {
                     hideSafetySupportBanner();
                     return;
                 }
-
-                const inputs = document.querySelectorAll('input[type="text"], input[type="search"], textarea');
-                let triggered = false;
-                for (const el of inputs) {
-                    if (el.value && checkTextForSafety(el.value)) {
-                        triggered = true;
-                        break;
-                    }
-                }
-
-                if (triggered) {
-                    showSafetySupportBanner();
-                } else {
-                    isSafetyBannerDismissed = false;
-                    hideSafetySupportBanner();
-                }
+                const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input:not([type]), textarea');
+                const triggered = Array.from(inputs).some(el => el.value && checkTextForSafety(el.value));
+                if (triggered) showSafetySupportBanner();
+                else hideSafetySupportBanner();
             }
 
+            // 打っている途中には出さず、手が止まってから確かめる(変換中の文字でちらつかないように)
+            let safetyCheckTimer = null;
             document.addEventListener('input', function (e) {
-                const target = e.target;
-                if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-                    if (checkTextForSafety(target.value)) {
-                        isSafetyBannerDismissed = false;
-                        showSafetySupportBanner();
-                    } else {
-                        checkAllActiveInputsForSafety();
-                    }
-                }
+                const t = e.target;
+                if (!t || !(t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && ['text', 'search', ''].includes(t.getAttribute('type') || '')))) return;
+                clearTimeout(safetyCheckTimer);
+                safetyCheckTimer = setTimeout(checkAllActiveInputsForSafety, 900);
             });
 
             function addMenuButton(feature) {
@@ -18353,6 +18736,7 @@
                     // 実学習時間 = 全経過 − 過去に確定した休憩 − 現在のフォーカス期間中の休憩
                     const netStudyTime = Math.max(0, wallElapsed - focusBreakAccumMs - fc.totalBreakTime);
                     const totalStr = formatTime(netStudyTime);
+                    goalLiveMs = running ? netStudyTime : 0;
                     if (subEl) {
                         subEl.style.display = 'block';
                         subEl.textContent = `${getText('focusTotalLabel')} ${totalStr}`;
@@ -18383,6 +18767,7 @@
                 } else {
                     const timeStr = formatTime(wallElapsed);
                     timerEl.textContent = timeStr;
+                    goalLiveMs = running ? wallElapsed : 0;
                     if (subEl) subEl.style.display = 'none';
                     if (phaseEl) {
                         phaseEl.textContent = running && isPaused ? getText('focusPhasePaused') : '';
@@ -18391,6 +18776,10 @@
                     if (running) document.title = `${timeStr} - ${getText('studyTimeManagement')}`;
                     hideFocusProgressBar();
                 }
+                // 計測の開始/終了の直後はすぐ、それ以外は数秒おきに
+                const goalRunning = goalLiveMs > 0;
+                updateGoalLine(goalRunning !== updateTimer._goalRunning);
+                updateTimer._goalRunning = goalRunning;
             }
 
 
@@ -19671,7 +20060,7 @@
                 return (document.getElementById('textPromptInput').value || '').trim();
             }
 
-            // 入力のたびに: 保存できるか・理由/補足・文字数・消去ボタンを更新
+            // 入力のたびに: 保存できるか･理由/補足･文字数･消去ボタンを更新
             function updateTextPrompt() {
                 if (!textPromptState) return false;
                 const { opts, touched } = textPromptState;
@@ -20114,7 +20503,7 @@
                 return `${minutes}:${String(seconds).padStart(2, '0')}`;
             }
 
-            // 再生位置の表示(バー・つまみ・時間・読み上げ用の値)をまとめて更新
+            // 再生位置の表示(バー･つまみ･時間･読み上げ用の値)をまとめて更新
             function renderSeekBar(cur, dur) {
                 if (!progressContainer) return;
                 const ratio = dur ? Math.max(0, Math.min(1, cur / dur)) : 0;
@@ -20321,7 +20710,7 @@
                 return Math.max(0, Math.min(1, Number.isFinite(raw) ? raw : 1));
             }
 
-            // 音量の変更はすべてここを通す(音声/YouTube・アイコン・スライダー・%表示をまとめて更新)
+            // 音量の変更はすべてここを通す(音声/YouTube･アイコン･スライダー･%表示をまとめて更新)
             function setMusicVolume(value) {
                 const v = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 1));
                 applyElementVolume(v);
@@ -20399,7 +20788,7 @@
                 return [...todos].sort((a, b) => Number(a.order) - Number(b.order));
             }
 
-            // ===== 繰り返しの詳細(時刻・曜日・日にち) =====
+            // ===== 繰り返しの詳細(時刻･曜日･日にち) =====
             // todo.repeatSchedule = { time: 'HH:MM' | null, weekdays: [0-6], monthDay: 1-31 }
             const REPEAT_WEEKDAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -20420,7 +20809,7 @@
                 return { time: null, weekdays: [base.getDay()], monthDay: base.getDate() };
             }
 
-            // 曜日・日にちが未設定のToDo(旧データ)は開始日または作成日を基準にする
+            // 曜日･日にちが未設定のToDo(旧データ)は開始日または作成日を基準にする
             function getRepeatAnchorDate(todo) {
                 const start = todo.period && todo.period.start ? parseLocalDate(todo.period.start) : null;
                 if (start) return start;
@@ -20551,7 +20940,7 @@
                 return { checked, editable };
             }
 
-            // 繰り返しなしToDoの最後の日(終了日・開始日・複数選択のうち最も遅い日)
+            // 繰り返しなしToDoの最後の日(終了日･開始日･複数選択のうち最も遅い日)
             function getTodoLastDate(todo) {
                 const period = todo.period || {};
                 const candidates = [period.start, period.end, ...(Array.isArray(period.dates) ? period.dates : [])]
@@ -20679,7 +21068,7 @@
                 return parts.join(', ');
             }
 
-            // 行のタイトル下に出す情報(日付・繰り返し・通知)。どれもなければ空
+            // 行のタイトル下に出す情報(日付･繰り返し･通知)。どれもなければ空
             function getTodoInfoHtml(todo) {
                 const items = [];
                 const hasRepeat = !!todo.repeat && todo.repeat !== 'none';
@@ -20697,7 +21086,7 @@
                 return `<div class="todo-info">${items.map(item => `<span class="todo-info-item">${item}</span>`).join('')}</div>`;
             }
 
-            // 行の右端: 設定(繰り返し・通知・優先度)と削除
+            // 行の右端: 設定(繰り返し･通知･優先度)と削除
             function getTodoActionsHtml(todo, deleteHandler) {
                 return `<div class="todo-actions">
                     <button type="button" class="todo-icon-btn" title="${getText('todoEditButton')}" aria-label="${getText('todoEditButton')}" onclick="openTodoEditModal('${todo.id}')">${TODO_ICONS.edit}</button>
@@ -20708,7 +21097,7 @@
             // ===== 追加フォーム(ToDoリスト/カレンダー)と設定モーダルで共通のエディター =====
             // ctx: 'list' | 'calendar' | 'modal'
             function createTodoEditorState() {
-                // weekdays / monthDay が null のあいだは基準日(開始日・カレンダーで選んだ日)に合わせる
+                // weekdays / monthDay が null のあいだは基準日(開始日･カレンダーで選んだ日)に合わせる
                 return { repeat: 'none', priority: 'normal', time: null, weekdays: null, monthDay: null, open: null };
             }
 
@@ -21106,7 +21495,7 @@
                         if (todo.repeat === 'daily') {
                             shouldReset = lastCompletedDate.toDateString() !== today;
                         } else if (todo.repeatSchedule && (todo.repeat === 'weekly' || todo.repeat === 'monthly')) {
-                            // 曜日・日にちを指定済みなら、最後に完了した日より後の繰り返し日が来たらリセット
+                            // 曜日･日にちを指定済みなら、最後に完了した日より後の繰り返し日が来たらリセット
                             const prevDate = findPrevRepeatDate(todo, now);
                             shouldReset = !!prevDate && prevDate > startOfLocalDay(lastCompletedDate);
                         } else if (todo.repeat === 'weekly') {
@@ -21691,7 +22080,7 @@
             let todoCalendarScroller = null;
             let todoCalendarData = null;
 
-            // ToDoカレンダーの1日ぶん(ToDoの印・勉強時間の濃さ・今日の丸)
+            // ToDoカレンダーの1日ぶん(ToDoの印･勉強時間の濃さ･今日の丸)
             function buildTodoCalendarDay(date) {
                 const data = todoCalendarData;
                 const dateStr = toLocalDateKey(date);
@@ -22389,7 +22778,7 @@
                 return history.filter(item => criteriaList.every(c => matchesSearchCriteria(item, c)));
             }
 
-            // 今日・先週などを [開始, 終了) の時刻にする(週はカレンダーと同じ日曜はじまり)
+            // 今日･先週などを [開始, 終了) の時刻にする(週はカレンダーと同じ日曜はじまり)
             function getRelativeSearchRange(word) {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -22417,6 +22806,7 @@
             }
 
             function loadHistory() {
+                updateGoalLine(true);
                 const historyList = document.getElementById('historyList');
                 const searchInput = document.getElementById('searchInput');
                 const groupFilter = document.getElementById('groupFilter');
@@ -23228,7 +23618,7 @@
                 applyGroupRename(selected, newName);
             }
 
-            // oldNames のグループを newName に変更(既存の名前ならまとめる)。記録・保存済みグループ・選択中の状態をすべて更新する
+            // oldNames のグループを newName に変更(既存の名前ならまとめる)。記録･保存済みグループ･選択中の状態をすべて更新する
             function applyGroupRename(oldNames, newName) {
                 let history = getData('studyHistory');
                 history = history ? JSON.parse(history) : [];
@@ -23243,7 +23633,7 @@
                 stored.push(newName);
                 saveStoredGroups(stored);
 
-                // タイマー・移動先で選んでいたグループも新しい名前に置き換える(古い名前で記録されないように)
+                // タイマー･移動先で選んでいたグループも新しい名前に置き換える(古い名前で記録されないように)
                 [selectedTimerGroups, selectedMoveGroups].forEach(set => {
                     if (!set) return;
                     let had = false;
@@ -23337,6 +23727,10 @@
                 const dateEl = document.getElementById('dailyTimelineDate');
                 const contentEl = document.getElementById('dailyTimelineContent');
                 if (!dateEl || !contentEl) return;
+                // 「タイムラインバー」の設定は、履歴カードと統計の日別タイムラインの両方に効かせる
+                const section = document.getElementById('dailyTimelineSection');
+                if (section) section.hidden = !isHistoryTimelineEnabled();
+                if (!isHistoryTimelineEnabled()) return;
 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -23413,7 +23807,7 @@
                 const streak = calculateStreak();
                 const totalSessions = history.length;
                 const statsContainer = document.getElementById('statsContainer');
-                // 数字は1枚のカードにまとめ、暗記カード・積み木は下の小さな入口にする
+                // 数字は1枚のカードにまとめ、暗記カード･積み木は下の小さな入口にする
                 // TSUMIKI_UNIT_MS は後ろで宣言されるため、初期化中に呼ばれても困らないよう値を直接書く(30分)
                 const tsumikiCount = Math.floor(totalTime / (30 * 60 * 1000));
                 const chevron = '<svg class="stats-shortcut-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>';
@@ -23562,6 +23956,7 @@
             ];
 
             const EXPORT_SKIP_LOCALSTORAGE_KEYS = new Set([
+                'last_backup_at',
                 'studyHistory',
                 'todos',
                 'studyStartTime',
@@ -23873,6 +24268,10 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                if (selected.has('history')) {
+                    saveData('last_backup_at', String(Date.now()));
+                    applyBackupSettingUI();
+                }
             }
 
             // インポートされた設定を localStorage に保存する(UI反映はリロードで行う)
@@ -24552,7 +24951,7 @@
                 }
             }
 
-            // 保存された順序を正規化する: 知らない値・重複は捨て、後から増えた項目(ToDo など)は末尾に足す。
+            // 保存された順序を正規化する: 知らない値･重複は捨て、後から増えた項目(ToDo など)は末尾に足す。
             // 改行は複数置けるが、連続したものは1つにまとめる
             function getMenuOrder() {
                 let saved = null;
@@ -24575,7 +24974,7 @@
                 return getMenuOrder().find(key => key !== MENU_BREAK_KEY && vis[key]) || null;
             }
 
-            // メニュー項目の表示/非表示はすべてここを通す(設定・エディターモード・機能トグル共通)
+            // メニュー項目の表示/非表示はすべてここを通す(設定･エディターモード･機能トグル共通)
             function setMenuItemVisible(key, visible) {
                 if (!MENU_ITEM_KEYS.includes(key)) return false;
                 const vis = getMenuVisibility();
@@ -25119,12 +25518,10 @@
 
             async function initializeRemainingApp() {
 
-                // テーマ永続化のデバッグ(テーマ変更の追跡用)
-                const DEBUG_THEME = true;
-                if (DEBUG_THEME) {
+                // 別のタブでテーマを変えたら、このタブにも反映する
+                {
                     window.addEventListener('storage', (e) => {
                         if (e.key === 'theme') {
-                            console.log('[DEBUG] storage event theme changed:', e.oldValue, '=>', e.newValue);
                             const newTheme = (e.newValue || '').trim();
                             const normalizedTheme = normalizeThemeName(newTheme);
                             if (normalizedTheme) {
@@ -25136,18 +25533,6 @@
                             }
                         }
                     });
-
-                    const bodyObserver = new MutationObserver(mutations => {
-                        for (const m of mutations) {
-                            if (m.type === 'attributes' && m.attributeName === 'data-theme') {
-                                console.log('[DEBUG] body data-theme changed to', document.body.getAttribute('data-theme'));
-                                console.trace();
-                            }
-                        }
-                    });
-                    bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-
-                    console.log('[DEBUG] initial stored theme:', getData('theme'));
                 }
 
                 const mode = getData('mode');
@@ -25173,7 +25558,6 @@
                 } else {
                     // 保存済みテーマが見つからない場合、現在のテーマを保存して意図しないリセットを防ぐ
                     const currentTheme = document.body.getAttribute('data-theme') || 'blue';
-                    console.log('[DEBUG] No stored theme found on load. Saving current body theme ->', currentTheme);
                     saveData('theme', currentTheme);
                 }
                 updateTsumikiLogoSources();
@@ -25217,10 +25601,7 @@
                     option.setAttribute('role', 'button');
                     option.tabIndex = 0;
                     option.addEventListener('click', (e) => {
-                        if (!e.isTrusted) {
-                            console.log('[DEBUG] Ignored synthetic click on theme-option', themeName);
-                            return;
-                        }
+                        if (!e.isTrusted) return;
                         changeTheme(themeName);
                     });
                     option.addEventListener('keydown', (e) => {
@@ -25384,6 +25765,12 @@
 
                 // セーフティフィルター (デフォルトON)
                 syncSafetyFilterToggle();
+
+                // 1日の目標・記録を消えにくくする・最後のバックアップ
+                applyGoalSettingUI();
+                updateGoalLine(true);
+                applyBackupSettingUI();
+                requestStoragePersist(false).then(refreshStoragePersistUI);
 
                 if (isStopMusicOnTimerEndEnabled()) { // デフォルトON
                     const toggle = document.getElementById('toggleStopMusicOnTimerEnd');
@@ -26591,7 +26978,7 @@
                 });
                 const dayValue = d => daily[dayKey(d)] || 0;
 
-                // 期間の始まり・終わり(終わりの日を含む)と、並べる列
+                // 期間の始まり･終わり(終わりの日を含む)と、並べる列
                 let start, end, title;
                 const slots = []; // { from, to, label, tip }
                 if (range === 'week') {
@@ -26642,7 +27029,7 @@
                     title = getText('chartRangeAllTitle');
                 }
 
-                // 列ごとの合計(まだ来ていない日・月は null = 描かない)
+                // 列ごとの合計(まだ来ていない日･月は null = 描かない)
                 const labels = [], values = [], tipLabels = [];
                 let todayIndex = -1;
                 slots.forEach((s, i) => {
@@ -26684,7 +27071,8 @@
                     type,
                     tipLabels,
                     todayIndex,
-                    avgValue: dailyBars ? avgHours : 0
+                    avgValue: dailyBars ? avgHours : 0,
+                    goalValue: dailyBars && isGoalEnabled() ? getGoalMinutes() / 60 : 0
                 });
             }
 
@@ -26757,8 +27145,8 @@
                 const totalM = Math.round(hours * 60);
                 const h = Math.floor(totalM / 60);
                 const m = totalM % 60;
-                if (currentLanguage === 'en') return h > 0 ? `${h}h ${m}m` : `${m}m`;
-                return h > 0 ? `${h}時間${m}分` : `${m}分`;
+                if (currentLanguage === 'en') return h > 0 ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+                return h > 0 ? (m ? `${h}時間${m}分` : `${h}時間`) : `${m}分`;
             }
 
             // 目盛りの文字(短く。小数は使わない: 1.5 → 1h30m)
@@ -26820,6 +27208,7 @@
                     tipLabels: opts.tipLabels || opts.labels,
                     todayIndex: (opts.todayIndex != null) ? opts.todayIndex : -1,
                     avgValue: Number.isFinite(opts.avgValue) ? opts.avgValue : 0,
+                    goalValue: Number.isFinite(opts.goalValue) ? opts.goalValue : 0,
                     hoverIndex: -1
                 };
 
@@ -26934,7 +27323,7 @@
                 canvas.setAttribute('role', 'img');
                 canvas.setAttribute('aria-label', `${getText('graphTitle')}: ${getText('chartTotal')} ${formatChartHours(values.reduce((a, b) => a + (b || 0), 0))}`);
 
-                const maxVal = Math.max(0.0001, ...values.filter(v => v != null));
+                const maxVal = Math.max(0.0001, state.goalValue || 0, ...values.filter(v => v != null));
 
                 // 目盛りは0を含めて3〜5本。きりのよい間隔にする
                 const steps = [0.25, 0.5, 1, 2, 3, 4, 6, 12, 24, 48, 96, 168];
@@ -27081,6 +27470,28 @@
                     ctx.lineTo(plotX + plotW, yAvg);
                     ctx.stroke();
                     ctx.restore();
+                }
+
+                // 目標の線(細い実線。右端に小さく「目標」)
+                if (animT >= 1 && state.goalValue > 0) {
+                    const yGoal = Math.round(yFor(state.goalValue)) + 0.5;
+                    ctx.strokeStyle = col.base;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(plotX, yGoal);
+                    ctx.lineTo(plotX + plotW, yGoal);
+                    ctx.stroke();
+                    const label = getText('goalChartLabel');
+                    ctx.font = `10px ${fontFamily}`;
+                    const lw = ctx.measureText(label).width + 10;
+                    const lx = plotX + plotW - lw;
+                    ctx.fillStyle = col.surface;
+                    ctx.fillRect(lx, yGoal - 7, lw, 14);
+                    ctx.fillStyle = col.muted;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, lx + lw / 2, yGoal + 0.5);
+                    ctx.font = `11px ${fontFamily}`;
                 }
 
                 // 値の吹き出し(HTML。日付と時間を1行で)
@@ -27279,7 +27690,7 @@
                         + `<div class="tsumiki-note">${formatChartHours(totalTime / 3600000)}</div>`;
                 }
 
-                // 山の下: 次の1個までの進み具合と、今日・7日間で増えた数
+                // 山の下: 次の1個までの進み具合と、今日･7日間で増えた数
                 const details = document.getElementById('tsumikiDetails');
                 if (details) {
                     const now = new Date();
@@ -27865,7 +28276,7 @@
                 fcFocusForm();
             }
 
-            // 数式: 「数(または範囲)・記号・数 …」と交互に並び、最後が数なら有効
+            // 数式: 「数(または範囲)･記号･数 …」と交互に並び、最後が数なら有効
             function fcFormulaIsValid() {
                 if (!fcFormulaTokens.length || fcFormulaTokens.length % 2 === 0) return false;
                 return fcFormulaTokens.every(function (tk, i) { return (i % 2 === 0) ? tk.type !== 'op' : tk.type === 'op'; });
