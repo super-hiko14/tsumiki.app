@@ -2362,8 +2362,9 @@
         }
 
         body.auto-stop-compact .auto-stop-pill .auto-stop-pill-icon {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
+            stroke-width: 0.85;
         }
 
         body.auto-stop-compact .auto-stop-pill:hover,
@@ -3371,12 +3372,30 @@
             overflow-y: auto;
             padding: 6px;
             border-radius: 24px;
-            display: none;
-            animation: fadeIn 0.15s ease-out;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(0.95) translateY(-6px);
+            transform-origin: top right;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
         }
 
         .pl-pop.show {
-            display: block;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s;
+        }
+
+        /* ボタンの上に開くときは、上から下へ */
+        .pl-pop.above {
+            transform: scale(0.95) translateY(6px);
+            transform-origin: bottom right;
+        }
+
+        .pl-pop.above.show {
+            transform: scale(1) translateY(0);
         }
 
         .light .pl-pop {
@@ -13242,7 +13261,7 @@
             <div class="auto-stop-control" id="timerAutoStopControl">
                 <button type="button" class="auto-stop-pill" id="timerAutoStopPill" aria-expanded="false"
                     aria-controls="timerAutoStopPanelWrap" onclick="toggleAutoStopPanel('timer')">
-                    <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="timerAutoStopPillText">自動停止</span>
+                    <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="timerAutoStopPillText">自動停止</span>
                 </button>
                 <div class="auto-stop-panel-wrap" id="timerAutoStopPanelWrap"></div>
             </div>
@@ -13474,7 +13493,7 @@
                         <div class="auto-stop-control" id="musicAutoStopControl">
                             <button type="button" class="auto-stop-pill" id="musicAutoStopPill" aria-expanded="false"
                                 aria-controls="musicAutoStopPanelWrap" onclick="toggleAutoStopPanel('music')">
-                                <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="musicAutoStopPillText">自動停止</span>
+                                <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="musicAutoStopPillText">自動停止</span>
                             </button>
                             <div class="auto-stop-panel-wrap" id="musicAutoStopPanelWrap"></div>
                         </div>
@@ -18638,17 +18657,22 @@
                 }).join('');
                 pop._anchor = anchor;
                 if (anchor) anchor.setAttribute('aria-expanded', 'true');
-                pop.style.left = '0px';
-                pop.style.top = '0px';
-                pop.classList.add('show');
+                // 位置を決めてから開く(閉じている間も大きさは測れる)
+                pop.classList.remove('show', 'above');
+                pop.style.transition = 'none';
                 const r = anchor.getBoundingClientRect();
                 const w = pop.offsetWidth;
                 const h = pop.offsetHeight;
                 const left = Math.min(window.innerWidth - w - 12, Math.max(12, r.right - w));
                 let top = r.bottom + 6;
-                if (top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+                const above = top + h > window.innerHeight - 12;
+                if (above) top = Math.max(12, r.top - h - 6);
+                pop.classList.toggle('above', above);
                 pop.style.left = left + 'px';
                 pop.style.top = top + 'px';
+                void pop.offsetWidth;
+                pop.style.transition = '';
+                pop.classList.add('show');
             }
 
             function closePlaylistPopover() {
