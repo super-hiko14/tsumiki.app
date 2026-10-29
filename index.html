@@ -11317,7 +11317,7 @@
             transition: transform 0.2s ease;
         }
 
-        .qa-item[open] summary::after {
+        .qa-item[open]:not(.qa-closing) summary::after {
             transform: translateY(2px) rotate(-135deg);
         }
 
@@ -11327,7 +11327,12 @@
             font-size: 0.88rem;
             line-height: 1.75;
             opacity: 0.85;
-            animation: fadeIn 0.2s ease-out;
+            transition: opacity 0.2s ease;
+        }
+
+        /* 閉じるあいだは答えを薄くしていく(高さは JS で縮める) */
+        .qa-item.qa-closing p {
+            opacity: 0;
         }
 
         .qa-footnote {
@@ -17304,6 +17309,42 @@
                 anim.onfinish = done;
                 anim.oncancel = done;
             }
+
+            // Q&A(<details>)を、高さを伸び縮みさせて開け閉めする
+            function toggleQaItemSmooth(item) {
+                if (typeof item.animate !== 'function' || prefersReducedMotion()) {
+                    item.open = !item.open;
+                    return;
+                }
+                const closing = item.open && !item.classList.contains('qa-closing');
+                const from = item.getBoundingClientRect().height;
+                if (item._qaAnim) item._qaAnim.cancel();
+                item.classList.toggle('qa-closing', closing);
+                if (!closing) item.open = true;
+                const to = closing
+                    ? item.querySelector('summary').getBoundingClientRect().height
+                    : item.getBoundingClientRect().height;
+                item.style.overflow = 'hidden';
+                const anim = item.animate([{ height: `${from}px` }, { height: `${to}px` }], {
+                    duration: 260,
+                    easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)'
+                });
+                item._qaAnim = anim;
+                anim.onfinish = () => {
+                    if (item._qaAnim !== anim) return;
+                    item._qaAnim = null;
+                    if (closing) item.open = false;
+                    item.classList.remove('qa-closing');
+                    item.style.overflow = '';
+                };
+            }
+
+            document.addEventListener('click', (e) => {
+                const summary = e.target.closest('.qa-item > summary');
+                if (!summary) return;
+                e.preventDefault();
+                toggleQaItemSmooth(summary.parentElement);
+            });
 
             function getEditIconSvg() {
                 return '<svg class="todo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 8.5l2 2"/></svg>';
