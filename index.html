@@ -9415,6 +9415,209 @@
             font-size: 0.9rem;
         }
 
+        /* ═══ 今週(積み木の画面と同じ部品で作る) ═══ */
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            opacity: 0.8;
+        }
+
+        .week-nav-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 999px;
+            background: transparent;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .week-nav-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .week-nav-btn:disabled {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        .week-goal {
+            width: 100%;
+            max-width: 220px;
+            margin: 10px auto 0;
+        }
+
+        .week-goal .tsumiki-progress-track {
+            height: 6px;
+        }
+
+        .week-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            color: #fff;
+            vertical-align: 1px;
+        }
+
+        .light .week-badge {
+            background-color: var(--primary-color);
+        }
+
+        .dark .week-badge {
+            background-color: var(--primary-color-dark);
+        }
+
+        #weekCanvas {
+            display: block;
+            margin: 10px auto 0;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            max-width: 100%;
+        }
+
+        .week-stage {
+            flex: 1 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        /* 塔の下の曜日(canvas と同じ幅で7等分して、塔の真下にそろえる) */
+        .week-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            max-width: 100%;
+            margin: 6px auto 14px;
+            box-sizing: border-box;
+            font-size: 0.78rem;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .week-day {
+            opacity: 0.7;
+            min-width: 0;
+        }
+
+        .week-day-time {
+            display: block;
+            font-size: 0.68rem;
+            opacity: 0.75;
+            white-space: nowrap;
+        }
+
+        .week-day.is-today {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .week-day.is-future {
+            opacity: 0.3;
+        }
+
+        /* グループの色の見本(積み木と今週で共通) */
+        .block-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 14px;
+            margin: 4px 0 10px;
+            font-size: 0.8rem;
+        }
+
+        .block-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .block-legend-item b {
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            opacity: 0.7;
+        }
+
+        .block-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            background-color: var(--c);
+        }
+
+        /* グループ管理の色の丸と、押すと出る10色 */
+        .group-color-toggle {
+            margin-top: 16px;
+        }
+
+        .group-color-btn {
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            flex: 0 0 auto;
+            background-color: var(--c);
+            cursor: pointer;
+        }
+
+        .group-color-btn:focus-visible,
+        .group-color-swatch:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .group-color-pop {
+            position: fixed;
+            z-index: 1600;
+            display: grid;
+            grid-template-columns: repeat(5, 30px);
+            gap: 10px;
+            padding: 14px;
+            border-radius: 24px;
+        }
+
+        .light .group-color-pop {
+            background-color: var(--panel-light);
+            box-shadow: 0 0 0 1px var(--panel-light-border);
+        }
+
+        .dark .group-color-pop {
+            background-color: var(--panel-dark);
+            box-shadow: 0 0 0 1px var(--panel-dark-2);
+        }
+
+        .group-color-swatch {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--c);
+            cursor: pointer;
+        }
+
+        .group-color-swatch.is-current {
+            box-shadow: 0 0 0 2px var(--panel-light), 0 0 0 4px var(--c);
+        }
+
+        .dark .group-color-swatch.is-current {
+            box-shadow: 0 0 0 2px var(--panel-dark), 0 0 0 4px var(--c);
+        }
+
         .flashcard-modal {
             background: var(--panel-light);
             border-radius: 24px;
@@ -12187,6 +12390,238 @@
             transition: width 0.4s ease;
         }
 
+
+        /* ═══ アイコンをドット絵にする(svg の形を隠し、同じ大きさでドット絵の形に色を塗る) ═══ */
+        body.icons-dot svg[data-dot] {
+            background-color: currentColor;
+            -webkit-mask: var(--dot) center / contain no-repeat;
+            mask: var(--dot) center / contain no-repeat;
+        }
+
+        body.icons-dot svg[data-dot] > * {
+            display: none;
+        }
+
+        /* 高解像度の画面ではドットをくっきり */
+        @media (min-resolution: 2dppx) {
+            body.icons-dot svg[data-dot] {
+                image-rendering: pixelated;
+            }
+        }
+
+        svg[data-dot="timer"] { --dot: url(timer.webp); }
+        svg[data-dot="stats"] { --dot: url(reco.webp); }
+        svg[data-dot="list"] { --dot: url(toukei.webp); }
+        svg[data-dot="music"] { --dot: url(music.webp); }
+        svg[data-dot="todo"] { --dot: url(todo.webp); }
+        svg[data-dot="edit"] { --dot: url(edit.webp); }
+        svg[data-dot="trash"] { --dot: url(del_icon.webp); }
+        svg[data-dot="fullscreen"] { --dot: url(fullscreen.webp); }
+        svg[data-dot="autostop"] { --dot: url(jidouteisi_timer.webp); }
+        svg[data-dot="bell"] { --dot: url(tuuti.webp); }
+        svg[data-dot="general"] { --dot: url(settigns_general.webp); }
+        svg[data-dot="appearance"] { --dot: url(settings_e.webp); }
+        svg[data-dot="settimer"] { --dot: url(settigns_timer.webp); }
+        svg[data-dot="records"] { --dot: url(reco.webp); }
+        svg[data-dot="settodo"] { --dot: url(settings_todo.webp); }
+        svg[data-dot="other"] { --dot: url(settings_other.webp); }
+
+
+        /* ═══ すべて線(SVG)のとき: 前からあるドット絵の画像も線にする ═══
+           img はそのまま(あとから src が変わってもよいように)、絵を外にずらして同じ大きさの線の絵を背景に描く */
+        body.icons-svg :is(img[src$="play.webp"], img[src$="pause.webp"], img[src$="prev.webp"], img[src$="next.webp"], img[src$="loop_on.webp"], img[src$="loop_off.webp"], img[src$="shuffle_on.webp"], img[src$="shuffle_off.webp"], img[src$="volume.webp"], img[src$="volume_low.webp"], img[src$="volume_mute.webp"], img[src$="moon.webp"], img[src$="sun.webp"], img[src$="settings.webp"], img[src$="no_settings.webp"], img[src$="delete.webp"], img[src$="drag_handle.webp"], img[src$="drag_handle_kuro.webp"], img[src$="export.webp"], img[src$="import.webp"], img[src$="warning.webp"]) {
+            object-position: -99999px 0;
+            background: var(--svg-icon) center / contain no-repeat;
+        }
+
+        body.icons-svg img[src$="play.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M8 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2A.8.8 0 0 0 8 5.8z%22 fill=%22%23b1b1b1%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="pause.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%226.5%22 y=%225%22 width=%223.6%22 height=%2214%22 rx=%221.2%22 fill=%22%23b1b1b1%22 stroke=%22none%22/%3E%3Crect x=%2213.9%22 y=%225%22 width=%223.6%22 height=%2214%22 rx=%221.2%22 fill=%22%23b1b1b1%22 stroke=%22none%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="prev.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6.5 5.5v13%22/%3E%3Cpath d=%22M18.5 6.3v11.4a.8.8 0 0 1-1.2.7l-8.6-5.7a.8.8 0 0 1 0-1.4l8.6-5.7a.8.8 0 0 1 1.2.7z%22 fill=%22%23b1b1b1%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="next.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M17.5 5.5v13%22/%3E%3Cpath d=%22M5.5 6.3v11.4a.8.8 0 0 0 1.2.7l8.6-5.7a.8.8 0 0 0 0-1.4L6.7 5.6a.8.8 0 0 0-1.2.7z%22 fill=%22%23b1b1b1%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="loop_on.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M17 3.5l3 3-3 3%22/%3E%3Cpath d=%22M4 11.5v-1a4 4 0 0 1 4-4h12%22/%3E%3Cpath d=%22M7 20.5l-3-3 3-3%22/%3E%3Cpath d=%22M20 12.5v1a4 4 0 0 1-4 4H4%22/%3E%3Cpath d=%22M11 10.6l1.4-1v5%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="loop_off.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M17 3.5l3 3-3 3%22/%3E%3Cpath d=%22M4 11.5v-1a4 4 0 0 1 4-4h12%22/%3E%3Cpath d=%22M7 20.5l-3-3 3-3%22/%3E%3Cpath d=%22M20 12.5v1a4 4 0 0 1-4 4H4%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="shuffle_on.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M16 3.5h4.5V8%22/%3E%3Cpath d=%22M4 20 20.5 3.5%22/%3E%3Cpath d=%22M20.5 16v4.5H16%22/%3E%3Cpath d=%22M14.5 14.5l6 6%22/%3E%3Cpath d=%22M4 4l5 5%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="shuffle_off.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M16 3.5h4.5V8%22/%3E%3Cpath d=%22M4 20 20.5 3.5%22/%3E%3Cpath d=%22M20.5 16v4.5H16%22/%3E%3Cpath d=%22M14.5 14.5l6 6%22/%3E%3Cpath d=%22M4 4l5 5%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="volume.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 9.5h3l4.5-4v13L7 14.5H4z%22 fill=%22%23b1b1b1%22/%3E%3Cpath d=%22M15 9a4 4 0 0 1 0 6%22/%3E%3Cpath d=%22M17.8 6.5a7.5 7.5 0 0 1 0 11%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="volume_low.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 9.5h3l4.5-4v13L7 14.5H4z%22 fill=%22%23b1b1b1%22/%3E%3Cpath d=%22M15 9a4 4 0 0 1 0 6%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="volume_mute.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 9.5h3l4.5-4v13L7 14.5H4z%22 fill=%22%23b1b1b1%22/%3E%3Cpath d=%22M15.5 9.5l5 5M20.5 9.5l-5 5%22/%3E%3C/svg%3E"); }
+        /* 月･太陽･歯車は about.tsumiki.app と同じ形と色にそろえる */
+        body.icons-svg .top-buttons button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 絵の大きさも about と同じ 22px */
+        body.icons-svg .top-buttons button img {
+            width: 22px;
+            height: 22px;
+        }
+
+        body.icons-svg img[src$="moon.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23323232%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="sun.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23e8e8e8%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%225%22/%3E%3Cline x1=%2212%22 y1=%221%22 x2=%2212%22 y2=%223%22/%3E%3Cline x1=%2212%22 y1=%2221%22 x2=%2212%22 y2=%2223%22/%3E%3Cline x1=%224.22%22 y1=%224.22%22 x2=%225.64%22 y2=%225.64%22/%3E%3Cline x1=%2218.36%22 y1=%2218.36%22 x2=%2219.78%22 y2=%2219.78%22/%3E%3Cline x1=%221%22 y1=%2212%22 x2=%223%22 y2=%2212%22/%3E%3Cline x1=%2221%22 y1=%2212%22 x2=%2223%22 y2=%2212%22/%3E%3Cline x1=%224.22%22 y1=%2219.78%22 x2=%225.64%22 y2=%2218.36%22/%3E%3Cline x1=%2218.36%22 y1=%225.64%22 x2=%2219.78%22 y2=%224.22%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="settings.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23323232%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3Cpath d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="no_settings.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23323232%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3Cpath d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z%22/%3E%3Cline x1=%222%22 y1=%222%22 x2=%2222%22 y2=%2222%22/%3E%3C/svg%3E"); }
+        body.dark.icons-svg img[src$="settings.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23e8e8e8%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3Cpath d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z%22/%3E%3C/svg%3E"); }
+        body.dark.icons-svg img[src$="no_settings.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23e8e8e8%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3Cpath d=%22M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z%22/%3E%3Cline x1=%222%22 y1=%222%22 x2=%2222%22 y2=%2222%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="delete.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M4 7h16%22/%3E%3Cpath d=%22M9.5 7V4.5h5V7%22/%3E%3Cpath d=%22M6.5 7l1 13h9l1-13%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="drag_handle.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%229%22 cy=%226%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%226%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3Ccircle cx=%229%22 cy=%2212%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%2212%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3Ccircle cx=%229%22 cy=%2218%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%2218%22 r=%221.5%22 fill=%22%23ffffff%22 stroke=%22none%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="drag_handle_kuro.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23000000%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%229%22 cy=%226%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%226%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3Ccircle cx=%229%22 cy=%2212%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%2212%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3Ccircle cx=%229%22 cy=%2218%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3Ccircle cx=%2215%22 cy=%2218%22 r=%221.5%22 fill=%22%23000000%22 stroke=%22none%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="export.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 15V4M7.5 8.5 12 4l4.5 4.5%22/%3E%3Cpath d=%22M5 13.5v5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-5%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="import.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 4v11M7.5 10.5 12 15l4.5-4.5%22/%3E%3Cpath d=%22M5 13.5v5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-5%22/%3E%3C/svg%3E"); }
+        body.icons-svg img[src$="warning.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23b1b1b1%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 7.5v5.5%22/%3E%3Ccircle cx=%2212%22 cy=%2216.5%22 r=%221.1%22 fill=%22%23b1b1b1%22 stroke=%22none%22/%3E%3C/svg%3E"); }
+
+        /* ═══ タイマーを押すと、まわりに「今日の自分」が飛び出す ═══ */
+        #timerPage .timer {
+            width: fit-content;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none;
+        }
+
+        #timerPage .timer:focus-visible {
+            box-shadow: 0 0 0 2px var(--primary-color);
+            border-radius: 24px;
+        }
+
+        #timerPage .timer.hop {
+            animation: timerHop 0.18s ease-out;
+        }
+
+        @keyframes timerHop {
+            40% { transform: scale(0.96); }
+            100% { transform: scale(1); }
+        }
+
+        /* 開いているあいだ、タイマー以外を薄くする */
+        #timerPage.burst-fade > :not(.timer-wrapper) {
+            transition: opacity 0.25s ease !important;
+        }
+
+        #timerPage.burst-fade #fullscreenTimerBtn,
+        body.burst-fade #mainMenu,
+        body.burst-fade .container > h1,
+        body.burst-fade .top-buttons,
+        body.burst-fade #currentClock,
+        body.burst-fade #miniPlayerPopup {
+            transition: opacity 0.25s ease !important;
+        }
+
+        body.burst-open #mainMenu,
+        body.burst-open .container > h1,
+        body.burst-open .top-buttons,
+        body.burst-open #currentClock,
+        body.burst-open #miniPlayerPopup,
+        #timerPage.burst-open #fullscreenTimerBtn,
+        #timerPage.burst-open > :not(.timer-wrapper) {
+            opacity: 0.12 !important;
+            pointer-events: none;
+        }
+
+        .timer-burst {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            pointer-events: none;
+        }
+
+        .timer-burst-chip {
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            margin: 0;
+            padding: 9px 16px;
+            border: none;
+            border-radius: 999px;
+            font: inherit;
+            font-size: 0.92rem;
+            line-height: 1.3;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            /* 閉じるときはタイマーの中へ吸い込まれる */
+            transform: translate(var(--x), var(--y)) translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0.3);
+            transition:
+                transform 0.28s cubic-bezier(0.4, 0, 0.8, 0.6),
+                opacity 0.2s ease-out,
+                visibility 0s linear 0.28s,
+                background-color 0.15s ease;
+        }
+
+        .timer-burst.open .timer-burst-chip {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translate(var(--x), var(--y)) translate(-50%, -50%) translate(0px, 0px) scale(1);
+            transition:
+                transform 0.5s cubic-bezier(0.16, 0.9, 0.3, 1) calc(var(--i) * 55ms),
+                opacity 0.3s ease-out calc(var(--i) * 55ms),
+                visibility 0s,
+                background-color 0.15s ease;
+        }
+
+        /* 置く場所を決めているあいだは動かさない(左上から飛んでこないように) */
+        .timer-burst.placing .timer-burst-chip {
+            transition: none !important;
+        }
+
+        body.light .timer-burst-chip {
+            background-color: var(--panel-light);
+            color: #323232;
+        }
+
+        body.dark .timer-burst-chip {
+            background-color: var(--panel-dark);
+            color: #e8e8e8;
+        }
+
+        body.light button.timer-burst-chip:hover {
+            background-color: var(--panel-light-hover);
+        }
+
+        body.dark button.timer-burst-chip:hover {
+            background-color: var(--panel-dark-2);
+        }
+
+        button.timer-burst-chip {
+            cursor: pointer;
+        }
+
+        button.timer-burst-chip:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .timer-burst-label {
+            font-size: 0.78rem;
+            opacity: 0.6;
+        }
+
+        .timer-burst-value {
+            font-weight: 500;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .timer-burst-chip,
+            .timer-burst.open .timer-burst-chip {
+                transition: opacity 0.15s ease, visibility 0s;
+                transform: translate(var(--x), var(--y)) translate(-50%, -50%) translate(0px, 0px) scale(1);
+            }
+
+            #timerPage .timer.hop {
+                animation: none;
+            }
+        }
+
         .goal-setting-body[hidden] {
             display: none;
         }
@@ -13103,6 +13538,9 @@
             var _normalizedTheme = (_t || '').trim().toLowerCase();
             var _validThemes = ['blue', 'green', 'purple', 'orange', 'pink', 'teal', 'white'];
             if (_m === 'dark') { document.body.className = 'dark'; }
+            var _icon = localStorage.getItem('icon_style');
+            if (_icon === 'svg') { document.body.classList.add('icons-svg'); }
+            else if (_icon === 'dot') { document.body.classList.add('icons-dot'); }
             if (_normalizedTheme === 'light' || _normalizedTheme === 'dark') {
                 localStorage.setItem('mode', _normalizedTheme);
             } else if (_validThemes.includes(_normalizedTheme)) {
@@ -13427,7 +13865,7 @@
                     data-i18n-aria="closeButton"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
             <div id="licenseContent" class="about-content">
-                <p class="lic-intro" data-i18n="licenseIntro">ツミキappでは、次のフォントをそれぞれのライセンスに従って使わせていただいています。</p>
+                <p class="lic-intro" data-i18n="licenseIntro">ツミキappでは、次のフォントとアイコンをそれぞれのライセンスに従って使わせていただいています。</p>
                 <div class="lic-section">
                     <div class="lic-head">Google Fonts</div>
                     <a class="lic-item" href="https://fonts.google.com/specimen/Jost" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Jost</span><span class="lic-by">Owen Earl (indestructible type*)</span></span><span class="lic-tag">OFL 1.1</span></a>
@@ -13449,6 +13887,10 @@
                     <a class="lic-item" href="https://littlelimit.net/misaki.htm" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">美咲ゴシック第2 (Misaki Gothic 2nd)</span><span class="lic-by">Little Limit</span></span><span class="lic-tag">Free software</span></a>
                     <a class="lic-item" href="http://jikasei.me/font/kh-dotfont/" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">小伝馬町 (KH Dot Kodenmachou)</span><span class="lic-by">自家製フォント工房</span></span><span class="lic-tag">OFL 1.1</span></a>
                     <a class="lic-item" href="https://modi.jpn.org/font_mushin.php" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">無心 (Mushin)</span><span class="lic-by">MODI工場</span></span><span class="lic-tag">MODI License</span></a>
+                </div>
+                <div class="lic-section">
+                    <div class="lic-head" data-i18n="licenseIcons">アイコン</div>
+                    <a class="lic-item" href="https://feathericons.com/" target="_blank" rel="noopener"><span class="lic-text"><span class="lic-name">Feather Icons</span><span class="lic-by">Cole Bemis</span></span><span class="lic-tag">MIT</span></a>
                 </div>
                 <p class="lic-note" data-i18n="licenseNote">OFL = SIL Open Font License。名前を押すと配布元のページが開きます。</p>
             </div>
@@ -13508,10 +13950,11 @@
             <div class="timer-wrapper" style="position: relative; display: block; width: 100%;">
                 <!-- 集中/休憩･一時停止中などの状態(必要なときだけ表示) -->
                 <div class="timer-phase" id="focusPhaseLabel" aria-live="polite"></div>
-                <div class="timer" id="timer" style="font-weight: 300;" data-editor-target="timer">00:00:00</div>
+                <div class="timer" id="timer" style="font-weight: 300;" data-editor-target="timer" tabindex="0"
+                    aria-expanded="false">00:00:00</div>
                 <button id="fullscreenTimerBtn" onclick="toggleFullscreenTimer()" aria-label="フルスクリーン"
                     style="position: absolute; right: 0; bottom: 4px; background: none; border: none; border-radius: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.45; transition: opacity 0.2s; color: inherit; padding: 0; z-index: 1;">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 960 960" width="22px"
+                    <svg data-dot="fullscreen" xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 960 960" width="22px"
                         fill="currentColor" style="display: block; overflow: hidden;">
                         <path
                             d="M234.26 783q-24.2 0-40.73-16.53Q177 749.94 177 725.74V598.5h25.5v127q0 12 10 22t22 10h127v25.5H234.26Zm364.24 0v-25.5h127q12 0 22-10t10-22v-127H783v127.24q0 24.2-16.53 40.73Q749.94 783 725.74 783H598.5ZM177 361.5v-127.24q0-24.2 16.53-40.73Q210.06 177 234.26 177H361.5v25.5h-127q-12 0-22 10t-10 22v127H177Zm580.5 0v-127q0-12-10-22t-22-10h-127V177h127.24q24.2 0 40.73 16.53Q783 210.06 783 234.26v127.24h-25.5Z" />
@@ -13546,7 +13989,7 @@
             <div class="auto-stop-control" id="timerAutoStopControl">
                 <button type="button" class="auto-stop-pill" id="timerAutoStopPill" aria-expanded="false"
                     aria-controls="timerAutoStopPanelWrap" onclick="toggleAutoStopPanel('timer')">
-                    <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="timerAutoStopPillText">自動停止</span>
+                    <svg class="auto-stop-pill-icon" data-dot="autostop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="timerAutoStopPillText">自動停止</span>
                 </button>
                 <div class="auto-stop-panel-wrap" id="timerAutoStopPanelWrap"></div>
             </div>
@@ -13585,7 +14028,7 @@
                 <div class="session-info" id="sessionInfo" data-i18n="sessionStart">開始ボタンを押して学習を始めましょう</div>
                 <button class="session-info-edit-btn" id="sessionInfoEditBtn" onclick="openSessionInfoEditor()"
                     aria-label="テキストを編集" data-i18n-aria="sessionInfoEditLabel">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    <svg data-dot="edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path d="M12 20h9" />
                         <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
@@ -13805,7 +14248,7 @@
                         <div class="auto-stop-control" id="musicAutoStopControl">
                             <button type="button" class="auto-stop-pill" id="musicAutoStopPill" aria-expanded="false"
                                 aria-controls="musicAutoStopPanelWrap" onclick="toggleAutoStopPanel('music')">
-                                <svg class="auto-stop-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="musicAutoStopPillText">自動停止</span>
+                                <svg class="auto-stop-pill-icon" data-dot="autostop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M19 5.5l1.5 1.5" /></svg><span id="musicAutoStopPillText">自動停止</span>
                             </button>
                             <div class="auto-stop-panel-wrap" id="musicAutoStopPanelWrap"></div>
                         </div>
@@ -14116,6 +14559,18 @@
 
             <div class="settings-section">
                 <h2 data-i18n="settingsScreenDisplay">画面の表示</h2>
+                <div style="margin-bottom: 15px;">
+                    <label for="iconStyleSelect" style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 8px;"
+                        data-i18n="iconStyleSetting">アイコン</label>
+                    <div class="custom-select" style="width: 100%;">
+                        <select id="iconStyleSelect" onchange="setIconStyle(this.value)">
+                            <option value="mixed" data-i18n="iconStyleMixed">これまでどおり(ドット絵と線)</option>
+                            <option value="dot" data-i18n="iconStyleDot">すべてドット絵</option>
+                            <option value="svg" data-i18n="iconStyleSvg">すべて線</option>
+                        </select>
+                        <div class="select-arrow">▾</div>
+                    </div>
+                </div>
                 <div class="toggle-item">
                     <span data-i18n="titleTimeDisplay">タイトルの時間表示</span>
                     <div class="toggle-switch" id="toggleTitleTime" onclick="toggleTitleTime()">
@@ -14411,6 +14866,12 @@
                 <div id="groupManageList" class="group-manage-list" role="group" aria-label="管理対象グループ"
                     data-i18n-aria="groupManagementAria"></div>
                 <div class="group-bulk-bar" id="groupBulkBar"></div>
+                <div class="toggle-item group-color-toggle">
+                    <span data-i18n="groupColorSetting">積み木をグループごとに色分け</span>
+                    <div class="toggle-switch" id="toggleGroupColors" onclick="toggleGroupColorSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
                 <div class="setting-note" data-i18n="groupManagementHint">
                     グループを削除しても記録は消えず「未分類」になります。記録を消してもグループは残ります。</div>
             </div>
@@ -15270,6 +15731,40 @@
                     goalPlusAria: '目標を15分増やす',
                     goalProgress: '今日 {t} / 目標 {g}',
                     goalReached: '今日 {t} · 目標達成',
+                    weekThis: '今週',
+                    weekLast: '先週',
+                    weekOther: 'この週',
+                    weekPrev: '前の週',
+                    weekNext: '次の週',
+                    weekGoal: '目標 {g}',
+                    weekReached: '達成',
+                    weekVsMore: '先週より +{t}',
+                    weekVsLess: '先週より -{t}',
+                    weekVsSame: '先週と同じくらい',
+                    weekGoalDays: '達成した日',
+                    weekStudyDays: '勉強した日',
+                    weekDaysValue: '{n}日',
+                    weekBlocks: '積んだ積み木',
+                    weekEmpty: 'この週の記録はありません',
+                    weekShortcut: '今週',
+                    groupColorSetting: '積み木をグループごとに色分け',
+                    groupColorChange: '色を変える',
+                    iconStyleSetting: 'アイコン',
+                    iconStyleDot: 'すべてドット絵',
+                    iconStyleMixed: 'これまでどおり(ドット絵と線)',
+                    iconStyleSvg: 'すべて線',
+                    burstToday: '今日',
+                    burstGoal: '目標まで',
+                    burstGoalLeft: 'あと{t}',
+                    burstGoalDoneLabel: '目標',
+                    burstGoalDone: '達成',
+                    burstStreak: '連続',
+                    burstStreakDay: '{n}日',
+                    burstStreakDays: '{n}日',
+                    burstTodo: 'ToDo',
+                    burstTodoLeft: '残り{n}件',
+                    burstTodoDone: 'すべて完了',
+                    burstTodoNone: '予定なし',
                     goalChartLabel: '目標',
                     storagePersistTitle: '記録を消えにくくする',
                     storagePersistBtn: '有効にする',
@@ -15367,7 +15862,8 @@
                     playlistManagerHint: 'つまみをドラッグして並べ替え。名前を押すとそのプレイリストに切り替わります。',
                     playlistCurrent: '選択中',
                     seekPosition: '再生位置',
-                    licenseIntro: 'ツミキappでは、次のフォントをそれぞれのライセンスに従って使わせていただいています。',
+                    licenseIntro: 'ツミキappでは、次のフォントとアイコンをそれぞれのライセンスに従って使わせていただいています。',
+                    licenseIcons: 'アイコン',
                     licenseLocalFonts: '同梱しているフォント',
                     licenseNote: 'OFL = SIL Open Font License。名前を押すと配布元のページが開きます。',
                     playlistMenu: 'プレイリストのメニュー',
@@ -16070,6 +16566,40 @@
                     goalPlusAria: 'Increase goal by 15 minutes',
                     goalProgress: 'Today {t} / goal {g}',
                     goalReached: 'Today {t} · goal reached',
+                    weekThis: 'This week',
+                    weekLast: 'Last week',
+                    weekOther: 'Week',
+                    weekPrev: 'Previous week',
+                    weekNext: 'Next week',
+                    weekGoal: 'Goal {g}',
+                    weekReached: 'Reached',
+                    weekVsMore: '+{t} vs last week',
+                    weekVsLess: '-{t} vs last week',
+                    weekVsSame: 'About the same as last week',
+                    weekGoalDays: 'Goal days',
+                    weekStudyDays: 'Study days',
+                    weekDaysValue: '{n}',
+                    weekBlocks: 'Blocks stacked',
+                    weekEmpty: 'No records this week',
+                    weekShortcut: 'This week',
+                    groupColorSetting: 'Color blocks by group',
+                    groupColorChange: 'Change color',
+                    iconStyleSetting: 'Icons',
+                    iconStyleDot: 'All pixel art',
+                    iconStyleMixed: 'Classic (pixel art + line)',
+                    iconStyleSvg: 'All line',
+                    burstToday: 'Today',
+                    burstGoal: 'Goal',
+                    burstGoalLeft: '{t} to go',
+                    burstGoalDoneLabel: 'Goal',
+                    burstGoalDone: 'reached',
+                    burstStreak: 'Streak',
+                    burstStreakDay: '{n} day',
+                    burstStreakDays: '{n} days',
+                    burstTodo: 'To-do',
+                    burstTodoLeft: '{n} left',
+                    burstTodoDone: 'all done',
+                    burstTodoNone: 'none today',
                     goalChartLabel: 'Goal',
                     storagePersistTitle: 'Protect my records',
                     storagePersistBtn: 'Turn on',
@@ -16166,7 +16696,8 @@
                     playlistManagerHint: 'Drag the handle to reorder. Tap a name to switch to that playlist.',
                     playlistCurrent: 'Current',
                     seekPosition: 'Playback position',
-                    licenseIntro: 'Tsumiki app uses the following fonts under their respective licenses.',
+                    licenseIntro: 'Tsumiki app uses the following fonts and icons under their respective licenses.',
+                    licenseIcons: 'Icons',
                     licenseLocalFonts: 'Bundled fonts',
                     licenseNote: 'OFL = SIL Open Font License. Tap a name to open its source page.',
                     playlistMenu: 'Playlist menu',
@@ -17347,24 +17878,24 @@
             });
 
             function getEditIconSvg() {
-                return '<svg class="todo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 8.5l2 2"/></svg>';
+                return '<svg class="todo-icon" data-dot="edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 8.5l2 2"/></svg>';
             }
 
             function getTrashIconSvg() {
-                return '<svg class="trash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V4.5h5V7"/><path d="M6.5 7l1 13h9l1-13"/></svg>';
+                return '<svg class="trash-icon" data-dot="trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V4.5h5V7"/><path d="M6.5 7l1 13h9l1-13"/></svg>';
             }
 
             // ── 設定のカテゴリタブ ──
             const SETTINGS_TAB_ICON_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
             const SETTINGS_TABS = [
-                { key: 'general', labelKey: 'settingsTabGeneral', icon: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>' },
-                { key: 'appearance', labelKey: 'settingsTabAppearance', icon: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16a4.5 4.5 0 0 0 4.5-4.5c0-4-3.8-7.5-8.5-7.5z"/><circle cx="7.8" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.8" r="1" fill="currentColor" stroke="none"/>' },
-                { key: 'timer', labelKey: 'settingsTabTimer', icon: '<circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.8 2"/><path d="M9.5 2.5h5"/>' },
-                { key: 'records', labelKey: 'settingsTabRecords', icon: '<path d="M5.5 19.5v-5M12 19.5V9M18.5 19.5v-12"/>' },
-                { key: 'todo', labelKey: 'settingsTabTodo', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.5 2.5 5-5.2"/>' },
-                { key: 'music', labelKey: 'settingsTabMusic', icon: '<path d="M9 18V5.5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16.5" r="2.5"/>' },
-                { key: 'notify', labelKey: 'settingsTabNotify', icon: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>' },
-                { key: 'other', labelKey: 'settingsTabOther', icon: '<circle cx="6" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.3" fill="currentColor" stroke="none"/>' }
+                { key: 'general', dot: 'general', labelKey: 'settingsTabGeneral', icon: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>' },
+                { key: 'appearance', dot: 'appearance', labelKey: 'settingsTabAppearance', icon: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1-.3-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5H16a4.5 4.5 0 0 0 4.5-4.5c0-4-3.8-7.5-8.5-7.5z"/><circle cx="7.8" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7.8" r="1" fill="currentColor" stroke="none"/>' },
+                { key: 'timer', dot: 'settimer', labelKey: 'settingsTabTimer', icon: '<circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.8 2"/><path d="M9.5 2.5h5"/>' },
+                { key: 'records', dot: 'records', labelKey: 'settingsTabRecords', icon: '<path d="M5.5 19.5v-5M12 19.5V9M18.5 19.5v-12"/>' },
+                { key: 'todo', dot: 'settodo', labelKey: 'settingsTabTodo', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.5 2.5 5-5.2"/>' },
+                { key: 'music', dot: 'music', labelKey: 'settingsTabMusic', icon: '<path d="M9 18V5.5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16.5" r="2.5"/>' },
+                { key: 'notify', dot: 'bell', labelKey: 'settingsTabNotify', icon: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>' },
+                { key: 'other', dot: 'other', labelKey: 'settingsTabOther', icon: '<circle cx="6" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.3" fill="currentColor" stroke="none"/>' }
             ];
 
             // 開いていたタブは覚えない(再読み込みしたら「基本」から)。以前保存していた値は片づける
@@ -17376,7 +17907,7 @@
                 if (!container) return;
                 container.innerHTML = SETTINGS_TABS.map(tab => {
                     const active = tab.key === currentSettingsTab;
-                    return `<button type="button" class="settings-tab${active ? ' active' : ''}" role="tab" aria-selected="${active}" onclick="switchSettingsTab('${tab.key}')"><svg ${SETTINGS_TAB_ICON_ATTRS}>${tab.icon}</svg><span>${getText(tab.labelKey)}</span></button>`;
+                    return `<button type="button" class="settings-tab${active ? ' active' : ''}" role="tab" aria-selected="${active}" onclick="switchSettingsTab('${tab.key}')"><svg data-dot="${tab.dot}" ${SETTINGS_TAB_ICON_ATTRS}>${tab.icon}</svg><span>${getText(tab.labelKey)}</span></button>`;
                 }).join('');
                 document.querySelectorAll('#settingsPage .settings-panel').forEach(panel => {
                     panel.classList.toggle('active', panel.dataset.settingsTab === currentSettingsTab);
@@ -17673,6 +18204,260 @@
             }
             setInterval(() => updateGoalLine(), 30000); // 日付が変わったときなど
 
+            // ── タイマーを押すと、まわりに「今日の自分」が飛び出す ──
+            let timerBurstOpen = false;
+            let timerBurstFadeTimer = null;
+
+            // 今日やるToDoの数(繰り返しは今日の回、日付なしは終わるまで今日のもの)
+            function countTodayTodos() {
+                let todos;
+                try { todos = JSON.parse(getData('todos') || '[]'); } catch (e) { return null; }
+                if (!Array.isArray(todos)) return null;
+                const today = startOfLocalDay(new Date());
+                let total = 0, open = 0;
+                todos.forEach(todo => {
+                    const period = todo.period || {};
+                    const dated = period.start || period.end || (Array.isArray(period.dates) && period.dates.length);
+                    let applies, done;
+                    if (todo.repeat && todo.repeat !== 'none') {
+                        applies = isRepeatOccurrenceOnDate(todo, today);
+                        done = applies && isRepeatOccurrenceDone(todo, today);
+                    } else if (dated) {
+                        applies = todoAppearsOnDate(todo, today);
+                        done = !!todo.completed;
+                    } else {
+                        applies = !todo.completed;
+                        done = false;
+                    }
+                    if (!applies) return;
+                    total++;
+                    if (!done) open++;
+                });
+                return { total, open };
+            }
+
+            function getTimerBurstItems() {
+                const vis = getMenuVisibility();
+                const items = [];
+                const toStats = vis.stats ? () => showPage('stats') : null;
+
+                const todayMs = getTodayRecordedMs() + goalLiveMs;
+                items.push({ label: getText('burstToday'), value: formatChartHours(todayMs / 3600000), action: toStats });
+
+                if (isGoalEnabled()) {
+                    const left = getGoalMinutes() * 60000 - todayMs;
+                    items.push(left > 0
+                        ? { label: getText('burstGoal'), value: getText('burstGoalLeft').replace('{t}', formatChartHours(left / 3600000)) }
+                        : { label: getText('burstGoalDoneLabel'), value: getText('burstGoalDone') });
+                }
+
+                const streak = calculateStreak();
+                if (streak > 0) {
+                    items.push({
+                        label: getText('burstStreak'),
+                        value: getText(streak === 1 ? 'burstStreakDay' : 'burstStreakDays').replace('{n}', streak),
+                        action: toStats
+                    });
+                }
+
+                if (vis.todo) {
+                    const t = countTodayTodos();
+                    if (t) {
+                        const value = !t.total ? getText('burstTodoNone')
+                            : !t.open ? getText('burstTodoDone')
+                                : getText('burstTodoLeft').replace('{n}', t.open);
+                        items.push({ label: getText('burstTodo'), value, action: () => showPage('todo') });
+                    }
+                }
+
+                let history;
+                try { history = JSON.parse(getData('studyHistory') || '[]'); } catch (e) { history = []; }
+                const totalMs = history.reduce((sum, item) => sum + (item.duration || 0), 0);
+                const remainMin = Math.max(1, Math.ceil((TSUMIKI_UNIT_MS - totalMs % TSUMIKI_UNIT_MS) / 60000));
+                items.push({ label: getText('tsumikiNextLabel'), value: getText('tsumikiRemain').replace('{n}', remainMin), action: openTsumikiPage });
+
+                return items;
+            }
+
+            function getTimerBurstLayer() {
+                let layer = document.getElementById('timerBurst');
+                if (!layer) {
+                    layer = document.createElement('div');
+                    layer.id = 'timerBurst';
+                    layer.className = 'timer-burst';
+                    document.body.appendChild(layer);
+                }
+                return layer;
+            }
+
+            function buildTimerBurstChips(items) {
+                const layer = getTimerBurstLayer();
+                layer.innerHTML = '';
+                items.forEach((it, i) => {
+                    const chip = document.createElement(it.action ? 'button' : 'div');
+                    chip.className = 'timer-burst-chip';
+                    if (it.action) {
+                        chip.type = 'button';
+                        chip.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            closeTimerBurst(true);
+                            it.action();
+                        });
+                    }
+                    const label = document.createElement('span');
+                    label.className = 'timer-burst-label';
+                    label.textContent = it.label;
+                    const value = document.createElement('span');
+                    value.className = 'timer-burst-value';
+                    value.textContent = it.value;
+                    chip.append(label, value);
+                    chip.style.setProperty('--i', i);
+                    layer.appendChild(chip);
+                });
+                return [...layer.children];
+            }
+
+            // タイマーのまわりの楕円に並べ、重なったものは押し離す(タイマー･メニュー･画面の外には出さない)
+            function placeTimerBurstChips(chips) {
+                const timerEl = document.getElementById('timer');
+                if (!timerEl || !chips.length) return;
+                const r = timerEl.getBoundingClientRect();
+                const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+                const M = 10, GAP = 8;
+                let minY = M, maxY = innerHeight - M;
+                const menu = document.getElementById('mainMenu');
+                if (menu && menu.offsetParent) {
+                    const mr = menu.getBoundingClientRect();
+                    if (mr.bottom <= r.top) minY = Math.max(minY, mr.bottom + GAP);
+                    else if (mr.top >= r.bottom) maxY = Math.min(maxY, mr.top - GAP);
+                }
+                const WOBBLE = [1.0, 1.12, 0.96, 1.08, 1.03, 0.98];
+                const n = chips.length;
+                const boxes = chips.map((c, i) => {
+                    const w = c.offsetWidth, h = c.offsetHeight;
+                    const a = (-90 + (i + 0.5) * 360 / n) * Math.PI / 180;
+                    const k = WOBBLE[i % WOBBLE.length];
+                    return {
+                        w, h,
+                        x: cx + Math.cos(a) * (r.width / 2 + w * 0.45 + 28) * k,
+                        y: cy + Math.sin(a) * (r.height / 2 + h / 2 + 30) * k
+                    };
+                });
+                const clamp = (b) => {
+                    b.x = Math.min(Math.max(b.x, b.w / 2 + M), innerWidth - b.w / 2 - M);
+                    b.y = Math.min(Math.max(b.y, minY + b.h / 2), maxY - b.h / 2);
+                };
+                // 2つの箱が重なっていたら、重なりの小さい向きに押し離す
+                const separate = (a, b, moveB, moveA) => {
+                    const ox = (a.w + b.w) / 2 + GAP - Math.abs(a.x - b.x);
+                    const oy = (a.h + b.h) / 2 + GAP - Math.abs(a.y - b.y);
+                    if (ox <= 0 || oy <= 0) return false;
+                    if (ox < oy) {
+                        const s = a.x <= b.x ? 1 : -1;
+                        b.x += s * ox * moveB; a.x -= s * ox * moveA;
+                    } else {
+                        const s = a.y <= b.y ? 1 : -1;
+                        b.y += s * oy * moveB; a.y -= s * oy * moveA;
+                    }
+                    return true;
+                };
+                const timerBox = { x: cx, y: cy, w: r.width, h: r.height };
+                for (let iter = 0; iter < 80; iter++) {
+                    let moved = false;
+                    boxes.forEach(clamp);
+                    for (let i = 0; i < n; i++) {
+                        for (let j = i + 1; j < n; j++) moved = separate(boxes[i], boxes[j], 0.5, 0.5) || moved;
+                        moved = separate(timerBox, boxes[i], 1, 0) || moved;
+                    }
+                    if (!moved) break;
+                }
+                boxes.forEach(clamp);
+                chips.forEach((c, i) => {
+                    const b = boxes[i];
+                    c.style.setProperty('--x', `${b.x}px`);
+                    c.style.setProperty('--y', `${b.y}px`);
+                    c.style.setProperty('--dx', `${cx - b.x}px`);
+                    c.style.setProperty('--dy', `${cy - b.y}px`);
+                });
+            }
+
+            function setTimerBurstFade(open) {
+                const page = document.getElementById('timerPage');
+                if (!page) return;
+                clearTimeout(timerBurstFadeTimer);
+                [page, document.body].forEach(el => {
+                    el.classList.add('burst-fade');
+                    el.classList.toggle('burst-open', open);
+                });
+                if (!open) timerBurstFadeTimer = setTimeout(() => [page, document.body].forEach(el => el.classList.remove('burst-fade')), 300);
+            }
+
+            function openTimerBurst() {
+                const layer = getTimerBurstLayer();
+                layer.classList.add('placing');
+                const chips = buildTimerBurstChips(getTimerBurstItems());
+                placeTimerBurstChips(chips);
+                void layer.offsetWidth; // タイマーの中心に置いてから
+                layer.classList.remove('placing');
+                void layer.offsetWidth;
+                layer.classList.add('open'); // 飛び出す
+                timerBurstOpen = true;
+                setTimerBurstFade(true);
+                const timerEl = document.getElementById('timer');
+                if (timerEl) timerEl.setAttribute('aria-expanded', 'true');
+            }
+
+            function closeTimerBurst(instant) {
+                if (!timerBurstOpen) return;
+                timerBurstOpen = false;
+                const layer = getTimerBurstLayer();
+                layer.classList.remove('open');
+                if (instant) layer.innerHTML = '';
+                setTimerBurstFade(false);
+                const timerEl = document.getElementById('timer');
+                if (timerEl) timerEl.setAttribute('aria-expanded', 'false');
+            }
+
+            function toggleTimerBurst() {
+                if (editorModeActive) return;
+                const timerEl = document.getElementById('timer');
+                if (timerEl) {
+                    timerEl.classList.remove('hop');
+                    void timerEl.offsetWidth;
+                    timerEl.classList.add('hop');
+                }
+                if (timerBurstOpen) closeTimerBurst();
+                else openTimerBurst();
+            }
+
+            (function initTimerBurst() {
+                const timerEl = document.getElementById('timer');
+                if (!timerEl) return;
+                timerEl.addEventListener('click', (e) => {
+                    if (editorModeActive) return;
+                    e.stopPropagation();
+                    toggleTimerBurst();
+                });
+                timerEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation(); // 開始/一時停止のショートカットと同時に動かないように
+                        toggleTimerBurst();
+                    }
+                });
+                timerEl.addEventListener('animationend', () => timerEl.classList.remove('hop'));
+                document.addEventListener('click', (e) => {
+                    if (timerBurstOpen && !e.target.closest('.timer-burst-chip')) closeTimerBurst();
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && timerBurstOpen) closeTimerBurst();
+                });
+                window.addEventListener('scroll', () => closeTimerBurst(), { passive: true });
+                window.addEventListener('resize', () => {
+                    if (timerBurstOpen) placeTimerBurstChips([...getTimerBurstLayer().children]);
+                });
+            })();
+
             // ── 記録を消えにくくする(ブラウザに「この保存領域は消さないで」と頼む) ──
             const canPersistStorage = !!(navigator.storage && navigator.storage.persist && navigator.storage.persisted);
             // 確認のポップアップが出るのは Firefox だけ。そこでは自動では頼まず、設定のボタンから頼む
@@ -17840,6 +18625,7 @@
             }
 
             function showPage(pageName) {
+                closeTimerBurst(true);
                 if (pageName === 'settings') {
                     const isTimerRunning = startTime !== null && !isPaused;
                     if (isTimerRunning && getData('lock_settings_during_timer') === 'true') {
@@ -21056,7 +21842,7 @@
                 return `${Number(h)}:${m}`;
             }
 
-            const TODO_BADGE_BELL_SVG = '<svg class="todo-badge-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>';
+            const TODO_BADGE_BELL_SVG = '<svg class="todo-badge-bell" data-dot="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>';
 
             function getTodoNotifyTime(todo) {
                 const s = todo && todo.repeatSchedule;
@@ -23454,6 +24240,128 @@
                 return [...new Set([...getStoredGroups(), ...fromHistory])].sort((a, b) => a.localeCompare(b, 'ja'));
             }
 
+            // ── グループの色(積み木の色分けに使う) ──
+            // テーマと同じくすみ色。グループを作った順に、まだ使っていない色を割り当てる
+            const GROUP_COLOR_PALETTE = ['#9db4c8', '#a8c9a8', '#d9b4a0', '#b8a8c9', '#d9a8b4', '#a0c9c9', '#cfc39a', '#a8b0d9', '#c9a8a0', '#b9c9a0'];
+
+            // アイコン: 'mixed' これまでどおり(標準)/ 'dot' すべてドット絵 / 'svg' すべて線
+            const ICON_STYLES = ['dot', 'mixed', 'svg'];
+
+            function getIconStyle() {
+                const v = getData('icon_style');
+                return ICON_STYLES.includes(v) ? v : 'mixed';
+            }
+
+            function applyIconStyle() {
+                const style = getIconStyle();
+                document.body.classList.toggle('icons-dot', style === 'dot');
+                document.body.classList.toggle('icons-svg', style === 'svg');
+                const select = document.getElementById('iconStyleSelect');
+                if (select) select.value = style;
+            }
+
+            function setIconStyle(style) {
+                if (!ICON_STYLES.includes(style)) return;
+                saveData('icon_style', style);
+                applyIconStyle();
+            }
+
+            function isGroupColorEnabled() {
+                return getData('tsumiki_group_colors') !== 'false';
+            }
+
+            function toggleGroupColorSetting() {
+                const toggle = document.getElementById('toggleGroupColors');
+                const next = !isGroupColorEnabled();
+                saveData('tsumiki_group_colors', next ? 'true' : 'false');
+                if (toggle) toggle.classList.toggle('active', next);
+                renderGroupManagement();
+            }
+
+            function loadGroupColors() {
+                const o = safeJsonParse(getData('group_colors'), {});
+                return o && typeof o === 'object' && !Array.isArray(o) ? o : {};
+            }
+
+            function saveGroupColors(map) {
+                saveData('group_colors', JSON.stringify(map));
+            }
+
+            // まだ色のないグループに色を付けて、名前 → 色 を返す
+            function ensureGroupColors(names) {
+                const map = loadGroupColors();
+                let changed = false;
+                const valid = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+                names.forEach(name => {
+                    if (!name || valid(map[name])) return;
+                    const used = new Set(Object.values(map));
+                    map[name] = GROUP_COLOR_PALETTE.find(c => !used.has(c))
+                        || GROUP_COLOR_PALETTE[Object.keys(map).length % GROUP_COLOR_PALETTE.length];
+                    changed = true;
+                });
+                if (changed) saveGroupColors(map);
+                return map;
+            }
+
+            function moveGroupColor(oldNames, newName) {
+                const map = loadGroupColors();
+                const kept = newName ? (map[newName] || oldNames.map(n => map[n]).find(Boolean)) : null;
+                oldNames.forEach(n => { delete map[n]; });
+                if (newName && kept) map[newName] = kept;
+                saveGroupColors(map);
+            }
+
+            let groupColorPop = null;
+
+            function closeGroupColorPalette() {
+                if (groupColorPop) groupColorPop.remove();
+                groupColorPop = null;
+            }
+
+            function openGroupColorPalette(i, btn) {
+                const group = managedGroupsCache[i];
+                if (!group) return;
+                const wasOpen = groupColorPop && groupColorPop.dataset.group === group;
+                closeGroupColorPalette();
+                if (wasOpen) return;
+                const current = ensureGroupColors([group])[group];
+                const pop = document.createElement('div');
+                pop.className = 'group-color-pop';
+                pop.dataset.group = group;
+                pop.setAttribute('role', 'listbox');
+                pop.innerHTML = GROUP_COLOR_PALETTE.map(c =>
+                    `<button type="button" class="group-color-swatch${c === current ? ' is-current' : ''}" style="--c:${c}" data-color="${c}" role="option" aria-selected="${c === current}" aria-label="${c}"></button>`
+                ).join('');
+                pop.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const sw = e.target.closest('.group-color-swatch');
+                    if (!sw) return;
+                    const map = loadGroupColors();
+                    map[group] = sw.dataset.color;
+                    saveGroupColors(map);
+                    closeGroupColorPalette();
+                    renderGroupManagement();
+                });
+                document.body.appendChild(pop);
+                groupColorPop = pop;
+                const r = btn.getBoundingClientRect();
+                const w = pop.offsetWidth, h = pop.offsetHeight;
+                const left = Math.min(Math.max(10, r.left), innerWidth - w - 10);
+                const top = r.bottom + 8 + h < innerHeight ? r.bottom + 8 : Math.max(10, r.top - 8 - h);
+                pop.style.left = `${left}px`;
+                pop.style.top = `${top}px`;
+                const cur = pop.querySelector('.is-current') || pop.firstElementChild;
+                if (cur) cur.focus({ preventScroll: true });
+            }
+
+            document.addEventListener('click', (e) => {
+                if (groupColorPop && !e.target.closest('.group-color-pop, .group-color-btn')) closeGroupColorPalette();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && groupColorPop) closeGroupColorPalette();
+            });
+            window.addEventListener('scroll', () => closeGroupColorPalette(), true);
+
             // ── グループ管理(設定 > 記録) ──
             let groupSelectMode = false;
             let editingGroupName = null;
@@ -23517,6 +24425,8 @@
                 }
 
                 const stats = getGroupRecordStats();
+                const colorOn = isGroupColorEnabled();
+                const colors = colorOn ? ensureGroupColors(groups) : {};
                 listEl.innerHTML = groups.map((group, i) => {
                     const st = stats[group];
                     const meta = st ? getText('groupRowMeta').replace('{n}', st.count).replace('{time}', formatGroupDuration(st.ms)) : getText('groupRowNoRecords');
@@ -23536,8 +24446,11 @@
                             <div class="group-row-main"><span class="group-row-name">${name}</span><span class="group-row-meta">${meta}</span></div>
                         </div>`;
                     }
+                    const colorBtn = colorOn
+                        ? `<button type="button" class="group-color-btn" style="--c:${colors[group]}" title="${getText('groupColorChange')}" aria-label="${getText('groupColorChange')}" onclick="openGroupColorPalette(${i}, this)"></button>`
+                        : '';
                     return `<div class="group-row">
-                        <div class="group-row-main"><span class="group-row-name">${name}</span><span class="group-row-meta">${meta}</span></div>
+                        ${colorBtn}<div class="group-row-main"><span class="group-row-name">${name}</span><span class="group-row-meta">${meta}</span></div>
                         <button type="button" class="todo-icon-btn" title="${getText('groupRename')}" aria-label="${getText('groupRename')}" onclick="startGroupRename(${i})">${TODO_ICONS.edit}</button>
                         <button type="button" class="trash-btn" title="${getText('deleteButton')}" aria-label="${getText('deleteButton')}" onclick="deleteManagedGroupAt(${i})">${getTrashIconSvg()}</button>
                     </div>`;
@@ -23673,6 +24586,7 @@
                 const stored = getStoredGroups().filter(g => !oldNames.includes(g));
                 stored.push(newName);
                 saveStoredGroups(stored);
+                moveGroupColor(oldNames, newName);
 
                 // タイマー･移動先で選んでいたグループも新しい名前に置き換える(古い名前で記録されないように)
                 [selectedTimerGroups, selectedMoveGroups].forEach(set => {
@@ -23694,6 +24608,7 @@
                 });
                 saveData('studyHistory', JSON.stringify(history));
                 saveStoredGroups(getStoredGroups().filter(g => !names.includes(g)));
+                moveGroupColor(names, '');
                 [selectedTimerGroups, selectedMoveGroups].forEach(set => { if (set) names.forEach(g => set.delete(g)); });
                 names.forEach(g => selectedManagedGroups.delete(g));
                 refreshAfterGroupChange(names, '');
@@ -23851,12 +24766,15 @@
                 // 数字は1枚のカードにまとめ、暗記カード･積み木は下の小さな入口にする
                 // TSUMIKI_UNIT_MS は後ろで宣言されるため、初期化中に呼ばれても困らないよう値を直接書く(30分)
                 const tsumikiCount = Math.floor(totalTime / (30 * 60 * 1000));
+                const weekStartMs = wcalWeekStart(new Date()).getTime();
+                const weekTotalMs = history.reduce((sum, item) => sum + (new Date(item.start).getTime() >= weekStartMs ? item.duration || 0 : 0), 0);
                 const chevron = '<svg class="stats-shortcut-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>';
                 statsContainer.innerHTML = `<div class="stats-summary">`
                     + `<div class="stats-summary-item"><div class="stat-label">${getText('totalTime')}</div><div class="stat-value">${formatChartHours(totalTime / 3600000)}</div></div>`
                     + `<div class="stats-summary-item"><div class="stat-label">${getText('consecutiveDays')}</div><div class="stat-value">${streak}${currentLanguage === 'en' ? ' ' : ''}${getText('days')}</div></div>`
                     + `<div class="stats-summary-item"><div class="stat-label">${getText('totalSessions')}</div><div class="stat-value">${totalSessions}</div></div>`
                     + `</div><div class="stats-shortcuts">`
+                    + `<button type="button" class="stats-shortcut" onclick="openWeekPage()"><svg class="stats-shortcut-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="16" y="4" width="4" height="16" rx="1"/></svg><span class="stats-shortcut-label">${getText('weekShortcut')}</span><span class="stats-shortcut-meta">${formatChartHours(weekTotalMs / 3600000)}</span>${chevron}</button>`
                     + `<button type="button" class="stats-shortcut" onclick="openFlashcardMenu()"><svg class="stats-shortcut-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><line x1="7" y1="10" x2="17" y2="10"/><line x1="7" y1="14" x2="13" y2="14"/></svg><span class="stats-shortcut-label">${getText('flashcards')}</span>${chevron}</button>`
                     + `<button type="button" class="stats-shortcut" onclick="openTsumikiPage()"><svg class="stats-shortcut-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7L12 2.5z"/><path d="M3.5 7 12 11.5 20.5 7"/><path d="M12 11.5V21.5"/></svg><span class="stats-shortcut-label">${getText('statTsumiki')}</span><span class="stats-shortcut-meta">${tsumikiCount}${currentLanguage === 'en' ? '' : getText('tsumikiCountSuffix')}</span>${chevron}</button>`
                     + `</div>`;
@@ -23938,6 +24856,9 @@
                 'todo_v2_prompt_shown',
                 'todo_priority_colors',
                 'feature_todo_repeat_calendar',
+                'tsumiki_group_colors',
+                'group_colors',
+                'icon_style',
                 'notify_master',
                 'notify_todo_browser',
                 'notify_todo_sound',
@@ -23964,6 +24885,7 @@
                 'feature_music',
                 'feature_todo',
                 'feature_todo_repeat_calendar',
+                'tsumiki_group_colors',
                 'notify_master',
                 'notify_todo_browser',
                 'notify_todo_sound',
@@ -24940,6 +25862,12 @@
                 todo: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
             };
 
+            // ドット絵のアイコン(設定で切り替え)。統計は棒、リストは線の絵を使う
+            const MENU_DOT_ICONS = { timer: 'timer', stats: 'stats', list: 'list', music: 'music', music_yt: 'music', todo: 'todo' };
+            Object.keys(MENU_ICONS).forEach(k => {
+                MENU_ICONS[k] = MENU_ICONS[k].replace('<svg ', `<svg data-dot="${MENU_DOT_ICONS[k]}" `);
+            });
+
             const MENU_ITEM_KEYS = ['timer', 'stats', 'list', 'music', 'todo'];
             const MENU_BREAK_KEY = '__menu_break__';
             const MENU_ITEM_I18N = { timer: 'menuTimer', stats: 'menuStats', list: 'menuList', music: 'menuMusic', todo: 'menuTodo' };
@@ -25801,6 +26729,11 @@
                 }
                 if (isTodoRepeatCalendarEnabled()) { // デフォルトON
                     const toggle = document.getElementById('toggleTodoRepeatCalendar');
+                    if (toggle) toggle.classList.add('active');
+                }
+                applyIconStyle(); // デフォルトはこれまでどおり
+                if (isGroupColorEnabled()) { // デフォルトON
+                    const toggle = document.getElementById('toggleGroupColors');
                     if (toggle) toggle.classList.add('active');
                 }
 
@@ -27655,6 +28588,256 @@
                 stopTsumikiStack(document.getElementById('tsumikiCanvas'));
             }
 
+            // ── 今週: 1日ごとの積み木の塔。目標の高さに線を引き、超えた日には旗を立てる ──
+            let weekOffset = 0; // 0 = 今週、1 = 先週 …
+
+            function openWeekPage() {
+                weekOffset = 0;
+                document.getElementById('weekOverlay').classList.add('show');
+                lockBodyScroll();
+                renderWeekPage(true);
+            }
+
+            function closeWeekPage() {
+                const overlay = document.getElementById('weekOverlay');
+                if (!overlay.classList.contains('show')) return;
+                overlay.classList.remove('show');
+                unlockBodyScroll();
+                stopTsumikiStack(document.getElementById('weekCanvas'));
+            }
+
+            function changeWeekPage(delta) {
+                weekOffset = Math.max(0, weekOffset + delta);
+                renderWeekPage(true);
+            }
+
+            // その週の記録を1日ずつにまとめる(記録の開始日で数える。統計のグラフと同じ)
+            function getWeekData(offset, history) {
+                const start = wcalAddDays(wcalWeekStart(new Date()), -offset * 7);
+                const end = wcalAddDays(start, 7);
+                const today = startOfLocalDay(new Date());
+                const days = Array.from({ length: 7 }, (_, i) => {
+                    const date = wcalAddDays(start, i);
+                    return { date, ms: 0, items: [], isToday: date.getTime() === today.getTime(), isFuture: date > today };
+                });
+                const groupMs = {};
+                let total = 0;
+                history.forEach(item => {
+                    const s = new Date(item.start);
+                    if (s < start || s >= end) return;
+                    const d = days[Math.floor((startOfLocalDay(s) - start) / 86400000)];
+                    if (!d) return;
+                    const ms = item.duration || 0;
+                    d.ms += ms;
+                    d.items.push(item);
+                    total += ms;
+                    const g = getItemGroups(item)[0] || '';
+                    groupMs[g] = (groupMs[g] || 0) + ms;
+                });
+                // 1日の中で30分ごとに1個。区切りをまたいだ記録のグループの色にする
+                days.forEach(d => {
+                    d.items.sort((a, b) => new Date(a.start) - new Date(b.start));
+                    d.blocks = [];
+                    let acc = 0, last = '';
+                    d.items.forEach(item => {
+                        const before = Math.floor(acc / TSUMIKI_UNIT_MS);
+                        acc += item.duration || 0;
+                        last = getItemGroups(item)[0] || '';
+                        for (let k = before; k < Math.floor(acc / TSUMIKI_UNIT_MS); k++) d.blocks.push(last);
+                    });
+                    d.partial = (acc % TSUMIKI_UNIT_MS) / TSUMIKI_UNIT_MS; // 次の1個までの途中
+                    d.partialGroup = last;
+                });
+                return { start, end, days, total, groupMs };
+            }
+
+            function renderWeekPage(animate = false) {
+                let history;
+                try { history = JSON.parse(getData('studyHistory') || '[]'); } catch (e) { history = []; }
+                const week = getWeekData(weekOffset, history);
+                const prev = getWeekData(weekOffset + 1, history);
+                const goalOn = isGoalEnabled();
+                const goalMs = goalOn ? getGoalMinutes() * 60000 : 0;
+                const en = currentLanguage === 'en';
+
+                document.getElementById('weekTitle').textContent = getText(weekOffset === 0 ? 'weekThis' : weekOffset === 1 ? 'weekLast' : 'weekOther');
+                const fmtMD = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+                const last = wcalAddDays(week.start, 6);
+                const yearPrefix = last.getFullYear() !== new Date().getFullYear() ? `${last.getFullYear()}/` : '';
+                document.getElementById('weekRange').textContent = `${yearPrefix}${fmtMD(week.start)} – ${fmtMD(last)}`;
+                document.getElementById('weekNextBtn').disabled = weekOffset === 0;
+                // いちばん古い記録の週より前には戻らない
+                const firstStart = history.reduce((min, item) => Math.min(min, new Date(item.start).getTime() || Infinity), Infinity);
+                document.getElementById('weekPrevBtn').disabled = !(firstStart < week.start.getTime());
+
+                // 合計と、目標(1日の目標 × 7)までの進み具合。目標がないときは先週とくらべる
+                const hours = (ms) => formatChartHours(ms / 3600000);
+                let sub;
+                if (goalOn) {
+                    const weekGoal = goalMs * 7;
+                    const reached = week.total >= weekGoal;
+                    sub = `<div class="tsumiki-note">${getText('weekGoal').replace('{g}', hours(weekGoal))}${reached ? `<span class="week-badge">${getText('weekReached')}</span>` : ''}</div>`
+                        + `<div class="week-goal"><div class="tsumiki-progress-track"><span style="width:${Math.min(100, week.total / weekGoal * 100).toFixed(1)}%"></span></div></div>`;
+                } else {
+                    const diff = week.total - prev.total;
+                    const text = Math.abs(diff) < 5 * 60000 ? getText('weekVsSame')
+                        : getText(diff > 0 ? 'weekVsMore' : 'weekVsLess').replace('{t}', hours(Math.abs(diff)));
+                    sub = `<div class="tsumiki-note">${text}</div>`;
+                }
+                document.getElementById('weekHero').innerHTML = `<div class="tsumiki-count">${hours(week.total)}</div>${sub}`;
+
+                // 塔の下の曜日と時間
+                const daysEl = document.getElementById('weekDays');
+                daysEl.innerHTML = week.days.map(d => {
+                    const cls = ['week-day', d.isToday ? 'is-today' : '', d.isFuture ? 'is-future' : ''].join(' ');
+                    const min = Math.round(d.ms / 60000);
+                    const time = d.ms > 0 ? `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}` : (d.isFuture ? '' : '–');
+                    return `<div class="${cls}">${getText('weekday_' + REPEAT_WEEKDAY_KEYS[d.date.getDay()])}<span class="week-day-time">${time}</span></div>`;
+                }).join('');
+
+                // 目標を達成した日(目標がないときは勉強した日)と、この週に積んだ積み木
+                const goalDays = week.days.filter(d => goalOn ? d.ms >= goalMs : d.ms > 0).length;
+                const before = history.reduce((sum, item) => sum + (new Date(item.start) < week.start ? item.duration || 0 : 0), 0);
+                const gained = Math.floor((before + week.total) / TSUMIKI_UNIT_MS) - Math.floor(before / TSUMIKI_UNIT_MS);
+                const stat = (label, value) => `<div class="tsumiki-stat"><span class="tsumiki-stat-label">${label}</span><span class="tsumiki-stat-value">${value}</span></div>`;
+                const colorOn = isGroupColorEnabled();
+                const legendGroups = Object.keys(week.groupMs).sort((a, b) => week.groupMs[b] - week.groupMs[a]);
+                document.getElementById('weekDetails').innerHTML =
+                    `<div class="tsumiki-stats">`
+                    + stat(getText(goalOn ? 'weekGoalDays' : 'weekStudyDays'), getText('weekDaysValue').replace('{n}', goalDays))
+                    + stat(getText('weekBlocks'), getText('tsumikiAdded').replace('{n}', gained))
+                    + `</div>`
+                    + (colorOn && historyHasGroups(history) ? blockLegendHtml(legendGroups, week.groupMs) : '')
+                    + (week.total === 0 ? `<div class="tsumiki-note">${getText('weekEmpty')}</div>` : '');
+
+                drawWeekTowers(document.getElementById('weekCanvas'), week.days, {
+                    animate,
+                    colorOn,
+                    hasGroups: historyHasGroups(history),
+                    goalBlocks: goalOn ? goalMs / TSUMIKI_UNIT_MS : 0,
+                    daysEl,
+                    maxW: Math.min(window.innerWidth - 32, 520),
+                    maxH: Math.max(160, window.innerHeight - 430)
+                });
+                if (en) daysEl.lang = 'en'; else daysEl.removeAttribute('lang');
+            }
+
+            function drawWeekTowers(canvas, days, opts) {
+                stopTsumikiStack(canvas);
+                const u = 6, h = 6, pad = 8, slot = 2 * u + 8, flagH = 10;
+                const counts = days.map(d => d.blocks.length + (d.partial > 0 ? 1 : 0));
+                const goal = opts.goalBlocks || 0;
+                const maxBlocks = Math.max(4, Math.ceil(goal) + 1, ...counts);
+                const iw = pad * 2 + 7 * slot;
+                const ih = pad * 2 + flagH + maxBlocks * h + h + u;
+                canvas.width = iw;
+                canvas.height = ih;
+                const k = Math.max(1, Math.min(5, Math.floor(Math.min(opts.maxW / iw, opts.maxH / ih))));
+                canvas.style.width = `${iw * k}px`;
+                // 曜日の列を塔の真下にそろえる
+                opts.daysEl.style.width = `${iw * k}px`;
+                opts.daysEl.style.padding = `0 ${pad * k}px`;
+
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                const base = tsumikiThemeHsl();
+                const isDark = document.body.classList.contains('dark');
+                const baseY = ih - pad - h - u / 2; // 1段目の上面の真ん中
+                const colX = (i) => pad + i * slot + slot / 2;
+                const colorCache = {};
+                const ungrouped = opts.colorOn && opts.hasGroups ? ungroupedBlockHsl() : base;
+                const colorOf = (g) => {
+                    if (!opts.colorOn) return base;
+                    if (!g) return ungrouped;
+                    if (!colorCache[g]) colorCache[g] = groupBlockHsl(ensureGroupColors([g])[g]);
+                    return colorCache[g];
+                };
+
+                function cube(cx, cy, c, alpha) {
+                    ctx.globalAlpha = alpha;
+                    const sat = Math.min(85, c.s * 0.9);
+                    ctx.fillStyle = `hsl(${c.h}, ${sat}%, ${Math.min(92, c.l + 13)}%)`;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - u / 2); ctx.lineTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx - u, cy);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = `hsl(${c.h}, ${sat}%, ${c.l}%)`;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx - u, cy + h);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = `hsl(${c.h}, ${sat}%, ${Math.max(14, c.l - 15)}%)`;
+                    ctx.beginPath();
+                    ctx.moveTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx + u, cy + h);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = `hsl(${c.h}, ${sat}%, ${Math.min(96, c.l + 24)}%)`;
+                    ctx.fillRect(cx - 2, cy - 1, 2, 1);
+                    ctx.globalAlpha = 1;
+                }
+
+                function drawStatic() {
+                    ctx.clearRect(0, 0, iw, ih);
+                    // 1日ずつの土台
+                    const gl = isDark ? base.l * 0.45 : Math.min(94, base.l + 26);
+                    ctx.fillStyle = `hsla(${base.h}, ${base.s * 0.5}%, ${gl}%, 0.45)`;
+                    days.forEach((d, i) => {
+                        const cx = colX(i), cy = baseY + h;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - u / 2); ctx.lineTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx - u, cy);
+                        ctx.closePath(); ctx.fill();
+                    });
+                    // 目標の高さの点線(塔の後ろ)
+                    if (goal > 0) {
+                        const y = Math.round(baseY - goal * h + h - u / 2);
+                        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.2)';
+                        for (let x = pad; x < iw - pad; x += 4) ctx.fillRect(x, y, 2, 1);
+                    }
+                }
+
+                function drawFlag(cx, topY) {
+                    const c = base;
+                    const poleTop = topY - flagH + 1;
+                    ctx.fillStyle = isDark ? '#e8e8e8' : '#5a5a5a';
+                    ctx.fillRect(cx, poleTop, 1, flagH - 1);
+                    ctx.fillStyle = `hsl(${c.h}, ${Math.min(90, c.s + 25)}%, ${isDark ? 62 : Math.max(35, c.l - 22)}%)`;
+                    ctx.fillRect(cx + 1, poleTop, 4, 1);
+                    ctx.fillRect(cx + 1, poleTop + 1, 3, 1);
+                    ctx.fillRect(cx + 1, poleTop + 2, 2, 1);
+                    ctx.fillRect(cx + 1, poleTop + 3, 1, 1);
+                }
+
+                // 下の段から順に落とす。全部の塔がいっしょに伸びる
+                const maxCount = Math.max(1, ...counts);
+                const step = Math.min(70, 900 / maxCount);
+                const dropDur = 220;
+                const start = performance.now();
+                function frame(now) {
+                    const elapsed = opts.animate ? now - start : Infinity;
+                    drawStatic();
+                    let pending = false;
+                    days.forEach((d, i) => {
+                        const cx = colX(i);
+                        const n = counts[i];
+                        let landedAll = true;
+                        for (let j = 0; j < n; j++) {
+                            const p = Math.min(1, Math.max(0, (elapsed - (j * step + i * 18)) / dropDur));
+                            if (p <= 0) { pending = true; landedAll = false; break; }
+                            if (p < 1) { pending = true; landedAll = false; }
+                            const isPartial = j === d.blocks.length;
+                            const g = isPartial ? d.partialGroup : d.blocks[j];
+                            const ease = 1 - (1 - p) * (1 - p);
+                            const drop = Math.round((1 - ease) * 3 * h);
+                            cube(cx, baseY - j * h - drop, colorOf(g), isPartial ? 0.25 + 0.4 * d.partial : 1);
+                        }
+                        // 目標に届いた日は、てっぺんに旗
+                        if (goal > 0 && landedAll && d.blocks.length + d.partial >= goal - 1e-9) {
+                            drawFlag(cx, baseY - (n - 1) * h - u / 2);
+                        }
+                    });
+                    canvas._tsumikiRaf = pending ? requestAnimationFrame(frame) : null;
+                }
+                if (opts.animate && !prefersReducedMotion()) canvas._tsumikiRaf = requestAnimationFrame(frame);
+                else { opts.animate = false; frame(start); }
+            }
+
             // 決定的な疑似乱数(同じ勉強量なら毎回同じ山になる)
             function tsumikiRand(seed) {
                 return function () {
@@ -27692,6 +28875,71 @@
                 const isDark = document.body.classList.contains('dark');
                 const raw = getComputedStyle(document.body)
                     .getPropertyValue(isDark ? '--primary-color-dark' : '--primary-color').trim() || '#8aa2c8';
+                return cssColorToHsl(raw);
+            }
+
+            // グループの色を積み木用の HSL にする(ダークではテーマと同じくらいの明るさまで落とす)
+            function groupBlockHsl(hex) {
+                const c = cssColorToHsl(hex);
+                if (document.body.classList.contains('dark')) {
+                    c.l = Math.max(30, c.l - 16);
+                    c.s = c.s * 0.85;
+                }
+                return c;
+            }
+
+            // 積み木1個ずつのグループ(古い順)。30分の区切りをまたいだ記録のグループにする
+            function computeBlockGroups(history, limit) {
+                const sorted = history.slice().sort((a, b) => new Date(a.start) - new Date(b.start));
+                const out = [];
+                let acc = 0;
+                for (const item of sorted) {
+                    const before = Math.floor(acc / TSUMIKI_UNIT_MS);
+                    acc += item.duration || 0;
+                    const after = Math.floor(acc / TSUMIKI_UNIT_MS);
+                    const group = getItemGroups(item)[0] || '';
+                    for (let k = before; k < after && out.length < limit; k++) out.push(group);
+                    if (out.length >= limit) break;
+                }
+                return out;
+            }
+
+            // グループなしの積み木の色。グループを使っている人には、色つきのグループと見分けやすいよう、テーマの色をくすませる
+            function ungroupedBlockHsl() {
+                const b = tsumikiThemeHsl();
+                return { h: b.h, s: b.s * 0.3, l: b.l };
+            }
+
+            function historyHasGroups(history) {
+                return history.some(item => getItemGroups(item).length > 0);
+            }
+
+            // グループ名の並び → 積み木の色(HSL)の並び。グループを1つも使っていなければ null(全部テーマの色)
+            function blockColorsFor(groups) {
+                const names = [...new Set(groups.filter(Boolean))];
+                if (!names.length) return null;
+                const map = ensureGroupColors(names);
+                const cache = { '': ungroupedBlockHsl() };
+                names.forEach(n => { cache[n] = groupBlockHsl(map[n]); });
+                return groups.map(g => cache[g || '']);
+            }
+
+            // 色の見本(その画面に出てくるグループだけ)。times を渡すと時間も並べる
+            function blockLegendHtml(groups, times) {
+                const names = [...new Set(groups)];
+                if (!names.some(Boolean)) return '';
+                const map = ensureGroupColors(names.filter(Boolean));
+                const u = ungroupedBlockHsl();
+                const ungrouped = `hsl(${u.h}, ${u.s}%, ${u.l}%)`;
+                return `<div class="block-legend">` + names.map(n => {
+                    const color = n ? map[n] : ungrouped;
+                    const label = escapeHtml(n || getText('uncategorized'));
+                    const time = times ? ` <b>${formatChartHours((times[n] || 0) / 3600000)}</b>` : '';
+                    return `<span class="block-legend-item"><span class="block-legend-dot" style="--c:${color}"></span>${label}${time}</span>`;
+                }).join('') + `</div>`;
+            }
+
+            function cssColorToHsl(raw) {
                 const c = document.createElement('canvas');
                 c.width = c.height = 1;
                 const cx = c.getContext('2d');
@@ -27753,9 +29001,19 @@
                         + (count > 0 ? `<div class="tsumiki-note">${getText('tsumikiUnitNote')}</div>` : '');
                 }
 
+                // 今日増えた分だけを落とす(昨日までの山はもう積まれている)
+                const dayStart = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+                const todayTotal = history.reduce((sum, item) => sum + (new Date(item.start).getTime() >= dayStart ? item.duration || 0 : 0), 0);
+                const todayGained = count - Math.floor(Math.max(0, totalTime - todayTotal) / TSUMIKI_UNIT_MS);
+                const renderCount = Math.min(count, TSUMIKI_MAX_RENDER);
+
                 // 狭い画面でも山が小さくなりすぎないよう、余白を詰めて使える幅を広げる
-                drawTsumikiStack(canvas, Math.min(count, TSUMIKI_MAX_RENDER), {
+                const blockGroups = isGroupColorEnabled() ? computeBlockGroups(history, renderCount) : null;
+                if (details && blockGroups) details.insertAdjacentHTML('beforeend', blockLegendHtml(blockGroups));
+                drawTsumikiStack(canvas, renderCount, {
                     animate,
+                    colors: blockGroups ? blockColorsFor(blockGroups) : null,
+                    settledCount: renderCount - todayGained,
                     maxW: Math.min(window.innerWidth - 32, 560),
                     maxH: Math.max(200, window.innerHeight - 400)
                 });
@@ -27774,6 +29032,7 @@
                 stopTsumikiStack(canvas);
                 const animate = !!opts.animate;
                 const onProgress = opts.onProgress || null;
+                const colors = opts.colors || null; // 積み木の順番(古い順)ごとの色。null はテーマの色
                 const { W, blocks, maxH } = computeTsumikiLayout(renderCount);
 
                 // 内部は低解像度で描き、CSSの整数倍拡大(image-rendering:pixelated)でドット感を出す
@@ -27809,10 +29068,11 @@
                     ctx.fill();
                 }
 
-                function drawCube(cx, cy, tint) {
-                    const hue = base.h + (tint - 0.5) * 16;
-                    const sat = Math.min(85, Math.max(20, base.s * 0.9 + (tint - 0.5) * 8));
-                    const lig = Math.min(78, Math.max(26, base.l + (tint - 0.5) * 10));
+                function drawCube(cx, cy, tint, color) {
+                    const c = color || base;
+                    const hue = c.h + (tint - 0.5) * (color ? 8 : 16);
+                    const sat = Math.min(85, Math.max(color ? 10 : 20, c.s * 0.9 + (tint - 0.5) * 8));
+                    const lig = Math.min(78, Math.max(26, c.l + (tint - 0.5) * 10));
                     // 上面(明)/左面(中)/右面(暗)の3面で2.5Dに見せる
                     ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.min(92, lig + 13)}%)`;
                     ctx.beginPath();
@@ -27841,6 +29101,17 @@
                 const dropDur = 260; // 1個の落下時間
                 const totalDur = animate ? Math.min(1800, 350 + renderCount * 10) : 0;
                 const start = performance.now();
+                // settledCount があるときは、それより前の積み木は最初から置いておき、残り(今日の分)だけを1個ずつ落とす
+                const settled = Math.max(0, Math.min(renderCount, opts.settledCount || 0));
+                const fresh = renderCount - settled;
+                const freshOnly = animate && settled > 0 && fresh > 0;
+                const freshStep = freshOnly ? Math.min(240, 1400 / fresh) : 0;
+                const appearTime = (b) => {
+                    if (totalDur === 0) return 0;
+                    if (freshOnly) return b.order < settled ? -Infinity : 250 + (b.order - settled) * freshStep;
+                    return (b.order / renderCount) * (totalDur - dropDur);
+                };
+                const dropHeight = (freshOnly ? 10 : 4) * h;
 
                 function frame(now) {
                     const elapsed = now - start;
@@ -27848,14 +29119,15 @@
                     let pending = false;
                     let landed = 0;
                     for (const b of blocks) {
-                        const appearAt = totalDur === 0 ? 0 : (b.order / renderCount) * (totalDur - dropDur);
-                        const p = totalDur === 0 ? 1 : Math.min(1, Math.max(0, (elapsed - appearAt) / dropDur));
+                        const appearAt = appearTime(b);
+                        const p = totalDur === 0 || appearAt === -Infinity ? 1 : Math.min(1, Math.max(0, (elapsed - appearAt) / dropDur));
                         if (p <= 0) { pending = true; continue; }
                         if (p < 1) pending = true;
                         else landed++;
-                        const ease = 1 - (1 - p) * (1 - p);
-                        const dropOffset = Math.round((1 - ease) * 4 * h);
-                        drawCube(cellX(b.x, b.z), cellY(b.x, b.z, b.y) - dropOffset, b.tint);
+                        // 今日の分は本当に落ちるように加速させる
+                        const ease = freshOnly ? p * p : 1 - (1 - p) * (1 - p);
+                        const dropOffset = Math.round((1 - ease) * dropHeight);
+                        drawCube(cellX(b.x, b.z), cellY(b.x, b.z, b.y) - dropOffset, b.tint, colors ? colors[b.order] : null);
                     }
                     if (onProgress) onProgress(landed);
                     canvas._tsumikiRaf = pending ? requestAnimationFrame(frame) : null;
@@ -27872,6 +29144,7 @@
                 if (e.key === 'Escape') {
                     const overlay = document.getElementById('tsumikiOverlay');
                     if (overlay && overlay.classList.contains('show')) closeTsumikiPage();
+                    closeWeekPage();
                 }
             });
 
@@ -30455,6 +31728,40 @@
             </div>
         </div>
 
+        <!-- 今週: 1日ごとの積み木の塔(積み木の画面と同じ作り) -->
+        <div id="weekOverlay" class="tsumiki-overlay" role="dialog" aria-modal="true" aria-labelledby="weekTitle">
+            <div class="tsumiki-header">
+                <h2 id="weekTitle" data-i18n="weekThis">今週</h2>
+                <button type="button" class="tsumiki-close" onclick="closeWeekPage()" aria-label="閉じる"
+                    data-i18n-aria="closeButton">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="week-nav">
+                <button type="button" class="week-nav-btn" id="weekPrevBtn" onclick="changeWeekPage(1)"
+                    aria-label="前の週" data-i18n-aria="weekPrev">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
+                <span id="weekRange"></span>
+                <button type="button" class="week-nav-btn" id="weekNextBtn" onclick="changeWeekPage(-1)"
+                    aria-label="次の週" data-i18n-aria="weekNext">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+            </div>
+            <div id="weekHero"></div>
+            <div class="week-stage">
+                <canvas id="weekCanvas" width="10" height="10"></canvas>
+                <div class="week-days" id="weekDays"></div>
+            </div>
+            <div id="weekDetails" class="tsumiki-details"></div>
+        </div>
+
         <script>
             (function () {
                 let fullscreenTimerInterval = null;
@@ -30540,6 +31847,13 @@
         </script>
 
         <script>
+            // ネットがなくても開けるようにする(通知を Service Worker 経由で出す端末のためにもなる)
+            if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('sw.js').catch(function () { });
+                });
+            }
+
             fetch('https://about.tsumiki.app/changelog.json')
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
