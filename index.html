@@ -11278,6 +11278,101 @@
             font-variant-numeric: tabular-nums;
         }
 
+        /* ── 自動停止とグループを1行に(通常/フォーカスの切り替えはその上に今までの太さで) ── */
+        body:not(.timer-classic) .timer-options-row {
+            --opt-h: 38px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        body:not(.timer-classic) .timer-options-row .timer-group-select-container,
+        body:not(.timer-classic) .timer-options-row .group-input {
+            margin: 0;
+        }
+
+        /* 自動停止: ボタンは行の中に、開いたパネルは行の下にいっぱいの幅で */
+        body:not(.timer-classic) .timer-options-row .auto-stop-control {
+            display: contents;
+        }
+
+        body:not(.timer-classic) .timer-options-row .auto-stop-pill {
+            height: var(--opt-h);
+            padding: 0 14px;
+            box-sizing: border-box;
+        }
+
+        /* 予約していないときはアイコンだけの丸(文字は読み上げ用に残す) */
+        body:not(.timer-classic) .timer-options-row .auto-stop-pill:not(.armed) {
+            width: var(--opt-h);
+            padding: 0;
+            justify-content: center;
+        }
+
+        body:not(.timer-classic) .timer-options-row .auto-stop-pill:not(.armed) > span {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        body:not(.timer-classic) .timer-options-row .auto-stop-panel-wrap {
+            order: 99;
+            flex-basis: 100%;
+        }
+
+        body:not(.timer-classic) .timer-options-row .group-input-wrapper {
+            flex: 0 1 260px;
+            min-width: 0;
+        }
+
+        body:not(.timer-classic) .timer-options-row .group-input {
+            width: 100%;
+        }
+
+        body:not(.timer-classic) .timer-options-row .timer-group-select-btn {
+            height: var(--opt-h);
+            padding: 0 14px 0 18px;
+            gap: 8px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+        }
+
+        body:not(.timer-classic) .timer-options-row .timer-group-select-text {
+            min-width: 0;
+        }
+
+        /* 押すと選べることがわかる小さな ∨ */
+        body:not(.timer-classic) .timer-options-row .timer-group-select-btn::after {
+            content: '';
+            flex-shrink: 0;
+            width: 6px;
+            height: 6px;
+            margin-top: -3px;
+            border-right: 1.5px solid currentColor;
+            border-bottom: 1.5px solid currentColor;
+            transform: rotate(45deg);
+            opacity: 0.45;
+        }
+
+        /* メニューは右にはみ出さないよう、ボタンの右端にそろえる */
+        body:not(.timer-classic) .timer-options-row .timer-group-dropdown-menu {
+            left: auto;
+        }
+
+        body:not(.timer-classic) .timer-options-row .group-input input {
+            height: var(--opt-h);
+            padding: 0 40px 0 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+        }
+
         /* ── セッション情報の編集 ── */
         .session-info-wrap {
             position: relative;
@@ -11286,6 +11381,28 @@
 
         .session-info-wrap .session-info {
             margin: 0;
+        }
+
+        /* 止まっていて出す文がないときは、すき間だけ残す(鉛筆ボタンはマウスを乗せると出る) */
+        body:not(.timer-classic) .session-info-wrap.is-quiet {
+            min-height: 18px;
+            margin: 14px 0;
+        }
+
+        body:not(.timer-classic) .session-info-wrap.is-quiet .session-info-edit-btn {
+            top: -8px;
+            right: 50%;
+            transform: translateX(50%);
+        }
+
+        /* 計測中の開始時刻は控えめに */
+        body:not(.timer-classic) .session-info-wrap.is-running {
+            margin: 18px 0 22px;
+        }
+
+        body:not(.timer-classic) .session-info-wrap.is-running .session-info {
+            font-size: 0.82rem;
+            opacity: 0.6;
         }
 
         .session-info.custom-text {
@@ -13588,6 +13705,7 @@
             var _icon = localStorage.getItem('icon_style');
             if (_icon === 'svg') { document.body.classList.add('icons-svg'); }
             else if (_icon === 'dot') { document.body.classList.add('icons-dot'); }
+            if (localStorage.getItem('timer_layout_classic') === 'true') { document.body.classList.add('timer-classic'); }
             if (_normalizedTheme === 'light' || _normalizedTheme === 'dark') {
                 localStorage.setItem('mode', _normalizedTheme);
             } else if (_validThemes.includes(_normalizedTheme)) {
@@ -14032,6 +14150,8 @@
                     </button>
                 </div>
             </div>
+            <!-- 自動停止(アイコンの丸)とグループを1行にまとめる -->
+            <div class="timer-options-row" id="timerOptionsRow">
             <!-- 自動停止: 三点メニューをやめ、今の状態を表示するボタン+その場で開くパネルにする -->
             <div class="auto-stop-control" id="timerAutoStopControl">
                 <button type="button" class="auto-stop-pill" id="timerAutoStopPill" aria-expanded="false"
@@ -14071,8 +14191,9 @@
                     </button>
                 </div>
             </div>
-            <div class="session-info-wrap" id="sessionInfoWrap" data-editor-target="sessionInfo">
-                <div class="session-info" id="sessionInfo" data-i18n="sessionStart">開始ボタンを押して学習を始めましょう</div>
+            </div>
+            <div class="session-info-wrap is-quiet" id="sessionInfoWrap" data-editor-target="sessionInfo">
+                <div class="session-info" id="sessionInfo"></div>
                 <button class="session-info-edit-btn" id="sessionInfoEditBtn" onclick="openSessionInfoEditor()"
                     aria-label="テキストを編集" data-i18n-aria="sessionInfoEditLabel">
                     <svg data-dot="edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
@@ -14722,6 +14843,13 @@
 
             <div class="settings-section" id="autoStopSettingsSection">
                 <h2 data-i18n="autoStopSettingsTitle">タイマーと自動停止</h2>
+                <div class="toggle-item">
+                    <span data-i18n="timerClassicSetting">タイマー画面を前の表示にする</span>
+                    <div class="toggle-switch" id="toggleTimerClassic" onclick="toggleTimerClassicSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="timerClassicNote">自動停止とグループを別々の段に並べ、止まっているときも「開始ボタンを押して…」や前回の学習を表示します。</div>
                 <div class="toggle-item">
                     <span data-i18n="autoStopMenuBtnSetting">自動停止</span>
                     <div class="toggle-switch active" id="toggleAutoStopMenuBtn" onclick="toggleAutoStopMenuBtnSetting()">
@@ -15606,6 +15734,8 @@
                     autoStopSettingsTitle: 'タイマーと自動停止',
                     autoStopMenuBtnSetting: '自動停止',
                     autoStopCompactSetting: '自動停止の表示をコンパクトにする',
+                    timerClassicSetting: 'タイマー画面を前の表示にする',
+                    timerClassicNote: '自動停止とグループを別々の段に並べ、止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
                     autoStopCompactNote: 'アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。',
                     endConfirmSetting: '長いセッション終了時に確認',
                     endConfirmThresholdLabel: '確認するしきい値(分)',
@@ -16473,6 +16603,8 @@
                     autoStopSettingsTitle: 'Timer & Auto-stop',
                     autoStopMenuBtnSetting: 'Auto-stop',
                     autoStopCompactSetting: 'Compact auto-stop button',
+                    timerClassicSetting: 'Use the previous timer layout',
+                    timerClassicNote: 'Shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
                     autoStopCompactNote: 'Shows only an icon: at the lower left of the clock on the timer, and to the right of the title in the music player. It turns colored while a stop is scheduled.',
                     endConfirmSetting: 'Confirm before ending long sessions',
                     endConfirmThresholdLabel: 'Confirm threshold (minutes)',
@@ -19111,7 +19243,35 @@
                 if (t) t.classList.toggle('active', isSessionInfoVisible());
             }
 
-            // タイマー停止中のセッション情報表示(カスタムテキスト > 前回の学習 > デフォルト文言)
+            // セッション情報の見せ方: 'quiet' 止まっていて出す文がない / 'running' 計測中(小さく薄く) / '' ふつう
+            function setSessionInfoState(state) {
+                const wrap = document.getElementById('sessionInfoWrap');
+                if (!wrap) return;
+                wrap.classList.toggle('is-quiet', state === 'quiet');
+                wrap.classList.toggle('is-running', state === 'running');
+            }
+
+            // ── タイマー画面を前の表示にする(自動停止とグループを別の段に･止まっているときの文も出す) ──
+            function isTimerClassic() {
+                return getData('timer_layout_classic') === 'true';
+            }
+
+            function applyTimerClassic() {
+                const classic = isTimerClassic();
+                document.body.classList.toggle('timer-classic', classic);
+                const t = document.getElementById('toggleTimerClassic');
+                if (t) t.classList.toggle('active', classic);
+            }
+
+            function toggleTimerClassicSetting() {
+                saveData('timer_layout_classic', isTimerClassic() ? 'false' : 'true');
+                applyTimerClassic();
+                renderSessionIdleInfo();
+            }
+
+            // タイマー停止中のセッション情報表示
+            // ふつう: 自分で書いた文だけを出す(「開始ボタンを押して…」や前回の学習の4行は、画面をすっきりさせるため出さない)
+            // 前の表示: カスタムテキスト > 前回の学習 > デフォルト文言
             function renderSessionIdleInfo() {
                 if (startTime) return; // タイマー動作中は上書きしない
                 const info = document.getElementById('sessionInfo');
@@ -19120,9 +19280,16 @@
                 if (custom) {
                     info.classList.add('custom-text');
                     info.textContent = custom;
+                    setSessionInfoState('');
                     return;
                 }
                 info.classList.remove('custom-text');
+                if (!isTimerClassic()) {
+                    info.textContent = '';
+                    setSessionInfoState('quiet');
+                    return;
+                }
+                setSessionInfoState('');
                 let history = getData('studyHistory');
                 history = history ? JSON.parse(history) : [];
                 if (history.length > 0) {
@@ -19702,6 +19869,7 @@
                 closeSessionInfoEditor();
                 document.getElementById('sessionInfo').classList.remove('custom-text');
                 document.getElementById('sessionInfo').textContent = `${getText('startTime')}: ${formatDateTime(new Date())}`;
+                setSessionInfoState('running');
                 timerInterval = setInterval(updateTimer, 100);
                 updateSettingsButtonState();
 
@@ -19801,6 +19969,7 @@
                         loadStats();
                         const startDisplay = formatSessionEdgeTime(start, endTime);
                         const endDisplay = formatSessionEdgeTime(endTime, start);
+                        setSessionInfoState('');
                         document.getElementById('sessionInfo').innerHTML = `${getText('startTime')}: ${startDisplay}<br>${getText('endTime')}: ${endDisplay}<br>${getText('studyTime')}: ${formatTime(actualStudyTime)}${groupName ? '<br>' + getText('group') + ': ' + groupName : ''}`;
                     }
                 }
@@ -26651,6 +26820,7 @@
                 applyGroupInputVisibility();
                 syncGroupInputToggle();
                 applyAutoStopMenuBtnVisibility();
+                applyTimerClassic();
                 applyAutoStopCompact();
                 applyHistoryListVisibility();
                 syncHistoryListToggle();
@@ -26720,6 +26890,7 @@
                     closeSessionInfoEditor();
                     document.getElementById('sessionInfo').classList.remove('custom-text');
                     document.getElementById('sessionInfo').textContent = `${getText('startTime')}: ${formatDateTime(startDate)}`;
+                    setSessionInfoState('running');
                     // 変数復元
                     // startTime は「最後に計測を開始/再開した時刻」。一時停止→再開があった場合は
                     // セッション開始時刻(studyStartTime)と異なるため、保存済みの実行アンカーを優先する
