@@ -4670,6 +4670,50 @@
             margin-top: 12px;
         }
 
+        /* 期間限定フィードバック: テーマ色の控えめなピル */
+        .feedback-wrap {
+            text-align: center;
+            margin-top: 28px;
+        }
+
+        .feedback-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px 7px 8px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            color: inherit;
+            text-decoration: none;
+            background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+            border: 1px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
+            transition: background-color 160ms ease, transform 120ms ease;
+        }
+
+        .feedback-link:hover,
+        .feedback-link:focus-visible {
+            background: color-mix(in srgb, var(--primary-color) 26%, transparent);
+            transform: translateY(-1px);
+        }
+
+        .feedback-link svg {
+            opacity: 0.6;
+        }
+
+        .feedback-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary-color-dark);
+        }
+
+        .dark .feedback-badge {
+            background: var(--primary-color);
+            color: #1f2329;
+        }
+
         .about-button {
             display: inline-flex;
             gap: 8px;
@@ -12503,20 +12547,23 @@
         }
 
         #timerPage.burst-fade #fullscreenTimerBtn,
+        #timerPage.burst-fade .timer-wrapper > .auto-stop-pill,
         body.burst-fade #mainMenu,
         body.burst-fade .container > h1,
         body.burst-fade .top-buttons,
         body.burst-fade #currentClock,
-        body.burst-fade #miniPlayerPopup {
+        body.burst-fade #miniPlayerPopup.visible {
             transition: opacity 0.25s ease !important;
         }
 
+        /* ミニプレイヤーは表示中のときだけ薄くする(隠れているのに 0.12 で浮き出ないように) */
         body.burst-open #mainMenu,
         body.burst-open .container > h1,
         body.burst-open .top-buttons,
         body.burst-open #currentClock,
-        body.burst-open #miniPlayerPopup,
+        body.burst-open #miniPlayerPopup.visible,
         #timerPage.burst-open #fullscreenTimerBtn,
+        #timerPage.burst-open .timer-wrapper > .auto-stop-pill,
         #timerPage.burst-open > :not(.timer-wrapper) {
             opacity: 0.12 !important;
             pointer-events: none;
@@ -15177,6 +15224,14 @@
             </div>
             </div>
 
+            <div class="feedback-wrap">
+                <a class="feedback-link" href="https://docs.google.com/forms/d/e/1FAIpQLScCtOOw15b1JMKg1y6kRyYKBTwQ8ghwygmvtBiUlQAqCgOlJw/viewform?usp=header" target="_blank" rel="noopener">
+                    <span class="feedback-badge" data-i18n="feedbackBadge">期間限定</span>
+                    <span data-i18n="feedbackLink">フィードバックを募集中</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            </div>
+
             <div class="footerrr">
 
                 <div class="copyright" data-i18n="copyright">© ツミキapp / Super Hiko14 / 高級ジェネ™ All rights reserved.</div>
@@ -15336,6 +15391,8 @@
                     fontMisaki: '美咲ゴシック',
                     fontKodenmachou: '小伝馬町',
                     licenseButton: 'ライセンス',
+                    feedbackBadge: '期間限定',
+                    feedbackLink: 'フィードバックを募集中',
                     licenseTitle: 'ライセンス',
 
                     // 追加: 削除確認メッセージ等
@@ -16209,6 +16266,8 @@
                     fontMisaki: 'Misaki Gothic',
                     fontKodenmachou: 'Kodenmachou',
                     licenseButton: 'License',
+                    feedbackBadge: 'Limited',
+                    feedbackLink: 'Share your feedback',
                     licenseTitle: 'Font Licenses',
 
                     // Meta
