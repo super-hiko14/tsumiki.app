@@ -10872,6 +10872,30 @@
             background: rgba(0, 0, 0, 0.96);
         }
 
+        /* カードの上の細い進み具合 */
+        .fcx-progress {
+            width: 85vw;
+            max-width: 400px;
+            height: 3px;
+            margin-bottom: 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+        }
+
+        .fcx-progress[hidden] {
+            display: none;
+        }
+
+        .fcx-progress > span {
+            display: block;
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.6);
+            transition: width 0.25s ease;
+        }
+
         .fcx-hint {
             position: absolute;
             bottom: max(24px, env(safe-area-inset-bottom));
@@ -10914,6 +10938,171 @@
         .fcx-end .fcx-end-actions button.secondary {
             background: #eee;
             color: #222;
+        }
+
+        /* カードの下: 端に小さな丸ボタン、真ん中に わかった/まだ(めくった後だけ) */
+        .fcx-study-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 85vw;
+            max-width: 400px;
+            margin-top: 14px;
+        }
+
+        .fcx-study-controls[hidden] {
+            display: none;
+        }
+
+        .fcx-study-ctl {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: #fff;
+            opacity: 0.45;
+            cursor: pointer;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .fcx-study-ctl:hover:not(:disabled) {
+            opacity: 0.85;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .fcx-study-ctl:disabled {
+            opacity: 0.15;
+            cursor: default;
+        }
+
+        .fcx-judge-row {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transform: translateY(-4px);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .fcx-judge-row.show {
+            opacity: 1;
+            transform: none;
+            pointer-events: auto;
+        }
+
+        .fcx-judge-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.75);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .fcx-judge-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .fcx-judge-btn.known {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .fcx-judge-btn.known:hover {
+            background: var(--primary-color-dark);
+        }
+
+        /* わかった/まだ を投げたとき、一瞬だけ出す印 */
+        .fcx-judge-stamp {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 2;
+            padding: 8px 20px;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            color: #fff;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0.9);
+            opacity: 0;
+            animation: fcxStamp 0.5s ease forwards;
+        }
+
+        .fcx-judge-stamp.known {
+            background: var(--primary-color);
+        }
+
+        .fcx-judge-stamp.unknown {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        @keyframes fcxStamp {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* おわり: 理解度 */
+        .fcx-end.fcx-end-result {
+            height: auto;
+            min-height: 260px;
+        }
+
+        .fcx-result-pct {
+            font-size: 2.4rem;
+            font-weight: 300;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fcx-result-bar {
+            width: 100%;
+            max-width: 260px;
+            height: 8px;
+            border-radius: 999px;
+            background: #e6e6e6;
+            overflow: hidden;
+        }
+
+        .fcx-result-bar > span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--primary-color);
+        }
+
+        .fcx-result-counts {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .fcx-end-actions.fcx-end-actions-col {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .fcx-end-actions-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .fcx-end-actions-row button {
+            flex: 1;
         }
 
         /* スワイプアニメーション(方向はインラインスタイルで設定) */
@@ -15160,6 +15349,17 @@
                 <div class="setting-note" data-i18n="examSettingNote">タイマーの下と、タイマーを押したときに「受験まで あと○日」を出します。名前は「共通テスト」などに変えられます。</div>
             </div>
 
+            <div class="settings-section" id="flashcardSettingsSection">
+                <h2 data-i18n="flashcards">暗記カード</h2>
+                <div class="toggle-item">
+                    <span data-i18n="fcClassicLabel">前の学習画面にする</span>
+                    <div class="toggle-switch" id="fcClassicToggle" onclick="toggleFcClassic()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="fcClassicNote">わかった/まだ のボタン・前のカードへ戻るボタン・終わった後の理解度を出さず、めくって次へ進むだけにします。</div>
+            </div>
+
                 <div class="settings-panel-title" data-i18n="settingsTabRecords">記録</div>
             <div class="settings-section">
                 <h2 data-i18n="settingsHistory">履歴</h2>
@@ -15598,6 +15798,7 @@
                 <button type="button" onclick="closeFlashcardViewer()" id="fcViewerCloseBtn" data-i18n="fcClose">閉じる</button>
                 <span class="fc-viewer-counter" id="fcViewerCounter"></span>
             </div>
+            <div class="fcx-progress" id="fcProgress" hidden><span id="fcProgressFill"></span></div>
             <div class="fc-card-scene" id="fcCardScene">
                 <div class="fc-card-inner" id="fcCardInner">
                     <div class="fc-card-face fc-card-front" id="fcCardFront"></div>
@@ -15606,6 +15807,19 @@
             </div>
             <div class="fc-no-flip-content" id="fcNoFlipContent" style="display:none;"></div>
             <div class="fc-no-flip-content fcx-end" id="fcEnd" style="display:none;"></div>
+            <!-- カードの下: 前のカード / わかった・まだ(めくった後だけ) / もう一度めくる。前の学習画面の設定では出さない -->
+            <div class="fcx-study-controls" id="fcStudyControls" hidden>
+                <button type="button" class="fcx-study-ctl" id="fcPrevBtn" onclick="fcPrevCard()" aria-label="前のカード" title="前のカード" data-i18n-aria="fcPrevCard" data-i18n-title="fcPrevCard">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div class="fcx-judge-row" id="fcJudgeRow">
+                    <button type="button" class="fcx-judge-btn" onclick="fcJudge(false)" data-i18n="fcUnknown">まだ</button>
+                    <button type="button" class="fcx-judge-btn known" onclick="fcJudge(true)" data-i18n="fcKnown">わかった</button>
+                </div>
+                <button type="button" class="fcx-study-ctl" id="fcFlipBtn" onclick="fcToggleFlip()" aria-label="めくる" title="めくる">
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><polyline points="3 21 3 16 8 16"/></svg>
+                </button>
+            </div>
             <div class="fcx-hint" id="fcHint"></div>
         </div>
 
@@ -16568,6 +16782,19 @@
                     fcFront2: '表',
                     fcBack2: '裏',
                     fcTapHint: 'タップでめくる',
+                    fcKnown: 'わかった',
+                    fcUnknown: 'まだ',
+                    fcKnownCount: 'わかった {n}枚',
+                    fcUnknownCount: 'まだ {n}枚',
+                    fcSkippedCount: 'チェックなし {n}枚',
+                    fcRetryUnknown: 'まだの{n}枚をもう一度',
+                    fcEndPerfect: 'ぜんぶわかった!',
+                    fcPrevCard: '前のカード',
+                    fcFlip: 'めくる',
+                    fcFlipBack: '表に戻す',
+                    fcLastResult: '前回 {p}%',
+                    fcClassicLabel: '前の学習画面にする',
+                    fcClassicNote: 'わかった/まだ のボタン・前のカードへ戻るボタン・終わった後の理解度を出さず、めくって次へ進むだけにします。',
                     fcSwipeHint: 'スワイプ(タップ)で次へ',
                     fcEndTitle: 'おつかれさまでした',
                     fcEndCount: '{n}枚のカードを見ました',
@@ -17390,6 +17617,19 @@
                     fcFront2: 'Front',
                     fcBack2: 'Back',
                     fcTapHint: 'Tap to flip',
+                    fcKnown: 'Got it',
+                    fcUnknown: 'Not yet',
+                    fcKnownCount: 'Got it: {n}',
+                    fcUnknownCount: 'Not yet: {n}',
+                    fcSkippedCount: 'Skipped: {n}',
+                    fcRetryUnknown: 'Retry the {n} not yet',
+                    fcEndPerfect: 'You got them all!',
+                    fcPrevCard: 'Previous',
+                    fcFlip: 'Flip',
+                    fcFlipBack: 'Show front',
+                    fcLastResult: 'last {p}%',
+                    fcClassicLabel: 'Use the previous study screen',
+                    fcClassicNote: 'Hides the Got it / Not yet buttons, the previous-card button and the results at the end. Cards just flip and move on.',
                     fcSwipeHint: 'Swipe (or tap) for the next card',
                     fcEndTitle: 'All done',
                     fcEndCount: 'You went through {n} cards',
@@ -27339,6 +27579,7 @@
                 // 1日の目標・記録を消えにくくする・最後のバックアップ
                 applyGoalSettingUI();
                 applyExamSettingUI();
+                (function () { var t = document.getElementById('fcClassicToggle'); if (t) t.classList.toggle('active', isFcClassic()); })();
                 updateGoalLine(true);
                 applyBackupSettingUI();
                 requestStoragePersist(false).then(refreshStoragePersistUI);
@@ -29816,7 +30057,9 @@
                         html += '<div class="fcx-deck">'
                             + '<div class="fcx-deck-main" onclick="openFlashcardEditor(' + ref + ')">'
                             + '<div class="fcx-deck-name">' + escapeHtml(g.name) + '</div>'
-                            + '<div class="fcx-meta">' + (n ? getText('fcCardsCount').replace('{n}', n) : getText('fcNoCardsToStudy')) + '</div></div>'
+                            + '<div class="fcx-meta">' + (n ? getText('fcCardsCount').replace('{n}', n) : getText('fcNoCardsToStudy'))
+                            + (n && g.lastResult && g.lastResult.total ? ' ・ ' + getText('fcLastResult').replace('{p}', Math.round(g.lastResult.known / g.lastResult.total * 100)) : '')
+                            + '</div></div>'
                             + '<button type="button" class="primary fcx-study-btn" onclick="startFlashcardViewer(' + ref + ')"' + (n ? '' : ' disabled') + '>' + getText('fcStudy') + '</button>'
                             + '<button type="button" class="todo-icon-btn" title="' + getText('fcEditDeck') + '" aria-label="' + getText('fcEditDeck') + '" onclick="openFlashcardEditor(' + ref + ')">' + getEditIconSvg() + '</button>'
                             + '<button type="button" class="trash-btn" title="' + getText('deleteButton') + '" aria-label="' + getText('deleteButton') + '" onclick="deleteFlashcardGroup(' + ref + ')">' + getTrashIconSvg() + '</button>'
@@ -30548,7 +30791,20 @@
             }
 
 
-            var fcStudy = null; // { groupId, queue: [カード], index, flipped, swiping, ended }
+            var fcStudy = null; // { groupId, queue: [カード], index, flipped, swiping, ended, results, retry }
+
+            // 前の学習画面(めくって次へ。わかった/まだ・前のカードのボタンなし)
+            function isFcClassic() {
+                return getData('flashcard_classic') === 'true';
+            }
+
+            function toggleFcClassic() {
+                var next = !isFcClassic();
+                saveData('flashcard_classic', next ? 'true' : 'false');
+                var t = document.getElementById('fcClassicToggle');
+                if (t) t.classList.toggle('active', next);
+            }
+
             var fcSwipeDx = -100;
             var fcSwipeDy = 0;
 
@@ -30580,7 +30836,7 @@
                 fcEnsureData();
                 var group = fcFindGroup(groupId);
                 if (!group || group.cards.length === 0) return;
-                fcStudy = { groupId: groupId, queue: fcBuildStudyQueue(group), index: 0, flipped: false, swiping: false, ended: false };
+                fcStudy = { groupId: groupId, queue: fcBuildStudyQueue(group), index: 0, flipped: false, swiping: false, ended: false, results: {}, retry: false };
                 closeFlashcardModal();
                 document.getElementById('fcViewerOverlay').classList.add('show');
                 lockBodyScroll();
@@ -30612,11 +30868,24 @@
                 var hint = document.getElementById('fcHint');
                 var pad = function (n) { return String(n).padStart(2, '0'); };
 
+                var controls = document.getElementById('fcStudyControls');
+                if (controls) controls.hidden = isFcClassic() || fcStudy.ended;
+                document.getElementById('fcViewerOverlay').classList.toggle('fcx-classic', isFcClassic());
+                var progress = document.getElementById('fcProgress');
+                if (progress) {
+                    progress.hidden = isFcClassic() || fcStudy.ended;
+                    document.getElementById('fcProgressFill').style.width = (total ? fcStudy.index / total * 100 : 0) + '%';
+                }
+                end.classList.remove('fcx-end-result');
                 if (fcStudy.ended) {
                     document.getElementById('fcViewerCounter').textContent = pad(total) + ' / ' + pad(total);
                     scene.style.display = 'none';
                     noFlip.style.display = 'none';
                     end.style.display = 'flex';
+                    if (!isFcClassic() && fcRenderStudyResult(end)) {
+                        hint.textContent = '';
+                        return;
+                    }
                     end.innerHTML = '<div class="fcx-end-title">' + getText('fcEndTitle') + '</div>'
                         + '<div class="fcx-end-count">' + getText('fcEndCount').replace('{n}', total) + '</div>'
                         + '<div class="fcx-end-actions">'
@@ -30653,7 +30922,124 @@
 
             function fcUpdateStudyHint() {
                 var card = fcStudy && fcStudy.queue[fcStudy.index];
-                document.getElementById('fcHint').textContent = !card ? '' : (card.flip && !fcStudy.flipped ? getText('fcTapHint') : getText('fcSwipeHint'));
+                var hint = document.getElementById('fcHint');
+                if (!card) { hint.textContent = ''; return; }
+                hint.textContent = card.flip && !fcStudy.flipped ? getText('fcTapHint') : getText('fcSwipeHint');
+                if (isFcClassic()) return;
+                var prev = document.getElementById('fcPrevBtn');
+                if (prev) prev.disabled = fcStudy.index === 0;
+                var flipBtn = document.getElementById('fcFlipBtn');
+                if (flipBtn) {
+                    flipBtn.style.visibility = card.flip ? 'visible' : 'hidden';
+                    var label = getText(fcStudy.flipped ? 'fcFlipBack' : 'fcFlip');
+                    flipBtn.setAttribute('aria-label', label);
+                    flipBtn.title = label;
+                }
+                // わかった/まだ は答えを見たあとだけ
+                var judge = document.getElementById('fcJudgeRow');
+                if (judge) judge.classList.toggle('show', !!(card.flip && fcStudy.flipped));
+            }
+
+            // めくる/表に戻す(ボタン・タップ・スペースキー)
+            function fcToggleFlip(dx, dy) {
+                if (!fcStudy || fcStudy.swiping || fcStudy.ended) return;
+                var card = fcStudy.queue[fcStudy.index];
+                if (!card || !card.flip) return;
+                var inner = document.getElementById('fcCardInner');
+                var backEl = document.getElementById('fcCardBack');
+                inner.style.transition = 'transform 0.18s ease';
+                if (!fcStudy.flipped) {
+                    var axis = fcCalcFlipAxis(dx || -100, dy || 0);
+                    fcStudy.flipAxis = axis;
+                    fcStudy.flipped = true;
+                    inner.style.transform = 'rotate3d(' + axis.ax + ',' + axis.ay + ',0,180deg)';
+                    backEl.style.transform = 'rotate3d(' + axis.ax + ',' + axis.ay + ',0,180deg)';
+                } else {
+                    var a = fcStudy.flipAxis || { ax: 0, ay: 1 };
+                    fcStudy.flipped = false;
+                    inner.style.transform = 'rotate3d(' + a.ax + ',' + a.ay + ',0,0deg)';
+                }
+                fcUpdateStudyHint();
+            }
+
+            // わかった / まだ を記録して、その向きに投げる
+            function fcJudge(known) {
+                if (!fcStudy || fcStudy.swiping || fcStudy.ended) return;
+                var card = fcStudy.queue[fcStudy.index];
+                if (!card) return;
+                fcSwipeDx = known ? 100 : -100; fcSwipeDy = 0;
+                if (card.flip) {
+                    fcStudy.results[fcStudy.index] = known ? 'known' : 'unknown';
+                    fcShowJudgeStamp(known);
+                }
+                fcDoSwipeOut(document.getElementById(card.flip ? 'fcCardScene' : 'fcNoFlipContent'));
+            }
+
+            function fcShowJudgeStamp(known) {
+                var overlay = document.getElementById('fcViewerOverlay');
+                var old = overlay.querySelector('.fcx-judge-stamp');
+                if (old) old.remove();
+                var stamp = document.createElement('div');
+                stamp.className = 'fcx-judge-stamp ' + (known ? 'known' : 'unknown');
+                stamp.textContent = getText(known ? 'fcKnown' : 'fcUnknown');
+                overlay.appendChild(stamp);
+                setTimeout(function () { stamp.remove(); }, 600);
+            }
+
+            // おわり: わかった/まだ の割合。判定したカードがなければ false(前と同じ画面にする)
+            function fcRenderStudyResult(end) {
+                var known = 0, unknown = 0, flipCards = 0;
+                Object.keys(fcStudy.results).forEach(function (k) {
+                    if (fcStudy.results[k] === 'known') known++; else unknown++;
+                });
+                fcStudy.queue.forEach(function (c) { if (c.flip) flipCards++; });
+                var skipped = Math.max(0, flipCards - known - unknown);
+                var judged = known + unknown;
+                if (!judged) return false;
+                var pct = Math.round(known / judged * 100);
+                // デッキ全部を通したときだけ、前回の結果として残す
+                if (!fcStudy.retry && !fcStudy.resultSaved) {
+                    var group = fcFindGroup(fcStudy.groupId);
+                    if (group) {
+                        group.lastResult = { known: known, total: judged, at: Date.now() };
+                        saveFlashcardData();
+                    }
+                    fcStudy.resultSaved = true;
+                }
+                end.classList.add('fcx-end-result');
+                var retry = unknown
+                    ? '<button type="button" class="primary" onclick="fcRetryUnknown()">' + getText('fcRetryUnknown').replace('{n}', unknown) + '</button>'
+                    : '';
+                end.innerHTML = '<div class="fcx-end-title">' + getText(unknown ? 'fcEndTitle' : 'fcEndPerfect') + '</div>'
+                    + '<div class="fcx-result-pct">' + pct + '<span style="font-size:1rem; margin-left:2px;">%</span></div>'
+                    + '<div class="fcx-result-bar" aria-hidden="true"><span style="width:' + pct + '%"></span></div>'
+                    + '<div class="fcx-result-counts"><span>' + getText('fcKnownCount').replace('{n}', known) + '</span><span>' + getText('fcUnknownCount').replace('{n}', unknown) + '</span>'
+                    + (skipped ? '<span>' + getText('fcSkippedCount').replace('{n}', skipped) + '</span>' : '') + '</div>'
+                    + '<div class="fcx-end-actions fcx-end-actions-col">' + retry
+                    + '<div class="fcx-end-actions-row">'
+                    + '<button type="button" class="secondary" onclick="closeFlashcardViewer()">' + getText('fcClose') + '</button>'
+                    + '<button type="button" class="' + (unknown ? 'secondary' : 'primary') + '" onclick="fcRestartStudy()">' + getText('fcStudyAgain') + '</button>'
+                    + '</div></div>';
+                return true;
+            }
+
+            // まだ のカードだけをもう一度
+            function fcRetryUnknown() {
+                if (!fcStudy) return;
+                var cards = [];
+                fcStudy.queue.forEach(function (c, i) {
+                    if (fcStudy.results[i] === 'unknown') cards.push(c.original);
+                });
+                if (!cards.length) return;
+                if (getFcRandomOrder()) fcShuffleArray(cards);
+                fcStudy.queue = cards.map(fcMakeStudyCard);
+                fcStudy.index = 0;
+                fcStudy.flipped = false;
+                fcStudy.ended = false;
+                fcStudy.results = {};
+                fcStudy.retry = true;
+                fcStudy.resultSaved = false;
+                fcRenderCardNoTransition();
             }
 
             function fcCalcFlipAxis(dx, dy) {
@@ -30673,6 +31059,7 @@
                 if (!fcStudy.flipped) {
                     fcStudy.flipped = true;
                     var axis = fcCalcFlipAxis(fcSwipeDx, fcSwipeDy);
+                    fcStudy.flipAxis = axis;
                     var inner = document.getElementById('fcCardInner');
                     var backEl = document.getElementById('fcCardBack');
                     inner.style.transition = 'transform 0.18s ease';
@@ -30715,6 +31102,8 @@
                 else if (fcStudy.index > 0) fcStudy.index--;
                 else return;
                 fcStudy.flipped = false;
+                if (fcStudy.results) delete fcStudy.results[fcStudy.index];
+                fcStudy.resultSaved = false;
                 fcRenderCardNoTransition();
             }
 
@@ -30725,6 +31114,9 @@
                 fcStudy.index = 0;
                 fcStudy.flipped = false;
                 fcStudy.ended = false;
+                fcStudy.results = {};
+                fcStudy.retry = false;
+                fcStudy.resultSaved = false;
                 fcRenderCardNoTransition();
             }
 
@@ -30738,7 +31130,7 @@
                     started = !(target && target.closest('button'));
                     startX = x; startY = y;
                 }
-                function handleEnd(x, y, target) {
+                function handleEnd(x, y, target, isTouch) {
                     if (!started || !fcStudy || fcStudy.swiping || fcStudy.ended) return;
                     started = false;
                     if (target && target.closest('button')) return;
@@ -30750,12 +31142,12 @@
                 }
                 overlay.addEventListener('touchstart', function (e) { handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
                 overlay.addEventListener('touchend', function (e) {
-                    handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target);
+                    handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target, true);
                     // タッチのあとに続くマウスイベントで二重に進まないようにする
                     if (e.cancelable && !(e.target && e.target.closest('button'))) e.preventDefault();
                 });
                 overlay.addEventListener('mousedown', function (e) { handleStart(e.clientX, e.clientY, e.target); });
-                overlay.addEventListener('mouseup', function (e) { handleEnd(e.clientX, e.clientY, e.target); });
+                overlay.addEventListener('mouseup', function (e) { handleEnd(e.clientX, e.clientY, e.target, false); });
             }
 
             document.addEventListener('keydown', function (e) {
