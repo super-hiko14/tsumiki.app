@@ -10577,6 +10577,143 @@
             opacity: 0.55;
         }
 
+        /* まとめて追加: 1行に1枚 */
+        .fcx textarea.fcx-bulk-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 14px 16px;
+            border: 2px solid transparent;
+            border-radius: 24px;
+            background: var(--ctl-bg);
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            outline: none;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .fcx textarea.fcx-bulk-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        body.dark .fcx textarea.fcx-bulk-input:focus {
+            border-color: var(--primary-color-dark);
+        }
+
+        .fcx-bulk-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 10px;
+            font-size: 0.82rem;
+        }
+
+        .fcx-bulk-preview-row {
+            display: flex;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .fcx-bulk-preview-row span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .fcx-bulk-preview-row span:first-child {
+            flex: 0 1 auto;
+            max-width: 50%;
+        }
+
+        .fcx-bulk-preview-row span:last-child {
+            opacity: 0.55;
+        }
+
+        .fcx-bulk-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .fcx-help-btn {
+            flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border: none;
+            border-radius: 999px;
+            background: var(--ctl-bg);
+            color: inherit;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.85rem;
+            font-style: italic;
+            font-weight: 600;
+            line-height: 26px;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .fcx-help-btn[aria-expanded="true"] {
+            background: var(--primary-color);
+            color: #fff;
+            opacity: 1;
+        }
+
+        body.dark .fcx-help-btn[aria-expanded="true"] {
+            background: var(--primary-color-dark);
+        }
+
+        .fcx-bulk-help {
+            padding: 14px 16px;
+            border-radius: 24px;
+            background: var(--ctl-bg);
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+
+        .fcx-bulk-help[hidden] {
+            display: none;
+        }
+
+        .fcx-bulk-help-title {
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .fcx-bulk-help-title:first-child {
+            margin-top: 0;
+        }
+
+        .fcx-bulk-help p {
+            margin: 2px 0 0;
+            opacity: 0.75;
+        }
+
+        .fcx-bulk-help-ex {
+            margin: 4px 0 0;
+            padding: 8px 14px;
+            border-radius: 24px;
+            background: var(--bg-light);
+            font-family: inherit;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            opacity: 0.85;
+        }
+
+        body.dark .fcx-bulk-help-ex {
+            background: var(--bg-dark);
+        }
+
+        .fcx-bulk-count {
+            margin-top: 8px;
+            font-size: 0.78rem;
+            opacity: 0.6;
+        }
+
         .fcx-form-actions {
             display: flex;
             justify-content: flex-end;
@@ -12794,6 +12931,49 @@
             margin: 4px 0 8px;
         }
 
+        /* ── 受験カウントダウン: 目標の線と同じ並びに、小さく1行 ── */
+        .goal-line:not([hidden]) + .exam-line {
+            margin-top: -12px;
+        }
+
+        .exam-setting-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .exam-setting-row .exam-date-btn {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .exam-setting-row input {
+            flex: 1;
+            min-width: 120px;
+            height: 42px;
+            padding: 0 16px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background: var(--panel-light);
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .dark .exam-setting-row input {
+            background: var(--panel-dark);
+        }
+
+        .exam-setting-row input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .dark .exam-setting-row input:focus {
+            border-color: var(--primary-color-dark);
+        }
+
         .goal-stepper-value {
             font-variant-numeric: tabular-nums;
         }
@@ -14135,6 +14315,10 @@
                 <span class="goal-line-bar" aria-hidden="true"><span></span></span>
                 <span class="goal-line-text" id="timerGoalText"></span>
             </div>
+            <!-- 受験カウントダウン(設定でONにしたときだけ) -->
+            <div class="goal-line exam-line" id="timerExamLine" hidden>
+                <span class="goal-line-text" id="timerExamText"></span>
+            </div>
             <div id="focusModeToggleContainer" style="display: none;"
                 data-editor-target="focusMode">
                 <div class="focus-mode-segment" id="toggleFocusModeMain" role="group" aria-label="フォーカスモード"
@@ -14956,6 +15140,24 @@
                     </div>
                 </div>
                 <div class="setting-note" data-i18n="goalSettingNote">タイマーの下に今日の進み具合を小さく出し、グラフ(週・月)に目標の線を引きます。届かない日があっても大丈夫です。</div>
+            </div>
+
+            <div class="settings-section" id="examSettingsSection">
+                <h2 data-i18n="examSettingTitle">受験カウントダウン</h2>
+                <div class="toggle-item">
+                    <span data-i18n="examSettingToggle">受験までの日数を出す</span>
+                    <div class="toggle-switch" id="toggleExam" onclick="toggleExamSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="goal-setting-body" id="examSettingBody" hidden>
+                    <div class="exam-setting-row">
+                        <button type="button" class="secondary exam-date-btn" id="examDateBtn" onclick="openExamDatePicker()"></button>
+                        <input type="text" id="examNameInput" maxlength="20" placeholder="受験" data-i18n-placeholder="examNamePlaceholder"
+                            aria-label="名前" data-i18n-aria="examNameAria" onchange="saveExamName()" onkeydown="if (event.key === 'Enter') { event.preventDefault(); this.blur(); }">
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="examSettingNote">タイマーの下と、タイマーを押したときに「受験まで あと○日」を出します。名前は「共通テスト」などに変えられます。</div>
             </div>
 
                 <div class="settings-panel-title" data-i18n="settingsTabRecords">記録</div>
@@ -15918,6 +16120,20 @@
                     goalPlusAria: '目標を15分増やす',
                     goalProgress: '今日 {t} / 目標 {g}',
                     goalReached: '今日 {t} · 目標達成',
+                    examSettingTitle: '受験カウントダウン',
+                    examSettingToggle: '受験までの日数を出す',
+                    examSettingNote: 'タイマーの下と、タイマーを押したときに「受験まで あと○日」を出します。名前は「共通テスト」などに変えられます。',
+                    examNamePlaceholder: '受験',
+                    examNameAria: '名前',
+                    examDefaultName: '受験',
+                    examPickDate: '日付を選ぶ',
+                    examPickerTitle: '受験日を選択',
+                    examLine: '{name}まで あと{n}日',
+                    examLineOne: '{name}まで あと1日',
+                    examLineToday: '今日は{name}の日',
+                    examBurstLabel: '{name}まで',
+                    examBurstValue: 'あと{n}日',
+                    examBurstToday: '今日',
                     weekThis: '今週',
                     weekLast: '先週',
                     weekOther: 'この週',
@@ -16275,6 +16491,22 @@
                     fcAdd: '追加',
                     fcNormal: '通常',
                     fcMath: '数式',
+                    fcBulk: 'まとめて',
+                    fcBulkLabel: '空行で区切るか、1行に「問題 / 答え」',
+                    fcBulkPlaceholder: 'apple\nりんご\n\nenglish\n英語',
+                    fcBulkNote: 'ノートやExcel・Quizletからコピーした文も、そのまま貼れます。',
+                    fcHelpAria: '書き方',
+                    fcHelpBlockTitle: '空行で区切る(スマホにおすすめ)',
+                    fcHelpBlockEx: 'apple\nりんご\n\nenglish\n英語',
+                    fcHelpLineTitle: '1行に1枚',
+                    fcHelpLineEx: 'apple / りんご\nenglish / 英語',
+                    fcHelpCopyTitle: 'コピーして貼る',
+                    fcHelpCopyText: 'Excel・スプレッドシート(問題と答えの2列)や、Quizletの書き出しは、そのまま貼れます。答えのない行は、表だけのカードになります。',
+                    fcHelpCameraTitle: 'カメラで読む',
+                    fcHelpCameraText: 'iPhone: 入力欄を長押しして「テキストをスキャン」を選ぶと、カメラで映した文字がそのまま入ります。<br>Android: Googleレンズで文字を選んで「コピー」し、ここに貼ってください。',
+                    fcBulkAdd: '{n}枚を追加',
+                    fcBulkMore: 'ほか{n}枚',
+                    fcBulkNoAnswer: '(答えなし)',
                     fcFront: '表面(問題)',
                     fcBack: '裏面(答え)',
                     fcFlip: 'フリップ',
@@ -16756,6 +16988,20 @@
                     goalMinusAria: 'Decrease goal by 15 minutes',
                     goalPlusAria: 'Increase goal by 15 minutes',
                     goalProgress: 'Today {t} / goal {g}',
+                    examSettingTitle: 'Exam countdown',
+                    examSettingToggle: 'Show days until the exam',
+                    examSettingNote: 'Shows the days left until your exam under the timer and when you tap the timer. You can rename it, e.g. “Finals”.',
+                    examNamePlaceholder: 'exam',
+                    examNameAria: 'Name',
+                    examDefaultName: 'exam',
+                    examPickDate: 'Pick a date',
+                    examPickerTitle: 'Select exam date',
+                    examLine: '{n} days until {name}',
+                    examLineOne: '1 day until {name}',
+                    examLineToday: '{name} is today',
+                    examBurstLabel: 'Until {name}',
+                    examBurstValue: '{n} days',
+                    examBurstToday: 'today',
                     goalReached: 'Today {t} · goal reached',
                     weekThis: 'This week',
                     weekLast: 'Last week',
@@ -17067,6 +17313,22 @@
                     fcAdd: 'Add',
                     fcNormal: 'Normal',
                     fcMath: 'Math',
+                    fcBulk: 'Bulk',
+                    fcBulkLabel: 'Separate cards with a blank line, or write “question / answer” per line',
+                    fcBulkPlaceholder: 'りんご\napple\n\n英語\nEnglish',
+                    fcBulkNote: 'You can paste text copied from notes, Excel or Quizlet as is.',
+                    fcHelpAria: 'How to write',
+                    fcHelpBlockTitle: 'Blank line between cards (easy on phones)',
+                    fcHelpBlockEx: 'りんご\napple\n\n英語\nEnglish',
+                    fcHelpLineTitle: 'One card per line',
+                    fcHelpLineEx: 'りんご / apple\n英語 / English',
+                    fcHelpCopyTitle: 'Copy and paste',
+                    fcHelpCopyText: 'Two columns from Excel or Sheets (question, answer) and Quizlet exports can be pasted as is. Lines without an answer become front-only cards.',
+                    fcHelpCameraTitle: 'Scan with the camera',
+                    fcHelpCameraText: 'iPhone: long-press the text box and choose “Scan Text” to type what the camera sees.<br>Android: select the text in Google Lens, tap “Copy”, then paste it here.',
+                    fcBulkAdd: 'Add {n}',
+                    fcBulkMore: '{n} more',
+                    fcBulkNoAnswer: '(no answer)',
                     fcFront: 'Front (Question)',
                     fcBack: 'Back (Answer)',
                     fcFlip: 'Flip',
@@ -17328,6 +17590,7 @@
                 updateTimer();
                 updateTimerAutoStopDisplays();
                 updateMusicAutoStopUI();
+                applyExamSettingUI();
                 ['timer', 'music'].forEach(ctx => { if (autoStopPanelOpen[ctx]) renderAutoStopPanel(ctx); });
                 updateNotifyPermissionUI();
                 if (currentTodoView === 'calendar') renderCalendar(calendarYear, calendarMonth);
@@ -18376,6 +18639,7 @@
                 const now = Date.now();
                 if (!force && now - goalLastUpdateAt < 5000) return;
                 goalLastUpdateAt = now;
+                updateExamLine();
                 if (!isGoalEnabled()) {
                     el.hidden = true;
                     return;
@@ -18394,6 +18658,93 @@
                 }
             }
             setInterval(() => updateGoalLine(), 30000); // 日付が変わったときなど
+
+            // ── 受験カウントダウン(デフォルトOFF。ONにすると日付を聞く) ──
+            function isExamEnabled() {
+                return getData('exam_enabled') === 'true';
+            }
+
+            function getExamName() {
+                return (getData('exam_name') || '').trim() || getText('examDefaultName');
+            }
+
+            // 今日から受験日まであと何日か(当日は0、過ぎたら負、日付がなければ null)
+            function getExamDaysLeft() {
+                const d = parseLocalDate(getData('exam_date'));
+                if (!d) return null;
+                return Math.round((d.getTime() - startOfLocalDay(new Date()).getTime()) / 86400000);
+            }
+
+            // 出すものがないとき(OFF・日付なし・過ぎた)は null
+            function getExamCountdown() {
+                if (!isExamEnabled()) return null;
+                const days = getExamDaysLeft();
+                if (days === null || days < 0) return null;
+                return { name: getExamName(), days };
+            }
+
+            function getExamLineText() {
+                const c = getExamCountdown();
+                if (!c) return '';
+                const key = c.days === 0 ? 'examLineToday' : c.days === 1 ? 'examLineOne' : 'examLine';
+                return getText(key).replace('{name}', c.name).replace('{n}', c.days);
+            }
+
+            function updateExamLine() {
+                const el = document.getElementById('timerExamLine');
+                if (!el) return;
+                const text = getExamLineText();
+                el.hidden = !text;
+                const t = document.getElementById('timerExamText');
+                if (t && t.textContent !== text) t.textContent = text;
+            }
+
+            function formatExamDate(dateStr) {
+                const d = parseLocalDate(dateStr);
+                if (!d) return getText('examPickDate');
+                return d.toLocaleDateString(currentLanguage === 'en' ? 'en-US' : 'ja-JP',
+                    { year: 'numeric', month: currentLanguage === 'en' ? 'short' : 'long', day: 'numeric', weekday: 'short' });
+            }
+
+            function applyExamSettingUI() {
+                const on = isExamEnabled();
+                const toggle = document.getElementById('toggleExam');
+                if (toggle) toggle.classList.toggle('active', on);
+                const body = document.getElementById('examSettingBody');
+                if (body) body.hidden = !on;
+                const btn = document.getElementById('examDateBtn');
+                if (btn) btn.textContent = formatExamDate(getData('exam_date'));
+                const input = document.getElementById('examNameInput');
+                if (input && document.activeElement !== input) input.value = getData('exam_name') || '';
+                updateExamLine();
+            }
+
+            function toggleExamSetting() {
+                const next = !isExamEnabled();
+                saveData('exam_enabled', next ? 'true' : 'false');
+                applyExamSettingUI();
+                // はじめてONにしたときは、すぐ日付を聞く
+                if (next && !getData('exam_date')) openExamDatePicker();
+            }
+
+            function openExamDatePicker() {
+                const saved = getData('exam_date');
+                selectedDate.exam = saved || null;
+                datePickerCurrentDate.exam = parseLocalDate(saved) || new Date();
+                openDatePicker('exam');
+            }
+
+            function saveExamName() {
+                const input = document.getElementById('examNameInput');
+                if (!input) return;
+                const name = input.value.trim().slice(0, 20);
+                if (name) saveData('exam_name', name);
+                else {
+                    localStorage.removeItem('exam_name');
+                    setCookie('exam_name', '', -1);
+                }
+                applyExamSettingUI();
+            }
 
             // ── タイマーを押すと、まわりに「今日の自分」が飛び出す ──
             let timerBurstOpen = false;
@@ -18434,6 +18785,13 @@
 
                 const todayMs = getTodayRecordedMs() + goalLiveMs;
                 items.push({ label: getText('burstToday'), value: formatChartHours(todayMs / 3600000), action: toStats });
+
+                const exam = getExamCountdown();
+                if (exam) {
+                    items.push(exam.days === 0
+                        ? { label: exam.name, value: getText('examBurstToday') }
+                        : { label: getText('examBurstLabel').replace('{name}', exam.name), value: getText('examBurstValue').replace('{n}', exam.days) });
+                }
 
                 if (isGoalEnabled()) {
                     const left = getGoalMinutes() * 60000 - todayMs;
@@ -23237,6 +23595,7 @@
                 const headingKey = type === 'start' ? 'selectStartDate'
                     : type === 'end' ? 'selectEndDate'
                         : type === 'dailyTimeline' ? 'dailyTimelinePickerTitle'
+                        : type === 'exam' ? 'examPickerTitle'
                             : (type === 'multi' || type === 'calendarMulti') ? 'selectMultiDates'
                                 : 'selectEndDate';
                 const isMulti = type === 'multi' || type === 'calendarMulti';
@@ -23306,7 +23665,7 @@
                 });
             }
 
-            let datePickerCurrentDate = { start: new Date(), end: new Date(), calendarEnd: new Date(), multi: new Date(), calendarMulti: new Date(), dailyTimeline: new Date() };
+            let datePickerCurrentDate = { start: new Date(), end: new Date(), calendarEnd: new Date(), multi: new Date(), calendarMulti: new Date(), dailyTimeline: new Date(), exam: new Date() };
 
             // 文字列からローカル日付を復元するヘルパー('YYYY-MM-DD' または ISO 全体を扱う)
             function parseLocalDate(dateStr) {
@@ -23331,6 +23690,13 @@
 
             function selectDate(type, dateStr) {
                 selectedDate[type] = dateStr;
+
+                if (type === 'exam') {
+                    saveData('exam_date', dateStr);
+                    closeAllDatePickers();
+                    applyExamSettingUI();
+                    return;
+                }
 
                 if (type === 'dailyTimeline') {
                     const parts = dateStr.split('-').map(Number);
@@ -26972,6 +27338,7 @@
 
                 // 1日の目標・記録を消えにくくする・最後のバックアップ
                 applyGoalSettingUI();
+                applyExamSettingUI();
                 updateGoalLine(true);
                 applyBackupSettingUI();
                 requestStoragePersist(false).then(refreshStoragePersistUI);
@@ -29762,6 +30129,8 @@
             function fcCloseCardForm() {
                 fcFormOpen = false;
                 fcEditingCardId = null;
+                fcBulkText = '';
+                if (fcFormType === 'bulk') fcFormType = 'normal';
                 fcRenderForm(false);
                 renderFlashcardCardList();
             }
@@ -29784,16 +30153,35 @@
             }
 
             function fcFocusForm() {
-                var el = document.getElementById(fcFormType === 'normal' ? 'fcFrontInput' : (fcFormulaInput === 'range' ? 'fcRangeMin' : 'fcNumValue'));
+                var el = document.getElementById(fcFormType === 'bulk' ? 'fcBulkInput' : fcFormType === 'normal' ? 'fcFrontInput' : (fcFormulaInput === 'range' ? 'fcRangeMin' : 'fcNumValue'));
                 if (el) el.focus();
             }
 
             function fcBuildCardFormHtml() {
-                var seg = ['normal', 'math'].map(function (t) {
+                // 「まとめて」は新しいカードのときだけ
+                var types = fcEditingCardId ? ['normal', 'math'] : ['normal', 'math', 'bulk'];
+                var segLabel = { normal: 'fcNormal', math: 'fcMath', bulk: 'fcBulk' };
+                var seg = types.map(function (t) {
                     var active = t === fcFormType;
-                    return '<button type="button" class="todo-seg-btn' + (active ? ' active' : '') + '" role="radio" aria-checked="' + active + '" onclick="setFcCardType(\'' + t + '\')">' + getText(t === 'normal' ? 'fcNormal' : 'fcMath') + '</button>';
+                    return '<button type="button" class="todo-seg-btn' + (active ? ' active' : '') + '" role="radio" aria-checked="' + active + '" onclick="setFcCardType(\'' + t + '\')">' + getText(segLabel[t]) + '</button>';
                 }).join('');
                 var body;
+                if (fcFormType === 'bulk') {
+                    var bulkCount = fcParseBulk(fcBulkText).length;
+                    return '<div class="fcx-form">'
+                        + '<div class="fcx-form-title">' + getText('fcNewCard') + '</div>'
+                        + '<div class="todo-seg" role="radiogroup">' + seg + '</div>'
+                        + '<div class="fcx-field"><div class="fcx-bulk-label-row"><label for="fcBulkInput">' + getText('fcBulkLabel') + '</label>'
+                        + '<button type="button" class="fcx-help-btn" id="fcBulkHelpBtn" aria-expanded="' + fcBulkHelpOpen + '" aria-controls="fcBulkHelp" aria-label="' + getText('fcHelpAria') + '" title="' + getText('fcHelpAria') + '" onclick="toggleFcBulkHelp()">i</button></div>'
+                        + fcBuildBulkHelpHtml()
+                        + '<textarea id="fcBulkInput" class="fcx-bulk-input" rows="6" spellcheck="false" placeholder="' + escapeHtml(getText('fcBulkPlaceholder')) + '" oninput="fcBulkOnInput()">' + escapeHtml(fcBulkText) + '</textarea>'
+                        + '<div class="fcx-field-note">' + getText('fcBulkNote') + '</div>'
+                        + '<div id="fcBulkPreview">' + fcBuildBulkPreviewHtml() + '</div></div>'
+                        + '<div class="fcx-form-actions">'
+                        + '<button type="button" class="secondary" onclick="fcCloseCardForm()">' + getText('cancelButton') + '</button>'
+                        + '<button type="button" class="primary" id="fcSaveCardBtn" onclick="saveFlashcardBulk()"' + (bulkCount ? '' : ' disabled') + '>' + fcBulkButtonText(bulkCount) + '</button>'
+                        + '</div></div>';
+                }
                 if (fcFormType === 'normal') {
                     body = '<div class="fcx-field"><label for="fcFrontInput">' + getText('fcQuestion') + '</label>'
                         + '<input type="text" id="fcFrontInput" onkeydown="if (event.key === \'Enter\') { event.preventDefault(); document.getElementById(\'fcBackInput\').focus(); }"></div>'
@@ -29814,7 +30202,7 @@
             }
 
             function setFcCardType(type) {
-                fcFormType = type === 'math' ? 'math' : 'normal';
+                fcFormType = type === 'math' || type === 'bulk' ? type : 'normal';
                 fcFormulaInput = null;
                 fcRenderForm(false);
                 fcFocusForm();
@@ -29946,6 +30334,122 @@
                     document.getElementById('fcBackInput').value = '';
                 }
                 fcFocusForm();
+            }
+
+            // ── まとめて追加: 1行に1枚。問題と答えは タブ(Excel・Quizlet) / 「/」 / 「：」 で分ける ──
+            var fcBulkText = '';
+            var fcBulkHelpOpen = false;
+            var FC_BULK_MAX = 500;
+
+            // 1行を「問題」と「答え」に分ける(区切りがなければ null)
+            function fcSplitBulkLine(line) {
+                var m = line.indexOf('\t') >= 0 ? line.match(/^([^\t]*)\t+(.*)$/)
+                    : line.match(/^(.*?)\s*[/／]\s*(.*)$/) || line.match(/^(.*?)\s*：\s*(.*)$/);
+                if (!m || !m[1].trim()) return null;
+                return { front: m[1].trim(), back: m[2].replace(/\t+/g, ' ').trim() };
+            }
+
+            // 書き方は3つ(まぜてもよい)
+            //  ・1行に1枚: 「apple / りんご」、タブ区切り(Excel・Quizlet)、「：」
+            //  ・空行で区切る: 1行目が問題、2行目からが答え(スマホで記号を打たなくてよい)
+            //  ・区切りのない1行: 表だけのカード
+            function fcParseBulk(text) {
+                var cards = [];
+                var add = function (front, back) {
+                    cards.push({ front: front.slice(0, 500), back: (back || '').slice(0, 500) });
+                };
+                var lines = String(text || '').split(/\r?\n/).map(function (raw) {
+                    // 行頭の「- 」「・」「1. 」などは外す
+                    return raw.replace(/^\s*(?:[-*•・]|\d+[.)、])\s+/, '').replace(/^\s*[•・]\s*/, '').trim();
+                });
+                var blockMode = /\n[ \t\u3000]*\r?\n/.test(String(text || '').trim());
+                if (!blockMode) {
+                    lines.forEach(function (line) {
+                        if (!line) return;
+                        var pair = fcSplitBulkLine(line);
+                        if (pair) add(pair.front, pair.back); else add(line, '');
+                    });
+                    return cards.slice(0, FC_BULK_MAX);
+                }
+                // 空行ごとのかたまりに分ける
+                var blocks = [], cur = [];
+                lines.forEach(function (line) {
+                    if (line) { cur.push(line); return; }
+                    if (cur.length) { blocks.push(cur); cur = []; }
+                });
+                if (cur.length) blocks.push(cur);
+                blocks.forEach(function (block) {
+                    var pairs = block.map(fcSplitBulkLine);
+                    // かたまりの全部の行に区切りがあれば、1行に1枚として読む
+                    if (block.length === 1 || pairs.every(Boolean)) {
+                        block.forEach(function (line, i) {
+                            if (pairs[i]) add(pairs[i].front, pairs[i].back); else add(line, '');
+                        });
+                        return;
+                    }
+                    add(block[0], block.slice(1).join(' '));
+                });
+                return cards.slice(0, FC_BULK_MAX);
+            }
+
+            function toggleFcBulkHelp() {
+                var help = document.getElementById('fcBulkHelp');
+                var btn = document.getElementById('fcBulkHelpBtn');
+                if (!help) return;
+                fcBulkHelpOpen = help.hidden;
+                help.hidden = !fcBulkHelpOpen;
+                if (btn) btn.setAttribute('aria-expanded', String(fcBulkHelpOpen));
+            }
+
+            function fcBuildBulkHelpHtml() {
+                var ex = function (key) { return '<pre class="fcx-bulk-help-ex">' + escapeHtml(getText(key)) + '</pre>'; };
+                return '<div class="fcx-bulk-help" id="fcBulkHelp"' + (fcBulkHelpOpen ? '' : ' hidden') + '>'
+                    + '<div class="fcx-bulk-help-title">' + getText('fcHelpBlockTitle') + '</div>' + ex('fcHelpBlockEx')
+                    + '<div class="fcx-bulk-help-title">' + getText('fcHelpLineTitle') + '</div>' + ex('fcHelpLineEx')
+                    + '<div class="fcx-bulk-help-title">' + getText('fcHelpCopyTitle') + '</div><p>' + getText('fcHelpCopyText') + '</p>'
+                    + '<div class="fcx-bulk-help-title">' + getText('fcHelpCameraTitle') + '</div><p>' + getText('fcHelpCameraText') + '</p>'
+                    + '</div>';
+            }
+
+            function fcBulkButtonText(n) {
+                return n ? getText('fcBulkAdd').replace('{n}', n) : getText('fcAdd');
+            }
+
+            function fcBuildBulkPreviewHtml() {
+                var cards = fcParseBulk(fcBulkText);
+                if (!cards.length) return '';
+                var rows = cards.slice(0, 3).map(function (c) {
+                    return '<div class="fcx-bulk-preview-row"><span>' + escapeHtml(c.front) + '</span><span>' + (c.back ? '→ ' + escapeHtml(c.back) : getText('fcBulkNoAnswer')) + '</span></div>';
+                }).join('');
+                var more = cards.length > 3 ? '<div class="fcx-bulk-count">' + getText('fcBulkMore').replace('{n}', cards.length - 3) + '</div>' : '';
+                return '<div class="fcx-bulk-preview">' + rows + '</div>' + more;
+            }
+
+            function fcBulkOnInput() {
+                var input = document.getElementById('fcBulkInput');
+                if (!input) return;
+                fcBulkText = input.value;
+                var n = fcParseBulk(fcBulkText).length;
+                var preview = document.getElementById('fcBulkPreview');
+                if (preview) preview.innerHTML = fcBuildBulkPreviewHtml();
+                var btn = document.getElementById('fcSaveCardBtn');
+                if (btn) {
+                    btn.disabled = !n;
+                    btn.textContent = fcBulkButtonText(n);
+                }
+            }
+
+            function saveFlashcardBulk() {
+                var group = fcFindGroup(fcCurrentGroupId);
+                if (!group) return;
+                var cards = fcParseBulk(fcBulkText);
+                if (!cards.length) return;
+                cards.forEach(function (c) {
+                    group.cards.push({ id: fcGenerateId(), type: 'normal', front: c.front, back: c.back, flip: !!c.back });
+                });
+                saveFlashcardData();
+                fcCloseCardForm();
+                fcRenderDeck();
             }
 
             function addFlashcard(groupId, cardData) {
@@ -31921,6 +32425,9 @@
             <div id="fullscreenTimerSub"
                 style="font-size:min(6vw, 3.5rem); font-weight:300; opacity:0.6; margin-top:10px; display:none; user-select:none;">
                 00:00:00</div>
+            <div id="fullscreenExamLine"
+                style="font-size:min(4vw, 1.4rem); font-weight:300; opacity:0.5; margin-top:20px; display:none; user-select:none;">
+            </div>
             <!-- color:inherit と appearance:none がないと iOS Safari でボタンが青色になる -->
             <button onclick="event.stopPropagation(); exitFullscreenTimer();"
                 style="position:absolute; top:24px; right:24px; background:none; border:none; cursor:pointer; padding:8px; color:inherit; -webkit-appearance:none; appearance:none;">
@@ -32049,6 +32556,13 @@
                         fsSub.textContent = subEl.textContent;
                     } else {
                         fsSub.style.display = 'none';
+                    }
+
+                    var fsExam = document.getElementById('fullscreenExamLine');
+                    if (fsExam) {
+                        var examText = typeof getExamLineText === 'function' ? getExamLineText() : '';
+                        fsExam.textContent = examText;
+                        fsExam.style.display = examText ? 'block' : 'none';
                     }
                 }
 
