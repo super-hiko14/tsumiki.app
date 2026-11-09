@@ -10123,6 +10123,13 @@
             cursor: pointer;
         }
 
+        /* 立体のカードを自分の層に閉じこめ、下のボタンの上に被さらないようにする */
+        .fcx-study:not(.fcx-classic) .fc-card-scene {
+            position: relative;
+            z-index: 1;
+            isolation: isolate;
+        }
+
         .fc-card-inner {
             position: relative;
             width: 100%;
@@ -10942,6 +10949,8 @@
 
         /* カードの下: 端に小さな丸ボタン、真ん中に わかった/まだ(めくった後だけ) */
         .fcx-study-controls {
+            position: relative;
+            z-index: 5;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -31196,7 +31205,17 @@
                 var NO_GESTURE = 'button, .fcx-study-controls, .fc-viewer-header';
                 function handleStart(x, y, target) {
                     started = !(target && target.closest(NO_GESTURE));
+                    if (started && !isFcClassic()) started = fcIsOnCard(x, y);
                     startX = x; startY = y;
+                }
+                // 前の学習画面は今までどおり画面のどこでも。新しい学習画面はカードの上だけ
+                function fcIsOnCard(x, y) {
+                    var card = document.getElementById('fcCardScene');
+                    if (!card || card.style.display === 'none') card = document.getElementById('fcNoFlipContent');
+                    if (!card || card.style.display === 'none') return false;
+                    var r = card.getBoundingClientRect();
+                    var M = 24;
+                    return x >= r.left - M && x <= r.right + M && y >= r.top - M && y <= r.bottom;
                 }
                 function handleEnd(x, y, target, isTouch) {
                     if (!started || !fcStudy || fcStudy.swiping || fcStudy.ended) return;
