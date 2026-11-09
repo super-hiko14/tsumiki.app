@@ -11023,6 +11023,52 @@
             background: var(--primary-color-dark);
         }
 
+        .fcx-judge-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (pointer: coarse) {
+            .fcx-study-controls {
+                margin-top: 18px;
+            }
+
+            .fcx-judge-row {
+                gap: 10px;
+            }
+
+            .fcx-judge-btn {
+                min-width: 104px;
+                min-height: 48px;
+                padding: 12px 22px;
+                font-size: 0.95rem;
+            }
+
+            .fcx-study-ctl {
+                width: 48px;
+                height: 48px;
+            }
+
+            /* ふだんの hover の色が指で押したあとに残らないように */
+            .fcx-judge-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.75);
+            }
+
+            .fcx-judge-btn.known:hover {
+                background: var(--primary-color);
+                color: #fff;
+            }
+
+            .fcx-judge-btn:active {
+                background: rgba(255, 255, 255, 0.22);
+            }
+
+            .fcx-judge-btn.known:active {
+                background: var(--primary-color-dark);
+            }
+        }
+
         /* わかった/まだ を投げたとき、一瞬だけ出す印 */
         .fcx-judge-stamp {
             position: fixed;
@@ -16786,7 +16832,6 @@
                     fcUnknown: 'まだ',
                     fcKnownCount: 'わかった {n}枚',
                     fcUnknownCount: 'まだ {n}枚',
-                    fcSkippedCount: 'チェックなし {n}枚',
                     fcRetryUnknown: 'まだの{n}枚をもう一度',
                     fcEndPerfect: 'ぜんぶわかった!',
                     fcPrevCard: '前のカード',
@@ -16796,6 +16841,7 @@
                     fcClassicLabel: '前の学習画面にする',
                     fcClassicNote: 'わかった/まだ のボタン・前のカードへ戻るボタン・終わった後の理解度を出さず、めくって次へ進むだけにします。',
                     fcSwipeHint: 'スワイプ(タップ)で次へ',
+                    fcJudgeHint: '「わかった」か「まだ」を選んで次へ',
                     fcEndTitle: 'おつかれさまでした',
                     fcEndCount: '{n}枚のカードを見ました',
                     fcStudyAgain: 'もう一度',
@@ -17621,7 +17667,6 @@
                     fcUnknown: 'Not yet',
                     fcKnownCount: 'Got it: {n}',
                     fcUnknownCount: 'Not yet: {n}',
-                    fcSkippedCount: 'Skipped: {n}',
                     fcRetryUnknown: 'Retry the {n} not yet',
                     fcEndPerfect: 'You got them all!',
                     fcPrevCard: 'Previous',
@@ -17631,6 +17676,7 @@
                     fcClassicLabel: 'Use the previous study screen',
                     fcClassicNote: 'Hides the Got it / Not yet buttons, the previous-card button and the results at the end. Cards just flip and move on.',
                     fcSwipeHint: 'Swipe (or tap) for the next card',
+                    fcJudgeHint: 'Choose Got it or Not yet to continue',
                     fcEndTitle: 'All done',
                     fcEndCount: 'You went through {n} cards',
                     fcStudyAgain: 'Again',
@@ -30924,8 +30970,11 @@
                 var card = fcStudy && fcStudy.queue[fcStudy.index];
                 var hint = document.getElementById('fcHint');
                 if (!card) { hint.textContent = ''; return; }
-                hint.textContent = card.flip && !fcStudy.flipped ? getText('fcTapHint') : getText('fcSwipeHint');
-                if (isFcClassic()) return;
+                if (isFcClassic()) {
+                    hint.textContent = card.flip && !fcStudy.flipped ? getText('fcTapHint') : getText('fcSwipeHint');
+                    return;
+                }
+                hint.textContent = !card.flip ? getText('fcSwipeHint') : fcStudy.flipped ? getText('fcJudgeHint') : getText('fcTapHint');
                 var prev = document.getElementById('fcPrevBtn');
                 if (prev) prev.disabled = fcStudy.index === 0;
                 var flipBtn = document.getElementById('fcFlipBtn');
@@ -30988,12 +31037,10 @@
 
             // おわり: わかった/まだ の割合。判定したカードがなければ false(前と同じ画面にする)
             function fcRenderStudyResult(end) {
-                var known = 0, unknown = 0, flipCards = 0;
+                var known = 0, unknown = 0;
                 Object.keys(fcStudy.results).forEach(function (k) {
                     if (fcStudy.results[k] === 'known') known++; else unknown++;
                 });
-                fcStudy.queue.forEach(function (c) { if (c.flip) flipCards++; });
-                var skipped = Math.max(0, flipCards - known - unknown);
                 var judged = known + unknown;
                 if (!judged) return false;
                 var pct = Math.round(known / judged * 100);
@@ -31014,7 +31061,7 @@
                     + '<div class="fcx-result-pct">' + pct + '<span style="font-size:1rem; margin-left:2px;">%</span></div>'
                     + '<div class="fcx-result-bar" aria-hidden="true"><span style="width:' + pct + '%"></span></div>'
                     + '<div class="fcx-result-counts"><span>' + getText('fcKnownCount').replace('{n}', known) + '</span><span>' + getText('fcUnknownCount').replace('{n}', unknown) + '</span>'
-                    + (skipped ? '<span>' + getText('fcSkippedCount').replace('{n}', skipped) + '</span>' : '') + '</div>'
+                    + '</div>'
                     + '<div class="fcx-end-actions fcx-end-actions-col">' + retry
                     + '<div class="fcx-end-actions-row">'
                     + '<button type="button" class="secondary" onclick="closeFlashcardViewer()">' + getText('fcClose') + '</button>'
@@ -31065,6 +31112,17 @@
                     inner.style.transition = 'transform 0.18s ease';
                     inner.style.transform = 'rotate3d(' + axis.ax + ',' + axis.ay + ',0,180deg)';
                     backEl.style.transform = 'rotate3d(' + axis.ax + ',' + axis.ay + ',0,180deg)';
+                    fcUpdateStudyHint();
+                    return;
+                }
+                if (!isFcClassic()) {
+                    // 「わかった / まだ」を選ばずに次へ進めないようにする
+                    var back = fcCalcFlipAxis(fcSwipeDx, fcSwipeDy);
+                    fcStudy.flipAxis = back;
+                    fcStudy.flipped = false;
+                    var innerBack = document.getElementById('fcCardInner');
+                    innerBack.style.transition = 'transform 0.18s ease';
+                    innerBack.style.transform = 'rotate3d(' + back.ax + ',' + back.ay + ',0,0deg)';
                     fcUpdateStudyHint();
                     return;
                 }
@@ -31126,14 +31184,15 @@
                 if (overlay.dataset.fcBound) return;
                 overlay.dataset.fcBound = 'true';
                 var startX = 0, startY = 0, started = false;
+                var NO_GESTURE = 'button, .fcx-study-controls, .fc-viewer-header';
                 function handleStart(x, y, target) {
-                    started = !(target && target.closest('button'));
+                    started = !(target && target.closest(NO_GESTURE));
                     startX = x; startY = y;
                 }
                 function handleEnd(x, y, target, isTouch) {
                     if (!started || !fcStudy || fcStudy.swiping || fcStudy.ended) return;
                     started = false;
-                    if (target && target.closest('button')) return;
+                    // ボタンの上で始めた操作は handleStart で外している(なぞった指がボタンの上で離れても動くように)
                     var dx = x - startX;
                     var dy = y - startY;
                     if (Math.sqrt(dx * dx + dy * dy) < 15) { fcSwipeDx = -100; fcSwipeDy = 0; }
@@ -31144,7 +31203,7 @@
                 overlay.addEventListener('touchend', function (e) {
                     handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target, true);
                     // タッチのあとに続くマウスイベントで二重に進まないようにする
-                    if (e.cancelable && !(e.target && e.target.closest('button'))) e.preventDefault();
+                    if (e.cancelable && !(e.target && e.target.closest(NO_GESTURE))) e.preventDefault();
                 });
                 overlay.addEventListener('mousedown', function (e) { handleStart(e.clientX, e.clientY, e.target); });
                 overlay.addEventListener('mouseup', function (e) { handleEnd(e.clientX, e.clientY, e.target, false); });
@@ -31160,6 +31219,11 @@
                     if (e.target && e.target.closest && e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
                     e.preventDefault();
                     if (fcStudy.ended) { if (e.key === ' ' || e.key === 'Enter') fcRestartStudy(); return; }
+                    var curCard = fcStudy.queue[fcStudy.index];
+                    if (!isFcClassic() && fcStudy.flipped && curCard && curCard.flip && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                        fcJudge(e.key === 'ArrowRight');
+                        return;
+                    }
                     fcSwipeDx = dirs[e.key];
                     fcSwipeDy = 0;
                     fcHandleSwipe();
