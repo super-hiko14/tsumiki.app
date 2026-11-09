@@ -10088,6 +10088,11 @@
             pointer-events: auto;
         }
 
+        .fc-viewer-overlay {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         .fc-viewer-header {
             position: absolute;
             top: 0;
@@ -31227,14 +31232,40 @@
                     else { fcSwipeDx = dx; fcSwipeDy = dy; }
                     fcHandleSwipe();
                 }
-                overlay.addEventListener('touchstart', function (e) { handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
+                // タッチのあとに端末が送ってくる「まねのマウス操作」は無視する(めくる→すぐ戻る、と2回動かないように)
+                var lastTouchAt = 0;
+                var btnStart = null;
+                overlay.addEventListener('touchstart', function (e) {
+                    lastTouchAt = Date.now();
+                    var t = e.touches[0];
+                    var btn = e.target && e.target.closest('.fcx-study-controls button, .fcx-end button');
+                    btnStart = btn ? { btn: btn, x: t.clientX, y: t.clientY } : null;
+                    handleStart(t.clientX, t.clientY, e.target);
+                }, { passive: true });
                 overlay.addEventListener('touchend', function (e) {
-                    handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target, true);
-                    // タッチのあとに続くマウスイベントで二重に進まないようにする
+                    lastTouchAt = Date.now();
+                    var t = e.changedTouches[0];
+                    // 学習画面のボタンは、指を離したその場で押したことにする(click を待たない)
+                    if (btnStart) {
+                        var b = btnStart;
+                        btnStart = null;
+                        var moved = Math.abs(t.clientX - b.x) > 20 || Math.abs(t.clientY - b.y) > 20;
+                        if (e.cancelable) e.preventDefault();
+                        if (!moved && !b.btn.disabled) b.btn.click();
+                        return;
+                    }
+                    handleEnd(t.clientX, t.clientY, e.target, true);
                     if (e.cancelable && !(e.target && e.target.closest(NO_GESTURE))) e.preventDefault();
                 });
-                overlay.addEventListener('mousedown', function (e) { handleStart(e.clientX, e.clientY, e.target); });
-                overlay.addEventListener('mouseup', function (e) { handleEnd(e.clientX, e.clientY, e.target, false); });
+                overlay.addEventListener('touchcancel', function () { btnStart = null; started = false; });
+                overlay.addEventListener('mousedown', function (e) {
+                    if (Date.now() - lastTouchAt < 800) return;
+                    handleStart(e.clientX, e.clientY, e.target);
+                });
+                overlay.addEventListener('mouseup', function (e) {
+                    if (Date.now() - lastTouchAt < 800) return;
+                    handleEnd(e.clientX, e.clientY, e.target, false);
+                });
             }
 
             document.addEventListener('keydown', function (e) {
