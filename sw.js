@@ -4,7 +4,7 @@
 // ･Google Fonts … 同じく保存して、ネットがなくても文字の形が変わらないようにする
 // ･それ以外(アクセス解析･YouTube など)… 何もしない
 
-const CACHE = 'tsumiki-v1';
+const CACHE = 'tsumiki-v2';
 const FONT_CACHE = 'tsumiki-fonts-v1';
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -106,7 +106,8 @@ self.addEventListener('fetch', (event) => {
 
 async function networkFirst(req) {
     const cache = await caches.open(CACHE);
-    const fresh = fetch(req).then(res => {
+    // ブラウザの HTTP キャッシュ(GitHub Pages は10分)に止められず、いつも新しいページを確かめにいく
+    const fresh = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then(res => {
         if (res && res.ok) cache.put('./', res.clone());
         return res;
     });

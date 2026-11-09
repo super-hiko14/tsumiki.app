@@ -11024,8 +11024,17 @@
         }
 
         .fcx-judge-btn {
+            position: relative;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 押せる範囲をボタンの外まで少し広げる(見た目は変えない。左右はすき間の半分まで) */
+        .fcx-judge-btn::before {
+            content: '';
+            position: absolute;
+            inset: -10px -5px;
+            border-radius: 999px;
         }
 
         @media (pointer: coarse) {
