@@ -2666,12 +2666,12 @@
             color: var(--primary-color-dark);
         }
 
-        /* グラフ上部のサマリー(合計 / 1日平均 / 1日最長): 枠なしで3つを横に並べる */
+        /* グラフ上部のサマリー: 合計を大きく、前の期間との差を横に。1日平均と1日最長は小さく添える */
         .chart-summary {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
-            margin: 0 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0 0 18px;
             text-align: left;
         }
 
@@ -2679,18 +2679,69 @@
             display: none;
         }
 
-        .chart-stat {
+        .chart-total {
             display: flex;
             flex-direction: column;
             gap: 2px;
+        }
+
+        .chart-total-label {
+            font-size: 0.72rem;
+            opacity: 0.6;
+        }
+
+        .chart-total-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+        }
+
+        .chart-total-value {
+            font-size: 1.75rem;
+            font-weight: 400;
+            line-height: 1.25;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 前の週･月･年より どれだけ多い/少ないか。増えたときだけテーマカラーでうっすら色づく */
+        .chart-delta {
+            padding: 3px 12px;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.14);
+            font-size: 0.74rem;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        @supports (background-color: color-mix(in srgb, red 10%, blue)) {
+            .light .chart-delta.up {
+                background: color-mix(in srgb, var(--primary-color) 38%, transparent);
+            }
+
+            .dark .chart-delta.up {
+                background: color-mix(in srgb, var(--primary-color-dark) 42%, transparent);
+            }
+        }
+
+        .chart-substats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 20px;
+        }
+
+        .chart-stat {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 8px;
             min-width: 0;
+            font-size: 0.8rem;
         }
 
         .chart-stat-label {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.72rem;
             opacity: 0.6;
         }
 
@@ -2701,17 +2752,14 @@
         }
 
         .chart-stat-value {
-            font-size: 1.05rem;
-            font-weight: 600;
+            font-weight: 500;
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         @media (max-width: 480px) {
-            .chart-stat-value {
-                font-size: 0.92rem;
+            .chart-total-value {
+                font-size: 1.5rem;
             }
         }
 
@@ -6134,7 +6182,7 @@
 
         .chart-range-btn.active {
             opacity: 1;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .light .chart-range-btn.active {
@@ -6155,7 +6203,7 @@
 
         .chart-nav-label {
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 500;
             font-variant-numeric: tabular-nums;
             padding: 0 2px;
         }
@@ -6242,7 +6290,7 @@
         }
 
         .chart-tip-value {
-            font-weight: 600;
+            font-weight: 500;
             font-variant-numeric: tabular-nums;
         }
 
@@ -12937,6 +12985,10 @@
             overflow: hidden;
         }
 
+        .goal-line.no-goal .goal-line-bar {
+            display: none;
+        }
+
         .goal-line-bar > span {
             display: block;
             height: 100%;
@@ -14127,6 +14179,849 @@
             opacity: 1;
             background: rgba(128, 128, 128, 0.12);
         }
+
+        /* ===== タイマー画面: 台の上に数字と今日の積み木をのせる =====
+           「タイマー画面を前の表示にする」がONのときは、ここの見た目は使わない */
+        body:not(.timer-classic) .timer-stage {
+            position: relative;
+            margin: 0 0 16px;
+            padding: 46px 20px 22px;
+            border-radius: 32px;
+            background-color: var(--panel-light);
+            transition: background-color 0.25s ease;
+        }
+
+        body.dark:not(.timer-classic) .timer-stage {
+            background-color: var(--panel-dark);
+        }
+
+        /* 計測中は台がテーマカラーにうっすら色づく。一時停止中と休憩中は元の色 */
+        @supports (background-color: color-mix(in srgb, red 10%, blue)) {
+            body.light.session-running:not(.session-paused):not(.timer-classic) .timer-stage:not(:has(.timer-phase.is-break)) {
+                background-color: color-mix(in srgb, var(--primary-color) 22%, var(--panel-light));
+            }
+
+            body.dark.session-running:not(.session-paused):not(.timer-classic) .timer-stage:not(:has(.timer-phase.is-break)) {
+                background-color: color-mix(in srgb, var(--primary-color-dark) 24%, var(--panel-dark));
+            }
+        }
+
+        /* 状態(集中･休憩･一時停止中)は台の上の端に。出たり消えたりしても数字が動かない */
+        body:not(.timer-classic) #timerPage .timer-phase {
+            position: absolute;
+            top: -34px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: calc(100% - 100px);
+            min-height: 0;
+            margin: 0;
+            padding: 4px 14px;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.14);
+            font-size: 0.78rem;
+            line-height: 1.5;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body:not(.timer-classic) #timerPage .timer-phase:empty {
+            display: none;
+        }
+
+        body:not(.timer-classic) #timerPage .timer,
+        body:not(.timer-classic) #timerPage .timer-phase:not(:empty) + .timer {
+            font-size: clamp(3rem, 15.5vw, 5.2rem);
+            line-height: 1.1;
+            margin: 0 auto 14px;
+        }
+
+        body:not(.timer-classic) #timerPage.focus-on .timer {
+            font-size: clamp(3.6rem, 21vw, 6rem);
+        }
+
+        body:not(.timer-classic) #timerPage #fullscreenTimerBtn {
+            top: -42px !important;
+            right: -12px !important;
+            bottom: auto !important;
+        }
+
+        body:not(.timer-classic) #timerPage .focus-progress-bar {
+            max-width: 280px;
+            margin: -4px auto 14px;
+        }
+
+        body:not(.timer-classic) #timerPage .timer-display-sub {
+            margin: -6px 0 12px;
+            font-size: 0.9rem;
+        }
+
+        /* 台の下の端: 「今日 ◯分」･受験まで･開始時刻を横に並べる。いつも1行ぶんの場所を取って、始めた瞬間に下のボタンが動かないようにする */
+        body:not(.timer-classic) .timer-stage-foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 4px 16px;
+            min-height: 22px;
+        }
+
+        body:not(.timer-classic) .timer-stage-foot .goal-line,
+        body:not(.timer-classic) .timer-stage-foot .goal-line:not([hidden]) + .exam-line {
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap,
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap.is-quiet,
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap.is-running {
+            min-width: 34px;
+            min-height: 22px;
+            margin: 0;
+        }
+
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap .session-info {
+            font-size: 0.8rem;
+            line-height: 1.7;
+            opacity: 0.55;
+        }
+
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap.editing {
+            flex-basis: 100%;
+        }
+
+        /* 通常/フォーカス･グループ･自動停止: 高さをそろえて1列に(狭い画面では2段) */
+        body:not(.timer-classic) .timer-tray {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        body:not(.timer-classic) .timer-tray #focusModeToggleContainer {
+            flex: 1.25 1 250px;
+            min-width: 0;
+            margin: 0;
+        }
+
+        body:not(.timer-classic) .timer-tray .focus-mode-segment {
+            width: 100%;
+            height: 44px;
+            box-sizing: border-box;
+        }
+
+        body:not(.timer-classic) .timer-tray .focus-segment-btn {
+            height: 100%;
+            padding: 0 8px;
+            white-space: nowrap;
+        }
+
+        body:not(.timer-classic) .timer-tray .timer-options-row {
+            --opt-h: 44px;
+            display: contents;
+        }
+
+        body:not(.timer-classic) .timer-tray .group-input-wrapper {
+            flex: 1 1 170px;
+        }
+
+        body:not(.timer-classic) .timer-tray .timer-group-select-btn,
+        body:not(.timer-classic) .timer-tray .group-input input {
+            font-size: 0.9rem;
+        }
+
+        body:not(.timer-classic) .timer-tray .auto-stop-pill {
+            order: 2;
+        }
+
+        /* 開始は横いっぱい。計測中は「一時停止」と「終了」を横に並べる */
+        body:not(.timer-classic) #timerPage .controls {
+            flex-direction: row;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        body:not(.timer-classic) #timerPage .controls button {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 54px;
+            padding: 0 20px;
+            border-radius: 999px;
+            font-size: 1.02rem;
+        }
+
+        body:not(.timer-classic) #timerPage .controls #pauseBtn {
+            flex-grow: 1.6;
+        }
+
+        /* 止めているあいだは「再開」が主役 */
+        body.light.session-paused:not(.timer-classic) #timerPage #pauseBtn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        body.dark.session-paused:not(.timer-classic) #timerPage #pauseBtn {
+            background-color: var(--primary-color-dark);
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            body:not(.timer-classic) .timer-stage {
+                padding: 44px 14px 20px;
+                border-radius: 28px;
+            }
+
+            body:not(.timer-classic) #timerPage #fullscreenTimerBtn {
+                right: -8px !important;
+            }
+        }
+
+        /* ===== 淡い色だけを選ぶ小さなピッカー(色あい と こさ の2本) ===== */
+        .pale-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        input[type="range"].pale-range {
+            -webkit-appearance: none;
+            appearance: none;
+            display: block;
+            width: 100%;
+            height: 30px;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            touch-action: pan-y;
+        }
+
+        .pale-range::-webkit-slider-runnable-track {
+            height: 14px;
+            border-radius: 999px;
+            background: var(--track, rgba(128, 128, 128, 0.2));
+        }
+
+        .pale-range::-moz-range-track {
+            height: 14px;
+            border-radius: 999px;
+            background: var(--track, rgba(128, 128, 128, 0.2));
+        }
+
+        .pale-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            margin-top: -4px;
+            border: none;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.28);
+        }
+
+        .pale-range::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.28);
+        }
+
+        .pale-range:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+            border-radius: 999px;
+        }
+
+        /* テーマカラーの「カスタム」 */
+        .theme-custom-body {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-radius: 24px;
+        }
+
+        .light .theme-custom-body {
+            background: var(--panel-light);
+        }
+
+        .dark .theme-custom-body {
+            background: var(--panel-dark);
+        }
+
+        .theme-custom-body[hidden] {
+            display: none;
+        }
+
+        .theme-custom-image {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px 12px;
+            margin-top: 10px;
+        }
+
+        .theme-custom-image button.secondary {
+            padding: 0 16px;
+            height: 36px;
+            font-size: 0.85rem;
+            border-radius: 999px;
+        }
+
+        .light .theme-custom-image button.secondary {
+            background: var(--bg-light);
+        }
+
+        .dark .theme-custom-image button.secondary {
+            background: var(--panel-dark-2);
+        }
+
+        .theme-custom-swatches {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-custom-swatches .bg-swatch {
+            border: none;
+            cursor: pointer;
+        }
+
+        .theme-selector.is-overridden .theme-custom-body {
+            opacity: 0.45;
+        }
+
+        /* グループの色: 候補の下に2本 */
+        .group-color-pop .pale-picker {
+            grid-column: 1 / -1;
+        }
+
+        /* 優先度の色: 四角い色の板とカラーコードはやめて、2本だけ */
+        .pc-dialog .priority-color-board,
+        .pc-dialog .priority-color-hex {
+            display: none;
+        }
+
+        /* ===== QRコードでスマホへ移す ===== */
+        .custom-confirm-dialog.qr-transfer-dialog {
+            width: auto;
+            max-width: min(94vw, 720px);
+            max-height: 96vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .qr-transfer-dialog .custom-confirm-message {
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* QRコードは明るい背景でないと読めないので、ダークでも白い台にのせる */
+        .qr-transfer-code {
+            display: inline-block;
+            padding: 12px;
+            border-radius: 28px;
+            background: #ffffff;
+            line-height: 0;
+        }
+
+        .qr-transfer-code canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        .qr-transfer-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .qr-transfer-nav[hidden],
+        .qr-transfer-dialog button[hidden] {
+            display: none;
+        }
+
+        .qr-transfer-dialog .custom-confirm-buttons {
+            margin-top: 16px;
+        }
+
+        /* ===== カスタム背景 =====
+           状態はすべて body のクラス(bg-…)とCSS変数(--cbg-…)で持つ。OFFのときは何も描かない。
+           ･#customBg … 画面のいちばん後ろに固定した層(画像 + その上にページの色をうすくかける)
+           ･置き方 … 全面 / 左右どちらかに「飾る」(広い画面だけ。せまい画面では全面になる)
+           ･中身の下地 … なし / カード / 帯(広い画面だけ) */
+        #customBg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            display: none;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        body.bg-on #customBg {
+            display: block;
+        }
+
+        body.bg-on {
+            --cbg-gutter: clamp(16px, 4vw, 96px);
+            --cbg-veil-base: var(--cbg-veil, 0.6);
+            --cbg-veil-eff: var(--cbg-veil-base);
+            --cbg-blur-eff: var(--cbg-blur, 0px);
+        }
+
+        .cbg-stage {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            overflow: hidden;
+            border-radius: 0;
+            -webkit-mask-image: var(--cbg-mask, none);
+            mask-image: var(--cbg-mask, none);
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            transition: top 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), right 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+                bottom 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), left 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-radius 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* ぼかすと端が透けるので、ぼかしの分だけ外へ広げておく */
+        .cbg-img {
+            position: absolute;
+            inset: calc(var(--cbg-blur-eff, 0px) * -2);
+            background-image: var(--cbg-url, none), var(--cbg-thumb, none);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: var(--cbg-x, 50%) var(--cbg-y, 50%);
+            filter: blur(var(--cbg-blur-eff, 0px));
+            transition: filter 0.3s ease, inset 0.3s ease;
+        }
+
+        /* ページの色を上からうすくかけて、画像をアプリの色になじませる */
+        .cbg-veil {
+            position: absolute;
+            inset: 0;
+            background-color: var(--bg-light);
+            opacity: var(--cbg-veil-eff, 0.6);
+            transition: opacity 0.3s ease, background-color 0.3s;
+        }
+
+        .dark .cbg-veil {
+            background-color: var(--bg-dark);
+        }
+
+        /* 積み木でひらく: 新しく見えたところを、ページの色からふわっと出す */
+        .cbg-pop {
+            position: absolute;
+            border-radius: 24px;
+            background-color: var(--bg-light);
+            animation: cbgPop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .dark .cbg-pop {
+            background-color: var(--bg-dark);
+        }
+
+        @keyframes cbgPop {
+            from { opacity: 0.9; }
+            to { opacity: 0; }
+        }
+
+        /* 勉強中の見え方(休憩･一時停止のあいだは元に戻る) */
+        body.bg-on.bg-study-calm.bg-studying {
+            --cbg-veil-eff: calc(var(--cbg-veil-base) + (1 - var(--cbg-veil-base)) * 0.45);
+            --cbg-blur-eff: calc(var(--cbg-blur, 0px) + 14px);
+        }
+
+        body.bg-on.bg-study-hide.bg-studying {
+            --cbg-veil-eff: 1;
+        }
+
+        /* 中身の下地(カード/帯)。.container 自体に backdrop-filter を付けると、中の position: fixed
+           (ミニプレイヤーや下のメニュー)の基準が変わってしまうので、後ろに敷く疑似要素に付ける */
+        @media (min-width: 769px) {
+            body.bg-on.bg-layout-full.bg-surface-card .container::before,
+            body.bg-on.bg-layout-full.bg-surface-column .container::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                border-radius: 32px;
+                background-color: color-mix(in srgb, var(--bg-light) calc(var(--cbg-surface, 0.85) * 100%), transparent);
+                -webkit-backdrop-filter: blur(20px);
+                backdrop-filter: blur(20px);
+                pointer-events: none;
+            }
+
+            body.dark.bg-on.bg-layout-full.bg-surface-card .container::before,
+            body.dark.bg-on.bg-layout-full.bg-surface-column .container::before {
+                background-color: color-mix(in srgb, var(--bg-dark) calc(var(--cbg-surface, 0.85) * 100%), transparent);
+            }
+
+            body.bg-on.bg-layout-full.bg-surface-card .container {
+                margin-top: 24px;
+                margin-bottom: 24px;
+            }
+
+            /* 帯: 中身の幅のまま、画面の上から下まで */
+            body.bg-on.bg-layout-full.bg-surface-column .container::before {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 50%;
+                right: auto;
+                width: 600px;
+                margin-left: -300px;
+                border-radius: 0;
+            }
+        }
+
+        /* 中身を左右に寄せる/画像を左右に飾る(広い画面だけ) */
+        @media (min-width: 1000px) {
+            body.bg-on.bg-layout-full.bg-content-left,
+            body.bg-on.bg-layout-frame-right {
+                justify-content: flex-start;
+            }
+
+            body.bg-on.bg-layout-full.bg-content-right,
+            body.bg-on.bg-layout-frame-left {
+                justify-content: flex-end;
+            }
+
+            body.bg-on.bg-layout-full.bg-content-left .container,
+            body.bg-on.bg-layout-frame-right .container {
+                margin-left: var(--cbg-gutter);
+            }
+
+            body.bg-on.bg-layout-full.bg-content-right .container,
+            body.bg-on.bg-layout-frame-left .container {
+                margin-right: var(--cbg-gutter);
+            }
+
+            /* カードが右上のボタンや左上の時計の下にもぐらないよう、上下をあける */
+            body.bg-on.bg-layout-full.bg-surface-card.bg-content-left .container,
+            body.bg-on.bg-layout-full.bg-surface-card.bg-content-right .container {
+                margin-top: 84px;
+                margin-bottom: 84px;
+            }
+
+            /* 帯を寄せたときは画面の端にぴったり付ける */
+            body.bg-on.bg-layout-full.bg-surface-column.bg-content-left .container {
+                margin-left: 0;
+            }
+
+            body.bg-on.bg-layout-full.bg-surface-column.bg-content-right .container {
+                margin-right: 0;
+            }
+
+            body.bg-on.bg-layout-full.bg-surface-column.bg-content-left .container::before {
+                left: 0;
+                margin-left: 0;
+            }
+
+            body.bg-on.bg-layout-full.bg-surface-column.bg-content-right .container::before {
+                left: auto;
+                right: 0;
+                margin-left: 0;
+            }
+
+            /* 飾る: 画像は中身の反対側に、角の丸い1枚の絵として置く。文字と重ならない */
+            body.bg-on.bg-layout-frame-left,
+            body.bg-on.bg-layout-frame-right {
+                --cbg-veil-base: var(--cbg-veil-frame, 0.15);
+            }
+
+            body.bg-on.bg-layout-frame-right .cbg-stage {
+                top: 84px;
+                right: 24px;
+                bottom: 24px;
+                left: calc(var(--cbg-gutter) * 2 + 600px);
+                border-radius: 32px;
+            }
+
+            body.bg-on.bg-layout-frame-left .cbg-stage {
+                top: 84px;
+                left: 24px;
+                bottom: 24px;
+                right: calc(var(--cbg-gutter) * 2 + 600px);
+                border-radius: 32px;
+            }
+
+            body.bg-on.menu-mode-bottom.bg-layout-frame-left .cbg-stage,
+            body.bg-on.menu-mode-bottom.bg-layout-frame-right .cbg-stage {
+                bottom: 96px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cbg-stage,
+            .cbg-img,
+            .cbg-veil {
+                transition: none;
+            }
+
+            .cbg-pop {
+                animation: none;
+                opacity: 0;
+            }
+        }
+
+        /* ── 設定: 背景 ── */
+        .bg-setting-body {
+            margin-top: 14px;
+        }
+
+        .bg-preview {
+            position: relative;
+            height: 200px;
+            max-width: 100%;
+            margin: 0 auto;
+            border-radius: 24px;
+            overflow: hidden;
+            background-color: var(--ctl-bg);
+            background-image: var(--cbg-url, none), var(--cbg-thumb, none);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: var(--cbg-x, 50%) var(--cbg-y, 50%);
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .bg-preview.is-dragging {
+            cursor: grabbing;
+        }
+
+        .bg-preview.is-empty {
+            width: 100% !important;
+            background-image: none;
+            cursor: default;
+            touch-action: auto;
+        }
+
+        .bg-preview:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 3px;
+        }
+
+        .bg-preview.is-dropping {
+            box-shadow: 0 0 0 3px var(--primary-color);
+        }
+
+        .bg-preview-empty {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0;
+            border-radius: 24px;
+            background: transparent;
+            color: inherit;
+            font-size: 0.95rem;
+        }
+
+        .bg-preview-empty svg {
+            opacity: 0.6;
+        }
+
+        .bg-preview.is-empty .bg-preview-empty {
+            display: flex;
+        }
+
+        .bg-preview-busy {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            background-color: var(--ctl-bg);
+        }
+
+        .bg-preview.is-busy .bg-preview-busy {
+            display: flex;
+        }
+
+        .bg-image-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .bg-image-actions button {
+            flex: 1 1 0;
+            padding: 9px 10px;
+            font-size: 0.9rem;
+            border-radius: 999px;
+            background: var(--ctl-bg) !important;
+            color: inherit;
+        }
+
+        .bg-preview-message {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            line-height: 1.45;
+        }
+
+        .bg-preview-message:empty {
+            display: none;
+        }
+
+        .bg-range-row + .bg-range-row,
+        .todo-seg + .bg-range-row {
+            margin-top: 14px;
+        }
+
+        .bg-range-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            font-size: 0.92rem;
+        }
+
+        .bg-range-value {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 音量バーと同じ形(押せる高さ28px、線は6px、今の値まで色を塗る) */
+        .bg-range {
+            --fill: 50%;
+            --fill-color: var(--primary-color);
+            --rest-color: rgba(0, 0, 0, 0.1);
+            display: block;
+            width: 100%;
+            height: 28px;
+            margin: 2px 0 0;
+            padding: 0;
+            background: transparent;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            touch-action: pan-y;
+        }
+
+        .dark .bg-range {
+            --fill-color: var(--primary-color-dark);
+            --rest-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .bg-range::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(to right, var(--fill-color) var(--fill), var(--rest-color) var(--fill));
+        }
+
+        .bg-range::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--rest-color);
+        }
+
+        .bg-range::-moz-range-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--fill-color);
+        }
+
+        .bg-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--fill-color);
+            box-shadow: 0 0 0 3px var(--panel-light);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .dark .bg-range::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px var(--panel-dark);
+        }
+
+        .bg-range:hover::-webkit-slider-thumb,
+        .bg-range:active::-webkit-slider-thumb {
+            transform: scale(1.2);
+        }
+
+        .bg-range::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border: none;
+            border-radius: 50%;
+            background: var(--fill-color);
+            box-shadow: 0 0 0 3px var(--panel-light);
+            cursor: pointer;
+        }
+
+        .dark .bg-range::-moz-range-thumb {
+            box-shadow: 0 0 0 3px var(--panel-dark);
+        }
+
+        .bg-range:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+            border-radius: 999px;
+        }
+
+        /* 画像から取った色の丸 */
+        .bg-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 4px 15px 12px;
+        }
+
+        .bg-swatches:empty {
+            display: none;
+        }
+
+        .bg-swatch {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            background: var(--c);
+            flex-shrink: 0;
+        }
+
+        .light .bg-swatch.is-current {
+            box-shadow: 0 0 0 3px var(--bg-light), 0 0 0 5px var(--c);
+        }
+
+        .dark .bg-swatch.is-current {
+            box-shadow: 0 0 0 3px var(--bg-dark), 0 0 0 5px var(--c);
+        }
+
+        /* 背景の色に合わせているあいだ、テーマカラーの選択は休ませる */
+        .theme-selector.is-overridden .theme-options {
+            opacity: 0.45;
+        }
+
+        .theme-selector .setting-note {
+            margin-top: 10px;
+        }
     </style>
 
 </head>
@@ -14138,7 +15033,7 @@
             var _m = localStorage.getItem('mode');
             var _t = localStorage.getItem('theme');
             var _normalizedTheme = (_t || '').trim().toLowerCase();
-            var _validThemes = ['blue', 'green', 'purple', 'orange', 'pink', 'teal', 'white'];
+            var _validThemes = ['blue', 'green', 'purple', 'orange', 'pink', 'teal', 'white', 'custom'];
             if (_m === 'dark') { document.body.className = 'dark'; }
             var _icon = localStorage.getItem('icon_style');
             if (_icon === 'svg') { document.body.classList.add('icons-svg'); }
@@ -14151,6 +15046,154 @@
                 localStorage.setItem('last_valid_theme', _normalizedTheme);
             }
         } catch (e) { }
+    </script>
+    <!-- カスタム背景(設定でONにしたときだけ表示。画像 + ページの色のうすい膜) -->
+    <div id="customBg" aria-hidden="true">
+        <div class="cbg-stage" id="customBgStage">
+            <div class="cbg-img"></div>
+            <div class="cbg-veil"></div>
+        </div>
+    </div>
+    <script>
+        // カスタム背景の状態を、保存された設定から body のクラスとCSS変数に写す。
+        // 初回描画の前にも呼ぶ(小さな下絵と色を先に出して、ちらつきを防ぐ)。設定を変えたあとも同じ関数を呼ぶ。
+        (function () {
+            var LAYOUTS = ['full', 'frame-left', 'frame-right'];
+            var CONTENTS = ['center', 'left', 'right'];
+            var SURFACES = ['none', 'card', 'column'];
+            var STUDY = ['none', 'calm', 'hide'];
+            var THEME_VARS = ['--primary-color', '--primary-hover', '--primary-color-dark', '--primary-hover-dark',
+                '--bg-light', '--bg-dark', '--panel-dark', '--panel-dark-2', '--panel-light', '--panel-light-2',
+                '--panel-light-hover', '--panel-light-border', '--panel-light-focus'];
+
+            function get(key) {
+                try { return localStorage.getItem(key); } catch (e) { return null; }
+            }
+            function pick(value, list) {
+                return list.indexOf(value) >= 0 ? value : list[0];
+            }
+            function num(value, lo, hi, fallback) {
+                var n = parseFloat(value);
+                return isFinite(n) ? Math.min(hi, Math.max(lo, n)) : fallback;
+            }
+            function hslToHex(h, s, l) {
+                s = Math.max(0, Math.min(100, s)) / 100;
+                l = Math.max(0, Math.min(100, l)) / 100;
+                var a = s * Math.min(l, 1 - l);
+                function f(n) {
+                    var k = (n + h / 30) % 12;
+                    var c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+                    return ('0' + Math.round(c * 255).toString(16)).slice(-2);
+                }
+                return '#' + f(0) + f(8) + f(4);
+            }
+
+            // 画像から取った色(色相と彩度)から、7色のテーマと同じ調子(くすんだ淡い色)の一式を作る
+            // tone(0〜100)は「カスタム」のテーマでだけ渡す: 色のこさ。50でほかのテーマと同じ調子、上げても淡さは保つ
+            function palette(h, sat, tone) {
+                var k = sat < 8 ? 0 : 1; // ほぼ灰色の画像は、色をつけない
+                var warm = Math.max(0, Math.cos((h - 25) * Math.PI / 180));
+                var ps = k * (28 + 14 * warm);
+                if (typeof tone === 'number') ps = Math.min(50, ps * (0.5 + tone / 100));
+                return {
+                    '--primary-color': hslToHex(h, ps, 71),
+                    '--primary-hover': hslToHex(h, ps - 3 * k, 65),
+                    '--primary-color-dark': hslToHex(h, ps - 6 * k, 58),
+                    '--primary-hover-dark': hslToHex(h, ps - 8 * k, 52),
+                    '--bg-light': hslToHex(h, 26 * k, 97.6),
+                    '--bg-dark': hslToHex(h, 11 * k, 9.5),
+                    '--panel-dark': hslToHex(h, 14 * k, 17),
+                    '--panel-dark-2': hslToHex(h, 11 * k, 27),
+                    '--panel-light': hslToHex(h, 27 * k, 95),
+                    '--panel-light-2': hslToHex(h, 27 * k, 95),
+                    '--panel-light-hover': hslToHex(h, 17 * k, 91.5),
+                    '--panel-light-border': hslToHex(h, 13 * k, 89),
+                    '--panel-light-focus': hslToHex(h, 22 * k, 94)
+                };
+            }
+
+            function parseColor(raw) {
+                var parts = String(raw || '').split(',');
+                if (parts.length !== 2) return null;
+                var h = parseFloat(parts[0]), s = parseFloat(parts[1]);
+                if (!isFinite(h) || !isFinite(s)) return null;
+                return { h: ((h % 360) + 360) % 360, s: Math.max(0, Math.min(100, s)) };
+            }
+
+            function read() {
+                return {
+                    enabled: get('bg_enabled') === 'true',
+                    hasImage: get('bg_has_image') === 'true',
+                    layout: pick(get('bg_layout'), LAYOUTS),
+                    content: pick(get('bg_content'), CONTENTS),
+                    surface: pick(get('bg_surface'), SURFACES),
+                    veil: num(get('bg_veil'), 0, 95, 60),
+                    veilFrame: num(get('bg_veil_frame'), 0, 95, 15),
+                    blur: num(get('bg_blur'), 0, 24, 0),
+                    surfaceAlpha: num(get('bg_surface_alpha'), 40, 100, 85),
+                    x: num(get('bg_pos_x'), 0, 100, 50),
+                    y: num(get('bg_pos_y'), 0, 100, 50),
+                    theme: get('bg_theme') !== 'false', // 標準ON
+                    color: parseColor(get('bg_theme_color')),
+                    study: pick(get('bg_study'), STUDY),
+                    reveal: get('bg_reveal') === 'true'
+                };
+            }
+
+            function apply() {
+                var s = read();
+                var body = document.body;
+                var on = s.enabled && s.hasImage;
+                var keep = [];
+                var i;
+                for (i = 0; i < body.classList.length; i++) {
+                    var c = body.classList[i];
+                    if (c.indexOf('bg-') !== 0 || c === 'bg-studying') keep.push(c);
+                }
+                if (on) {
+                    keep.push('bg-on', 'bg-layout-' + s.layout, 'bg-content-' + s.content,
+                        'bg-surface-' + s.surface, 'bg-study-' + s.study);
+                    if (s.reveal) keep.push('bg-reveal');
+                }
+                body.className = keep.join(' ');
+
+                var st = body.style;
+                st.setProperty('--cbg-veil', String(s.veil / 100));
+                st.setProperty('--cbg-veil-frame', String(s.veilFrame / 100));
+                st.setProperty('--cbg-blur', s.blur + 'px');
+                st.setProperty('--cbg-surface', String(s.surfaceAlpha / 100));
+                st.setProperty('--cbg-x', s.x + '%');
+                st.setProperty('--cbg-y', s.y + '%');
+                var thumb = on ? get('bg_thumb') : null;
+                if (thumb && /^data:image\/[a-z+]+;base64,[A-Za-z0-9+\/=]+$/.test(thumb)) {
+                    st.setProperty('--cbg-thumb', 'url("' + thumb + '")');
+                } else {
+                    st.removeProperty('--cbg-thumb');
+                }
+
+                // 色を画像に合わせる(テーマカラーの変数を上書き。OFFにすれば元のテーマに戻る)
+                // テーマカラーの「カスタム」も同じ仕組みで変数を上書きする(画像に合わせているあいだは画像が先)
+                var themed = on && s.theme && !!s.color;
+                var custom = get('theme') === 'custom' ? (parseColor(get('theme_custom')) || { h: 210, s: 50 }) : null;
+                var customVars = custom ? palette(custom.h, 50, custom.s) : null;
+                var vars = themed ? palette(s.color.h, s.color.s) : customVars;
+                for (i = 0; i < THEME_VARS.length; i++) {
+                    if (vars) st.setProperty(THEME_VARS[i], vars[THEME_VARS[i]]);
+                    else st.removeProperty(THEME_VARS[i]);
+                }
+                api.on = on;
+                api.themeHex = themed ? vars['--primary-color'] : '';
+                api.customHex = customVars ? customVars['--primary-color'] : '';
+                return s;
+            }
+
+            var api = window.tsumikiBg = {
+                LAYOUTS: LAYOUTS, CONTENTS: CONTENTS, SURFACES: SURFACES, STUDY: STUDY,
+                read: read, apply: apply, palette: palette, parseColor: parseColor,
+                on: false, themeHex: '', customHex: ''
+            };
+            try { apply(); } catch (e) { }
+        })();
     </script>
     <div id="loadingOverlay">
         <div class="loading-indicator" id="loadingIndicator"><span></span><span></span><span></span></div>
@@ -14222,6 +15265,25 @@
             <div class="custom-confirm-buttons">
                 <button class="custom-confirm-cancel" id="dataSelectCancelBtn" data-i18n="cancelButton">キャンセル</button>
                 <button class="custom-confirm-ok" id="dataSelectOkBtn" data-i18n="okButton">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-confirm-overlay" id="qrTransferOverlay">
+        <div class="custom-confirm-dialog qr-transfer-dialog">
+            <div class="custom-confirm-title" data-i18n="qrTitle">スマホへ移す</div>
+            <div class="custom-confirm-message" id="qrTransferMessage"></div>
+            <div class="qr-transfer-code">
+                <canvas id="qrTransferCanvas" role="img" aria-label="QRコード" data-i18n-aria="qrCanvasLabel"></canvas>
+            </div>
+            <div class="qr-transfer-nav" id="qrTransferNav" hidden>
+                <button type="button" class="chart-nav-btn" id="qrTransferPrev" onclick="stepQrTransfer(-1)" aria-label="前のQRコード" data-i18n-aria="qrPrev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button>
+                <span id="qrTransferCount" aria-live="polite"></span>
+                <button type="button" class="chart-nav-btn" id="qrTransferNextSmall" onclick="stepQrTransfer(1)" aria-label="次のQRコード" data-i18n-aria="qrNext"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+            </div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-cancel" id="qrTransferClose" onclick="closeQrTransfer()" data-i18n="closeButton">閉じる</button>
+                <button class="custom-confirm-ok" id="qrTransferNext" onclick="stepQrTransfer(1)"></button>
             </div>
         </div>
     </div>
@@ -14550,6 +15612,8 @@
         </div>
 
         <div id="timerPage" class="page active">
+            <!-- 数字と今日の進み具合をひとまとまりに見せる台 -->
+            <div class="timer-stage" id="timerStage">
             <div class="timer-wrapper" style="position: relative; display: block; width: 100%;">
                 <!-- 集中/休憩･一時停止中などの状態(必要なときだけ表示) -->
                 <div class="timer-phase" id="focusPhaseLabel" aria-live="polite"></div>
@@ -14568,6 +15632,8 @@
                 <div class="focus-progress-fill" id="mainFocusProgressFill"></div>
             </div>
             <div class="timer-display-sub" id="totalTimerDisplay" style="display: none;">00:00:00</div>
+            <!-- 台の下の端: 今日の進み具合･受験まで･開始時刻(セッション情報は applyTimerClassic がここへ入れる) -->
+            <div class="timer-stage-foot" id="timerStageFoot">
             <!-- 1日の目標(設定で決めたときだけ。小さく控えめに) -->
             <div class="goal-line" id="timerGoalLine" hidden>
                 <span class="goal-line-bar" aria-hidden="true"><span></span></span>
@@ -14577,6 +15643,10 @@
             <div class="goal-line exam-line" id="timerExamLine" hidden>
                 <span class="goal-line-text" id="timerExamText"></span>
             </div>
+            </div>
+            </div>
+            <!-- 通常/フォーカス･グループ･自動停止を、同じ高さで1列に -->
+            <div class="timer-tray" id="timerTray">
             <div id="focusModeToggleContainer" style="display: none;"
                 data-editor-target="focusMode">
                 <div class="focus-mode-segment" id="toggleFocusModeMain" role="group" aria-label="フォーカスモード"
@@ -14632,6 +15702,7 @@
                         </svg>
                     </button>
                 </div>
+            </div>
             </div>
             </div>
             <div class="session-info-wrap is-quiet" id="sessionInfoWrap" data-editor-target="sessionInfo">
@@ -15069,6 +16140,7 @@
                 <div class="settings-panel-title" data-i18n="settingsTabAppearance">外観</div>
             <div class="theme-selector">
                 <h2 data-i18n="themeColor">テーマカラー</h2>
+                <div class="setting-note" id="bgThemeOverrideNote" data-i18n="bgThemeOverrideNote" hidden>いまは背景の画像に色を合わせています。</div>
                 <div class="theme-options">
                     <div class="theme-option selected" data-theme="blue" onclick="changeTheme('blue')">
                         <div class="theme-option-preview" style="background-color: var(--panel-light);">
@@ -15125,6 +16197,130 @@
                             <div style="background-color: #101010;"></div>
                         </div>
                         <div class="theme-option-name" data-i18n="themeWhite">ホワイト/ブラック</div>
+                    </div>
+                    <div class="theme-option" data-theme="custom" onclick="changeTheme('custom')">
+                        <div class="theme-option-preview" id="themeCustomPreview" style="background-color: var(--panel-light);">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                        <div class="theme-option-name" data-i18n="themeCustom">カスタム</div>
+                    </div>
+                </div>
+                <!-- カスタム: 色あい と こさ だけ。どこを選んでも淡い色になる -->
+                <div class="theme-custom-body" id="themeCustomBody" hidden>
+                    <div class="pale-picker">
+                        <input type="range" class="pale-range" id="themeCustomHue" min="0" max="359" value="210"
+                            aria-label="色あい" data-i18n-aria="paleHue" oninput="onThemeCustomInput()">
+                        <input type="range" class="pale-range" id="themeCustomTone" min="0" max="100" value="50"
+                            aria-label="こさ" data-i18n-aria="paleTone" oninput="onThemeCustomInput()">
+                    </div>
+                    <div class="theme-custom-image">
+                        <button type="button" class="secondary" onclick="document.getElementById('themeImageInput').click()"
+                            data-i18n="themeFromImage">画像から色をとる</button>
+                        <div class="theme-custom-swatches" id="themeCustomSwatches"></div>
+                        <input type="file" id="themeImageInput" accept="image/*" style="display:none;"
+                            onchange="onThemeImageChosen(this)">
+                    </div>
+                    <div class="setting-note" style="margin: 8px 0 0;" data-i18n="themeFromImageNote">画像は色を調べるだけで、保存しません。</div>
+                </div>
+            </div>
+            <div class="settings-section" id="bgSettingsSection">
+                <h2 data-i18n="bgSettingTitle">背景</h2>
+                <div class="toggle-item">
+                    <span data-i18n="bgSettingToggle">背景に画像を使う</span>
+                    <div class="toggle-switch" id="toggleBgEnabled" onclick="toggleBgEnabled()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="bgSettingNote">好きな画像を背景にできます。画像はこの端末の中だけに保存され、バックアップには入りません。</div>
+                <div class="bg-setting-body" id="bgSettingBody" hidden>
+                    <div class="menu-setting-card">
+                        <div class="bg-preview is-empty" id="bgPreview" tabindex="0" aria-label="背景の画像。ドラッグか矢印キーで見せたい場所を動かせます"
+                            data-i18n-aria="bgPreviewAria">
+                            <button type="button" class="bg-preview-empty" onclick="chooseBgImage()">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span data-i18n="bgChooseImage">画像を選ぶ</span>
+                            </button>
+                            <div class="bg-preview-busy" data-i18n="bgImageBusy">読み込んでいます</div>
+                        </div>
+                        <div class="bg-preview-message" id="bgPreviewMessage" role="status" aria-live="polite"></div>
+                        <div class="menu-setting-note" id="bgPreviewHint" data-i18n="bgPreviewHint">ドラッグで、見せたい場所を動かせます</div>
+                        <div class="bg-image-actions" id="bgImageActions">
+                            <button type="button" class="secondary" onclick="chooseBgImage()" data-i18n="bgChangeImage">画像を変える</button>
+                            <button type="button" class="secondary" onclick="removeBgImage()" data-i18n="bgRemoveImage">画像を消す</button>
+                        </div>
+                        <input type="file" id="bgFileInput" accept="image/*" hidden onchange="onBgFileChosen(this)">
+                    </div>
+
+                    <div id="bgOptions" hidden>
+                        <div class="menu-setting-card" id="bgLayoutCard">
+                            <div class="menu-setting-label" data-i18n="bgLayoutLabel">画像の置き方</div>
+                            <div class="todo-seg" id="bgLayoutSeg" role="radiogroup"></div>
+                            <div class="menu-setting-note" id="bgLayoutNote"></div>
+                        </div>
+
+                        <div class="menu-setting-card" id="bgContentCard">
+                            <div class="menu-setting-label" data-i18n="bgContentLabel">中身の位置</div>
+                            <div class="todo-seg" id="bgContentSeg" role="radiogroup"></div>
+                        </div>
+
+                        <div class="menu-setting-card" id="bgSurfaceCard">
+                            <div class="menu-setting-label" data-i18n="bgSurfaceLabel">中身の下地</div>
+                            <div class="todo-seg" id="bgSurfaceSeg" role="radiogroup"></div>
+                            <div class="bg-range-row" id="bgSurfaceAlphaRow">
+                                <div class="bg-range-head">
+                                    <label for="bgSurfaceAlphaRange" data-i18n="bgSurfaceAlphaLabel">下地の濃さ</label>
+                                    <span class="bg-range-value" id="bgSurfaceAlphaValue"></span>
+                                </div>
+                                <input type="range" class="bg-range" id="bgSurfaceAlphaRange" min="40" max="100" step="1"
+                                    oninput="onBgRange('surfaceAlpha', this.value)">
+                            </div>
+                        </div>
+
+                        <div class="menu-setting-card">
+                            <div class="bg-range-row">
+                                <div class="bg-range-head">
+                                    <label for="bgVeilRange" data-i18n="bgVeilLabel">なじませる</label>
+                                    <span class="bg-range-value" id="bgVeilValue"></span>
+                                </div>
+                                <input type="range" class="bg-range" id="bgVeilRange" min="0" max="95" step="1"
+                                    oninput="onBgRange('veil', this.value)">
+                            </div>
+                            <div class="bg-range-row">
+                                <div class="bg-range-head">
+                                    <label for="bgBlurRange" data-i18n="bgBlurLabel">ぼかす</label>
+                                    <span class="bg-range-value" id="bgBlurValue"></span>
+                                </div>
+                                <input type="range" class="bg-range" id="bgBlurRange" min="0" max="24" step="1"
+                                    oninput="onBgRange('blur', this.value)">
+                            </div>
+                            <div class="menu-setting-note" data-i18n="bgVeilNote">「なじませる」を上げるほど、画像がページの色にとけこみます。</div>
+                        </div>
+
+                        <div class="toggle-item">
+                            <span data-i18n="bgThemeToggle">色を画像に合わせる</span>
+                            <div class="toggle-switch" id="toggleBgTheme" onclick="toggleBgTheme()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                        <div class="bg-swatches" id="bgSwatches" role="group" aria-label="画像から取った色"
+                            data-i18n-aria="bgSwatchesAria"></div>
+                        <div class="setting-note" data-i18n="bgThemeNote">ボタンやパネルの色を、画像から取った色に置きかえます。OFFにすると、選んでいたテーマカラーに戻ります。</div>
+
+                        <div class="menu-setting-card" style="margin-top: 14px;">
+                            <div class="menu-setting-label" data-i18n="bgStudyLabel">勉強中の見え方</div>
+                            <div class="todo-seg" id="bgStudySeg" role="radiogroup"></div>
+                            <div class="menu-setting-note" data-i18n="bgStudyNote">休憩と一時停止のあいだは、元の見え方に戻ります。</div>
+                        </div>
+
+                        <div class="toggle-item">
+                            <span data-i18n="bgRevealToggle">積み木でひらく</span>
+                            <div class="toggle-switch" id="toggleBgReveal" onclick="toggleBgReveal()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                        <div class="setting-note" id="bgRevealNote"></div>
                     </div>
                 </div>
             </div>
@@ -15291,7 +16487,7 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
-                <div class="setting-note" data-i18n="timerClassicNote">自動停止とグループを別々の段に並べ、止まっているときも「開始ボタンを押して…」や前回の学習を表示します。</div>
+                <div class="setting-note" data-i18n="timerClassicNote">数字をのせる台と今日の積み木を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。</div>
                 <div class="toggle-item">
                     <span data-i18n="autoStopMenuBtnSetting">自動停止</span>
                     <div class="toggle-switch active" id="toggleAutoStopMenuBtn" onclick="toggleAutoStopMenuBtnSetting()">
@@ -15720,6 +16916,9 @@
                     <input type="file" id="importFile" accept=".json" style="display:none;"
                         onchange="importData(event)">
                 </div>
+                <button type="button" class="secondary" style="width: 100%; margin-top: 12px;"
+                    onclick="openQrTransfer()" data-i18n="qrButton">スマホへ移す(QRコード)</button>
+                <div class="setting-note" style="margin-top: 8px;" data-i18n="qrButtonNote">この画面にQRコードを出し、スマホのカメラで読み取って移します。データはQRコードの中に入っていて、サーバーには送られません。</div>
                 <div class="setting-note" id="lastBackupNote" style="margin: 10px 0 14px;"></div>
                 <div class="toggle-item storage-persist-row">
                     <span class="storage-persist-text">
@@ -15928,8 +17127,10 @@
                         <div class="priority-color-board" id="priorityColorBoard">
                             <div class="priority-color-board-cursor" id="priorityColorBoardCursor"></div>
                         </div>
-                        <input type="range" min="0" max="360" value="0" class="priority-color-hue" id="priorityColorHue"
-                            aria-label="色相" data-i18n-aria="priorityColorHueLabel">
+                        <input type="range" min="0" max="360" value="0" class="pale-range" id="priorityColorHue"
+                            aria-label="色あい" data-i18n-aria="paleHue">
+                        <input type="range" min="0" max="100" value="50" class="pale-range" id="priorityColorTone"
+                            aria-label="こさ" data-i18n-aria="paleTone">
                         <input class="priority-color-hex" id="priorityColorHexInput" value="#E74C3C" maxlength="7"
                             aria-label="カラーコード" data-i18n-aria="priorityColorHexLabel" autocomplete="off" spellcheck="false">
                     </div>
@@ -16220,7 +17421,7 @@
                     autoStopMenuBtnSetting: '自動停止',
                     autoStopCompactSetting: '自動停止の表示をコンパクトにする',
                     timerClassicSetting: 'タイマー画面を前の表示にする',
-                    timerClassicNote: '自動停止とグループを別々の段に並べ、止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
+                    timerClassicNote: '数字をのせる台と今日の積み木を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
                     autoStopCompactNote: 'アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。',
                     endConfirmSetting: '長いセッション終了時に確認',
                     endConfirmThresholdLabel: '確認するしきい値(分)',
@@ -16240,6 +17441,9 @@
                     chartTotal: '合計',
                     chartDailyAvg: '1日平均',
                     chartBest: '1日最長',
+                    chartDeltaWeek: '前の週より {d}',
+                    chartDeltaMonth: '前の月より {d}',
+                    chartDeltaYear: '前の年より {d}',
                     chartAvgLine: '平均',
                     chartEmpty: 'この期間の記録はまだありません',
                     chartRangeLabel: '表示期間',
@@ -16364,6 +17568,13 @@
                     themePink: 'ピンク',
                     themeTeal: 'ティール',
                     themeWhite: 'ホワイト/ブラック',
+                    themeCustom: 'カスタム',
+                    paleHue: '色あい',
+                    paleTone: 'こさ',
+                    themeFromImage: '画像から色をとる',
+                    themeFromImageNote: '画像は色を調べるだけで、保存しません。',
+                    themeImageFailed: 'この画像は読み込めませんでした。',
+                    themeImageNoColor: 'この画像からは色を取れませんでした(白黒に近い画像です)。',
                     lockSettingsDuringTimer: 'タイマー作動中は設定を固定',
                     loadingAnimSetting: 'ローディングアニメーションを表示',
                     stopMusicOnTimerEnd: 'タイマー終了時に音楽を一時停止',
@@ -16402,6 +17613,7 @@
                     goalMinusAria: '目標を15分減らす',
                     goalPlusAria: '目標を15分増やす',
                     goalProgress: '今日 {t} / 目標 {g}',
+                    todayLine: '今日 {t}',
                     goalReached: '今日 {t} · 目標達成',
                     examSettingTitle: '受験カウントダウン',
                     examSettingToggle: '受験までの日数を出す',
@@ -16501,6 +17713,24 @@
                     groupRenameConfirm: '選択した{n}個のグループを「{name}」にまとめますか?(記録のグループも変わります)',
                     groupDeleteConfirm: '選択した{n}個のグループを削除しますか?(記録は未分類になります)',
                     exportData: 'データをエクスポート',
+                    qrButton: 'スマホへ移す(QRコード)',
+                    qrButtonNote: 'この画面にQRコードを出し、スマホのカメラで読み取って移します。データはQRコードの中に入っていて、サーバーには送られません。',
+                    qrTitle: 'スマホへ移す',
+                    qrSelectTitle: 'スマホへ移す項目',
+                    qrSelectNote: '項目が多いほどQRコードの枚数が増えます。音楽はYouTube動画だけ移せます。',
+                    qrMsgOne: 'スマホのカメラで読み取ってください。スマホで確認してから取り込みます。',
+                    qrMsgMany: '{n}枚あります。スマホのカメラで順番に読み取ってください。読み取るたびにアプリが開くので、開いたらここで次のQRコードに進みます。',
+                    qrNext: '次のQRコード',
+                    qrPrev: '前のQRコード',
+                    qrDone: '完了',
+                    qrCanvasLabel: 'QRコード',
+                    qrUnsupported: 'このブラウザではQRコードを作れません。エクスポートを使ってください。',
+                    qrMakeFailed: 'QRコードを作れませんでした。エクスポートを使ってください。',
+                    qrTooMany: 'データが多く、QRコードが{n}枚になります。項目を減らすか、エクスポートを使ってください。',
+                    qrReceiveTitle: 'QRコードから受け取る',
+                    qrGotPart: '{n}枚のうち{got}枚を受け取りました。残り: {list}枚目。PCで次のQRコードに進み、カメラで読み取ってください。',
+                    qrReadFailed: 'QRコードのデータを読み取れませんでした。PCでQRコードを出し直して、1枚目からやり直してください。',
+                    qrImportNote: '選んだ項目は、このスマホに今あるものと置きかわります。音楽は今あるものを残して、YouTube動画だけ追加されます。取り込んだあとページを再読み込みします。',
                     importData: 'データをインポート',
                     helpSection: 'ヘルプ',
                     showGuide: '使い方ガイドを再表示',
@@ -16747,6 +17977,52 @@
 
                     // 暗記カード
                     flashcards: '暗記カード',
+                    // カスタム背景
+                    bgSettingTitle: '背景',
+                    bgSettingToggle: '背景に画像を使う',
+                    bgSettingNote: '好きな画像を背景にできます。画像はこの端末の中だけに保存され、バックアップには入りません。',
+                    bgChooseImage: '画像を選ぶ',
+                    bgChangeImage: '画像を変える',
+                    bgRemoveImage: '画像を消す',
+                    bgRemoveConfirm: '背景の画像を消しますか?',
+                    bgImageBusy: '読み込んでいます',
+                    bgImageNotImage: '画像のファイルを選んでください。',
+                    bgImageTooLarge: '画像が大きすぎます(40MBまで)。',
+                    bgImageFailed: 'この画像は読み込めませんでした。',
+                    bgImageSaveFailed: '画像を保存できませんでした。端末の空き容量を確かめてください。',
+                    bgImageMissing: '保存していた画像が見つかりません。もう一度選んでください。',
+                    bgPreviewAria: '背景の画像。ドラッグか矢印キーで見せたい場所を動かせます',
+                    bgPreviewHint: 'ドラッグで、見せたい場所を動かせます',
+                    bgLayoutLabel: '画像の置き方',
+                    bgLayoutFull: '全面',
+                    bgLayoutFrameLeft: '左に飾る',
+                    bgLayoutFrameRight: '右に飾る',
+                    bgLayoutNoteFrame: '画像を1枚の絵として横に置きます。文字と重なりません。',
+                    bgLayoutNoteNarrow: '画面が広いとき(PCなど)は、画像を横に飾ったり、中身を左右に寄せたりできます。',
+                    bgContentLabel: '中身の位置',
+                    bgContentLeft: '左',
+                    bgContentCenter: '中央',
+                    bgContentRight: '右',
+                    bgSurfaceLabel: '中身の下地',
+                    bgSurfaceNone: 'なし',
+                    bgSurfaceCard: 'カード',
+                    bgSurfaceColumn: '帯',
+                    bgSurfaceAlphaLabel: '下地の濃さ',
+                    bgVeilLabel: 'なじませる',
+                    bgBlurLabel: 'ぼかす',
+                    bgVeilNote: '「なじませる」を上げるほど、画像がページの色にとけこみます。',
+                    bgThemeToggle: '色を画像に合わせる',
+                    bgThemeNote: 'ボタンやパネルの色を、画像から取った色に置きかえます。OFFにすると、選んでいたテーマカラーに戻ります。',
+                    bgSwatchesAria: '画像から取った色',
+                    bgSwatchAria: '画像から取った色 {n}',
+                    bgThemeOverrideNote: 'いまは背景の画像に色を合わせています。',
+                    bgStudyLabel: '勉強中の見え方',
+                    bgStudyNone: 'そのまま',
+                    bgStudyCalm: 'ぼかす',
+                    bgStudyHide: 'かくす',
+                    bgStudyNote: '休憩と一時停止のあいだは、元の見え方に戻ります。',
+                    bgRevealToggle: '積み木でひらく',
+                    bgRevealNote: '今日の勉強で、画像が下から積み木のように見えてきます。{t}でぜんぶ見えます。',
                     showClock: '現在時刻の表示',
                     themeToggleBtnSetting: 'ダーク/ライト切り替えボタンを常時表示',
                     statTsumiki: '積み木',
@@ -17132,7 +18408,7 @@
                     autoStopMenuBtnSetting: 'Auto-stop',
                     autoStopCompactSetting: 'Compact auto-stop button',
                     timerClassicSetting: 'Use the previous timer layout',
-                    timerClassicNote: 'Shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
+                    timerClassicNote: 'Drops the timer card and the row of blocks for today, shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
                     autoStopCompactNote: 'Shows only an icon: at the lower left of the clock on the timer, and to the right of the title in the music player. It turns colored while a stop is scheduled.',
                     endConfirmSetting: 'Confirm before ending long sessions',
                     endConfirmThresholdLabel: 'Confirm threshold (minutes)',
@@ -17152,6 +18428,9 @@
                     chartTotal: 'Total',
                     chartDailyAvg: 'Daily avg',
                     chartBest: 'Best day',
+                    chartDeltaWeek: '{d} vs previous week',
+                    chartDeltaMonth: '{d} vs previous month',
+                    chartDeltaYear: '{d} vs previous year',
                     chartAvgLine: 'avg',
                     chartEmpty: 'No records in this period yet',
                     chartRangeLabel: 'Range',
@@ -17246,6 +18525,13 @@
                     themePink: 'Pink',
                     themeTeal: 'Teal',
                     themeWhite: 'White/Black',
+                    themeCustom: 'Custom',
+                    paleHue: 'Hue',
+                    paleTone: 'Depth',
+                    themeFromImage: 'Pick from an image',
+                    themeFromImageNote: 'The image is only used to find colors. It is not saved.',
+                    themeImageFailed: 'This image could not be loaded.',
+                    themeImageNoColor: 'No color could be taken from this image (it is close to black and white).',
                     lockSettingsDuringTimer: 'Lock Settings during Timer',
                     loadingAnimSetting: 'Show Loading Animation on Start',
                     stopMusicOnTimerEnd: 'Pause music when timer ends',
@@ -17284,6 +18570,7 @@
                     goalMinusAria: 'Decrease goal by 15 minutes',
                     goalPlusAria: 'Increase goal by 15 minutes',
                     goalProgress: 'Today {t} / goal {g}',
+                    todayLine: 'Today {t}',
                     examSettingTitle: 'Exam countdown',
                     examSettingToggle: 'Show days until the exam',
                     examSettingNote: 'Shows the days left until your exam under the timer and when you tap the timer. You can rename it, e.g. “Finals”.',
@@ -17383,6 +18670,24 @@
                     groupRenameConfirm: 'Merge {n} selected groups into "{name}"? (Records are updated too)',
                     groupDeleteConfirm: 'Delete {n} selected groups? (Their records become uncategorized)',
                     exportData: 'Export Data',
+                    qrButton: 'Move to phone (QR code)',
+                    qrButtonNote: 'Shows QR codes on this screen for your phone camera to scan. The data is inside the QR codes and is not sent to any server.',
+                    qrTitle: 'Move to phone',
+                    qrSelectTitle: 'Items to Move',
+                    qrSelectNote: 'More items mean more QR codes. For music, only YouTube videos can be moved.',
+                    qrMsgOne: 'Scan this with your phone camera. Your phone asks before importing.',
+                    qrMsgMany: 'There are {n} codes. Scan them in order with your phone camera. The app opens after each scan; then go to the next code here.',
+                    qrNext: 'Next QR code',
+                    qrPrev: 'Previous QR code',
+                    qrDone: 'Done',
+                    qrCanvasLabel: 'QR code',
+                    qrUnsupported: 'This browser cannot make QR codes. Use Export instead.',
+                    qrMakeFailed: 'Could not make the QR code. Use Export instead.',
+                    qrTooMany: 'There is a lot of data: it would take {n} QR codes. Choose fewer items or use Export.',
+                    qrReceiveTitle: 'Receive from QR code',
+                    qrGotPart: 'Received {got} of {n}. Remaining: {list}. Go to the next QR code on your computer and scan it.',
+                    qrReadFailed: 'Could not read the QR code data. Show the QR codes again on your computer and start from the first one.',
+                    qrImportNote: 'The items you choose replace what is on this phone now. Existing music is kept; only YouTube videos are added. The page reloads after importing.',
                     importData: 'Import Data',
                     helpSection: 'Help',
                     showGuide: 'Show User Guide',
@@ -17582,6 +18887,52 @@
 
                     // Flashcards
                     flashcards: 'Flashcards',
+                    // Custom background
+                    bgSettingTitle: 'Background',
+                    bgSettingToggle: 'Use an image as the background',
+                    bgSettingNote: 'Put a picture you like behind the app. The image stays on this device and is not included in backups.',
+                    bgChooseImage: 'Choose an image',
+                    bgChangeImage: 'Change image',
+                    bgRemoveImage: 'Remove image',
+                    bgRemoveConfirm: 'Remove the background image?',
+                    bgImageBusy: 'Loading',
+                    bgImageNotImage: 'Please choose an image file.',
+                    bgImageTooLarge: 'The image is too large (up to 40 MB).',
+                    bgImageFailed: 'This image could not be loaded.',
+                    bgImageSaveFailed: 'The image could not be saved. Check the free space on this device.',
+                    bgImageMissing: 'The saved image was not found. Please choose it again.',
+                    bgPreviewAria: 'Background image. Drag or use the arrow keys to choose which part shows',
+                    bgPreviewHint: 'Drag to choose which part shows',
+                    bgLayoutLabel: 'Image placement',
+                    bgLayoutFull: 'Full',
+                    bgLayoutFrameLeft: 'On the left',
+                    bgLayoutFrameRight: 'On the right',
+                    bgLayoutNoteFrame: 'The image sits beside the content as one picture, so it never overlaps the text.',
+                    bgLayoutNoteNarrow: 'On a wide screen, you can also place the image beside the content or move the content to one side.',
+                    bgContentLabel: 'Content position',
+                    bgContentLeft: 'Left',
+                    bgContentCenter: 'Center',
+                    bgContentRight: 'Right',
+                    bgSurfaceLabel: 'Content backing',
+                    bgSurfaceNone: 'None',
+                    bgSurfaceCard: 'Card',
+                    bgSurfaceColumn: 'Column',
+                    bgSurfaceAlphaLabel: 'Backing strength',
+                    bgVeilLabel: 'Blend',
+                    bgBlurLabel: 'Blur',
+                    bgVeilNote: 'The higher "Blend" is, the more the image melts into the page color.',
+                    bgThemeToggle: 'Match colors to the image',
+                    bgThemeNote: 'Buttons and panels take a color picked from the image. Turn this off to go back to your theme color.',
+                    bgSwatchesAria: 'Colors from the image',
+                    bgSwatchAria: 'Color from the image {n}',
+                    bgThemeOverrideNote: 'Colors are matched to the background image right now.',
+                    bgStudyLabel: 'While studying',
+                    bgStudyNone: 'No change',
+                    bgStudyCalm: 'Blur',
+                    bgStudyHide: 'Hide',
+                    bgStudyNote: 'During breaks and pauses, it goes back to normal.',
+                    bgRevealToggle: 'Reveal with blocks',
+                    bgRevealNote: 'As you study today, the image appears from the bottom like stacked blocks. All of it shows at {t}.',
                     showClock: 'Show current time',
                     themeToggleBtnSetting: 'Always show dark/light toggle button',
                     statTsumiki: 'Blocks',
@@ -17887,6 +19238,9 @@
                 refreshTodoAddOptions();
                 renderSettingsTabs();
                 updateMenuModeSettingsUI();
+                renderBgSettingsUI();
+                renderQrTransfer();
+                updateGoalLine(true);
                 todoCalendarScroller = null;
                 if (currentTodoView === 'calendar') renderCalendar(calendarYear, calendarMonth);
                 if (document.getElementById('flashcardOverlay').classList.contains('show')) {
@@ -18309,7 +19663,7 @@
                 updateTsumikiLogoSources();
             }
 
-            const VALID_THEME_NAMES = ['blue', 'green', 'purple', 'orange', 'pink', 'teal', 'white'];
+            const VALID_THEME_NAMES = ['blue', 'green', 'purple', 'orange', 'pink', 'teal', 'white', 'custom'];
 
             function normalizeThemeName(themeName) {
                 const normalized = (themeName || '').trim().toLowerCase();
@@ -18326,6 +19680,9 @@
                 document.body.setAttribute('data-theme', normalizedTheme);
                 saveData('theme', normalizedTheme);
                 saveData('last_valid_theme', normalizedTheme);
+                // 「カスタム」は色の変数を直接書きかえる(ほかのテーマに戻したら消す)
+                if (window.tsumikiBg) window.tsumikiBg.apply();
+                renderThemeCustomUI();
                 document.querySelectorAll('.theme-option').forEach(option => {
                     option.classList.remove('selected');
                 });
@@ -18340,6 +19697,762 @@
                 updateDragHandleIcons();
                 // 優先度カラーが未カスタマイズなら、新しいテーマに追従して更新する
                 applyTodoPriorityColors();
+            }
+
+            // ══ 淡い色だけのピッカー(色あい 0〜359 と こさ 0〜100) ══
+            // どこを選んでも、7色のテーマと同じくすんだ淡い色になる
+            function paleHex(h, t) {
+                const rgb = hsvToRgb(((h % 360) + 360) % 360, 12 + 0.36 * t, 86 - 0.12 * t);
+                return rgbToHex(rgb.r, rgb.g, rgb.b);
+            }
+
+            // 今の色にいちばん近い つまみの位置
+            function paleFromHex(hex) {
+                const hsv = hexToHsv(hex);
+                return { h: Math.round(hsv.h) % 360, t: Math.max(0, Math.min(100, Math.round((hsv.s - 12) / 0.36))) };
+            }
+
+            // つまみのレールに、選べる色をそのまま並べる
+            function paleTrack(colorAt, from, to) {
+                const stops = [];
+                for (let i = 0; i <= 12; i++) stops.push(colorAt(from + (to - from) * i / 12));
+                return 'linear-gradient(to right, ' + stops.join(', ') + ')';
+            }
+
+            function setPaleTracks(hueInput, toneInput, h, t) {
+                if (hueInput) hueInput.style.setProperty('--track', paleTrack(x => paleHex(x, t), 0, 360));
+                if (toneInput) toneInput.style.setProperty('--track', paleTrack(x => paleHex(h, x), 0, 100));
+            }
+
+            // ── テーマカラーの「カスタム」 ──
+            let themeImageColors = [];
+            let themeCustomTimer = null;
+
+            function getThemeCustom() {
+                const c = window.tsumikiBg ? window.tsumikiBg.parseColor(getData('theme_custom')) : null;
+                return c ? { h: Math.round(c.h) % 360, t: Math.round(c.s) } : { h: 210, t: 50 };
+            }
+
+            function renderThemeCustomUI() {
+                const body = document.getElementById('themeCustomBody');
+                if (!body || !window.tsumikiBg) return;
+                const c = getThemeCustom();
+                const primary = (h, t) => window.tsumikiBg.palette(h, 50, t)['--primary-color'];
+                body.hidden = getData('theme') !== 'custom';
+                const vars = window.tsumikiBg.palette(c.h, 50, c.t);
+                const preview = document.getElementById('themeCustomPreview');
+                if (preview) {
+                    ['--primary-color', '--primary-hover', '--primary-color-dark'].forEach((k, i) => {
+                        if (preview.children[i]) preview.children[i].style.backgroundColor = vars[k];
+                    });
+                }
+                const hue = document.getElementById('themeCustomHue');
+                const tone = document.getElementById('themeCustomTone');
+                if (hue && document.activeElement !== hue) hue.value = String(c.h);
+                if (tone && document.activeElement !== tone) tone.value = String(c.t);
+                if (hue) hue.style.setProperty('--track', paleTrack(x => primary(x, c.t), 0, 360));
+                if (tone) tone.style.setProperty('--track', paleTrack(x => primary(c.h, x), 0, 100));
+                const box = document.getElementById('themeCustomSwatches');
+                if (box) {
+                    box.innerHTML = themeImageColors.map((col, i) => {
+                        const current = col.h === c.h;
+                        return `<button type="button" class="bg-swatch${current ? ' is-current' : ''}" style="--c:${primary(col.h, c.t)}" aria-pressed="${current}" aria-label="${escapeHtml(getText('bgSwatchAria').replace('{n}', String(i + 1)))}" onclick="pickThemeImageColor(${i})"></button>`;
+                    }).join('');
+                }
+            }
+
+            function setThemeCustom(h, t) {
+                saveData('theme_custom', `${h},${t}`);
+                if (getData('theme') !== 'custom') { changeTheme('custom'); return; }
+                window.tsumikiBg.apply();
+                renderThemeCustomUI();
+                // グラフやToDoの色など、色を計算して持っている所は少し待ってからまとめて直す
+                clearTimeout(themeCustomTimer);
+                themeCustomTimer = setTimeout(() => {
+                    if (getData('graph_enabled') === 'true') updateGraphs();
+                    updateDragHandleIcons();
+                    applyTodoPriorityColors();
+                }, 150);
+            }
+
+            function onThemeCustomInput() {
+                const hue = document.getElementById('themeCustomHue');
+                const tone = document.getElementById('themeCustomTone');
+                if (!hue || !tone) return;
+                setThemeCustom(parseInt(hue.value, 10) || 0, parseInt(tone.value, 10) || 0);
+            }
+
+            // 画像から目立つ色を取り出して候補にする(画像そのものは保存しない)
+            async function onThemeImageChosen(input) {
+                const file = input.files && input.files[0];
+                input.value = '';
+                if (!file) return;
+                try {
+                    const bmp = await createImageBitmap(file);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 64;
+                    const cx = canvas.getContext('2d', { willReadFrequently: true });
+                    cx.drawImage(bmp, 0, 0, 64, 64);
+                    if (bmp.close) bmp.close();
+                    themeImageColors = extractBgColors(cx.getImageData(0, 0, 64, 64).data).filter(c => c.s >= 8).slice(0, 5);
+                } catch (e) {
+                    themeImageColors = [];
+                    await customConfirm(getText('themeImageFailed'), getText('themeCustom'));
+                    return;
+                }
+                if (!themeImageColors.length) {
+                    renderThemeCustomUI();
+                    await customConfirm(getText('themeImageNoColor'), getText('themeCustom'));
+                    return;
+                }
+                setThemeCustom(themeImageColors[0].h, getThemeCustom().t);
+            }
+
+            function pickThemeImageColor(i) {
+                const col = themeImageColors[i];
+                if (col) setThemeCustom(col.h, getThemeCustom().t);
+            }
+
+            // ══ カスタム背景 ══
+            // クラス/CSS変数への反映は <body> 直後の tsumikiBg.apply() が受け持つ(初回描画の前にも走る)。
+            // ここでは、画像の保存(IndexedDB)･設定の画面･勉強と連動する見え方を扱う。
+            // 画像は大きいので localStorage には入れない(バックアップにも入らない)。
+            const BG_DB_NAME = 'tsumiki_bg_db';
+            const BG_MAX_FILE_BYTES = 40 * 1024 * 1024;
+            const BG_MAX_EDGE = 2560;          // これより大きい画像は縮めて保存する
+            const BG_REVEAL_TILES = 12;        // 「積み木でひらく」のマスの数
+            const BG_REVEAL_DEFAULT_MIN = 120; // 1日の目標がOFFのとき、ぜんぶ見えるまでの時間
+            const BG_WIDE_QUERY = '(min-width: 1000px)';
+            const BG_MID_QUERY = '(min-width: 769px)';
+            let _bgDB = null;
+            let bgObjectUrl = '';
+            let bgLastThemeHex = null;
+            let bgRevealState = { count: -1, w: 0, h: 0 };
+            let bgRevealPeak = { day: '', count: 0 };
+
+            function bgGet(key) {
+                try { return localStorage.getItem(key); } catch (e) { return null; }
+            }
+
+            function bgSet(key, value) {
+                try { localStorage.setItem(key, String(value)); return true; } catch (e) { return false; }
+            }
+
+            function bgRemove(key) {
+                try { localStorage.removeItem(key); } catch (e) { }
+            }
+
+            function bgMatches(query) {
+                return !!(window.matchMedia && window.matchMedia(query).matches);
+            }
+
+            function openBgDB() {
+                return new Promise((resolve, reject) => {
+                    if (_bgDB) return resolve(_bgDB);
+                    let req;
+                    try { req = indexedDB.open(BG_DB_NAME, 1); } catch (e) { reject(e); return; }
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('images')) db.createObjectStore('images', { keyPath: 'id' });
+                    };
+                    req.onsuccess = (e) => {
+                        _bgDB = e.target.result;
+                        resolve(_bgDB);
+                    };
+                    req.onerror = (e) => reject(e);
+                });
+            }
+
+            async function bgDbRequest(mode, run) {
+                const db = await openBgDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction('images', mode);
+                    const req = run(tx.objectStore('images'));
+                    tx.oncomplete = () => resolve(req.result);
+                    tx.onerror = () => reject(tx.error);
+                    tx.onabort = () => reject(tx.error);
+                });
+            }
+
+            function setBgObjectUrl(blob) {
+                const old = bgObjectUrl;
+                bgObjectUrl = blob ? URL.createObjectURL(blob) : '';
+                if (bgObjectUrl) document.body.style.setProperty('--cbg-url', `url("${bgObjectUrl}")`);
+                else document.body.style.removeProperty('--cbg-url');
+                // 古いURLは、新しい画像が出てから片づける
+                if (old) setTimeout(() => URL.revokeObjectURL(old), 1000);
+            }
+
+            // 設定を保存したあとに呼ぶ。色が変わったときは、テーマカラーを変えたときと同じものを描き直す
+            function applyCustomBg() {
+                const state = window.tsumikiBg.apply();
+                const hex = window.tsumikiBg.themeHex;
+                if (bgLastThemeHex !== null && hex !== bgLastThemeHex) {
+                    if (getData('graph_enabled') === 'true') setTimeout(() => updateGraphs(), 100);
+                    updateDragHandleIcons();
+                    applyTodoPriorityColors();
+                }
+                bgLastThemeHex = hex;
+                updateBgStudyState();
+                updateBgReveal(true);
+                return state;
+            }
+
+            function clearBgImageKeys() {
+                ['bg_has_image', 'bg_thumb', 'bg_colors', 'bg_theme_color', 'bg_pos_x', 'bg_pos_y'].forEach(bgRemove);
+            }
+
+            // 起動時: 保存してある画像を読み込む(それまでは小さな下絵が出ている)
+            async function loadBgImage() {
+                if (bgGet('bg_has_image') !== 'true') return;
+                let rec = null;
+                try {
+                    rec = await bgDbRequest('readonly', store => store.get('main'));
+                } catch (e) {
+                    console.warn('[Background] load failed:', e);
+                    return;
+                }
+                if (rec && rec.blob) {
+                    setBgObjectUrl(rec.blob);
+                    return;
+                }
+                // 設定だけ残っていて画像がない(ブラウザのデータが消えた･別の端末から設定を読み込んだ)
+                clearBgImageKeys();
+                applyCustomBg();
+                renderBgSettingsUI();
+                if (bgGet('bg_enabled') === 'true') showBgMessage('bgImageMissing');
+            }
+
+            // 画像から、目立つ色を5つまで取り出す(色相と彩度)。灰色ばかりの画像は「色なし」を返す
+            function extractBgColors(data) {
+                const BINS = 36;
+                const weight = new Float64Array(BINS);
+                const hx = new Float64Array(BINS);
+                const hy = new Float64Array(BINS);
+                const satSum = new Float64Array(BINS);
+                let total = 0;
+                let colorful = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] < 128) continue;
+                    total++;
+                    const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+                    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+                    const l = (max + min) / 2;
+                    if (d < 0.08 || l < 0.1 || l > 0.95) continue;
+                    const s = d / (1 - Math.abs(2 * l - 1));
+                    if (s < 0.15) continue;
+                    let h;
+                    if (max === r) h = ((g - b) / d) % 6;
+                    else if (max === g) h = (b - r) / d + 2;
+                    else h = (r - g) / d + 4;
+                    h = (h * 60 + 360) % 360;
+                    const w = Math.min(1, s) * (1 - Math.abs(l - 0.5)); // あざやかで、明るすぎず暗すぎない色を重く見る
+                    const bin = Math.floor(h / (360 / BINS)) % BINS;
+                    const rad = h * Math.PI / 180;
+                    weight[bin] += w;
+                    hx[bin] += Math.cos(rad) * w;
+                    hy[bin] += Math.sin(rad) * w;
+                    satSum[bin] += Math.min(1, s) * w;
+                    colorful++;
+                }
+                if (!total || colorful / total < 0.04) return [{ h: 0, s: 0 }];
+                const at = (arr, i) => arr[(i + BINS) % BINS];
+                const smooth = Array.from({ length: BINS }, (_, i) => weight[i] + 0.5 * (at(weight, i - 1) + at(weight, i + 1)));
+                const order = smooth.map((v, i) => i).sort((a, b) => smooth[b] - smooth[a]);
+                const hueGap = (a, b) => {
+                    const diff = Math.abs(a - b) % 360;
+                    return diff > 180 ? 360 - diff : diff;
+                };
+                const picked = [];
+                for (const i of order) {
+                    if (picked.length >= 5 || smooth[i] < smooth[order[0]] * 0.12) break;
+                    let x = 0, y = 0, sw = 0, ss = 0;
+                    for (let j = -1; j <= 1; j++) {
+                        x += at(hx, i + j);
+                        y += at(hy, i + j);
+                        sw += at(weight, i + j);
+                        ss += at(satSum, i + j);
+                    }
+                    if (!sw) continue;
+                    const hue = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+                    if (picked.some(p => hueGap(p.h, hue) < 35)) continue;
+                    picked.push({ h: Math.round(hue) % 360, s: Math.round(ss / sw * 100) });
+                }
+                return picked.length ? picked : [{ h: 0, s: 0 }];
+            }
+
+            // 選ばれたファイルから、保存する画像･起動時にすぐ出す小さな下絵･色を用意する
+            async function prepareBgImage(file) {
+                const url = URL.createObjectURL(file);
+                try {
+                    const img = new Image();
+                    img.src = url;
+                    await img.decode();
+                    const w = img.naturalWidth, h = img.naturalHeight;
+                    if (!w || !h) throw new Error('empty image');
+
+                    let blob = file;
+                    const scale = Math.min(1, BG_MAX_EDGE / Math.max(w, h));
+                    // 動くGIFはそのまま。大きすぎる写真だけ縮めて、表示を軽くする
+                    if (file.type !== 'image/gif' && (scale < 1 || file.size > 1.5 * 1024 * 1024)) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(w * scale));
+                        canvas.height = Math.max(1, Math.round(h * scale));
+                        const cx = canvas.getContext('2d');
+                        cx.fillStyle = '#ffffff';
+                        cx.fillRect(0, 0, canvas.width, canvas.height);
+                        cx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const out = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.88));
+                        if (out && (scale < 1 || out.size < file.size)) blob = out;
+                    }
+
+                    const thumbScale = 40 / Math.max(w, h);
+                    const thumbCanvas = document.createElement('canvas');
+                    thumbCanvas.width = Math.max(1, Math.round(w * thumbScale));
+                    thumbCanvas.height = Math.max(1, Math.round(h * thumbScale));
+                    const tx = thumbCanvas.getContext('2d');
+                    tx.fillStyle = '#ffffff';
+                    tx.fillRect(0, 0, thumbCanvas.width, thumbCanvas.height);
+                    tx.drawImage(img, 0, 0, thumbCanvas.width, thumbCanvas.height);
+                    const thumb = thumbCanvas.toDataURL('image/jpeg', 0.6);
+
+                    const sample = document.createElement('canvas');
+                    sample.width = sample.height = 64;
+                    const sx = sample.getContext('2d', { willReadFrequently: true });
+                    sx.drawImage(img, 0, 0, 64, 64);
+                    const colors = extractBgColors(sx.getImageData(0, 0, 64, 64).data);
+
+                    return { blob, thumb, colors };
+                } finally {
+                    URL.revokeObjectURL(url);
+                }
+            }
+
+            function showBgMessage(key) {
+                const el = document.getElementById('bgPreviewMessage');
+                if (el) el.textContent = key ? getText(key) : '';
+            }
+
+            function chooseBgImage() {
+                const input = document.getElementById('bgFileInput');
+                if (input) input.click();
+            }
+
+            function onBgFileChosen(input) {
+                const file = input.files && input.files[0];
+                input.value = ''; // 同じファイルをもう一度選べるように
+                handleBgFile(file);
+            }
+
+            async function handleBgFile(file) {
+                if (!file) return;
+                if (file.type && !file.type.startsWith('image/')) { showBgMessage('bgImageNotImage'); return; }
+                if (file.size > BG_MAX_FILE_BYTES) { showBgMessage('bgImageTooLarge'); return; }
+                const preview = document.getElementById('bgPreview');
+                showBgMessage('');
+                if (preview) preview.classList.add('is-busy');
+                try {
+                    let prepared;
+                    try {
+                        prepared = await prepareBgImage(file);
+                    } catch (e) {
+                        showBgMessage('bgImageFailed');
+                        return;
+                    }
+                    try {
+                        await bgDbRequest('readwrite', store => store.put({ id: 'main', blob: prepared.blob, savedAt: Date.now() }));
+                    } catch (e) {
+                        console.warn('[Background] save failed:', e);
+                        showBgMessage('bgImageSaveFailed');
+                        return;
+                    }
+                    bgSet('bg_has_image', 'true');
+                    if (!bgSet('bg_thumb', prepared.thumb)) bgRemove('bg_thumb');
+                    bgSet('bg_colors', prepared.colors.map(c => `${c.h},${c.s}`).join('|'));
+                    bgSet('bg_theme_color', `${prepared.colors[0].h},${prepared.colors[0].s}`);
+                    bgSet('bg_pos_x', '50');
+                    bgSet('bg_pos_y', '50');
+                    setBgObjectUrl(prepared.blob);
+                    applyCustomBg();
+                    renderBgSettingsUI(true);
+                } finally {
+                    if (preview) preview.classList.remove('is-busy');
+                }
+            }
+
+            async function removeBgImage() {
+                const ok = await customConfirm(getText('bgRemoveConfirm'));
+                if (!ok) return;
+                try {
+                    await bgDbRequest('readwrite', store => store.delete('main'));
+                } catch (e) {
+                    console.warn('[Background] delete failed:', e);
+                }
+                clearBgImageKeys();
+                setBgObjectUrl(null);
+                showBgMessage('');
+                applyCustomBg();
+                renderBgSettingsUI(true);
+            }
+
+            function getBgColors() {
+                return String(bgGet('bg_colors') || '').split('|')
+                    .map(part => window.tsumikiBg.parseColor(part))
+                    .filter(Boolean)
+                    .slice(0, 5);
+            }
+
+            function setBgRange(inputId, valueId, value, text) {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    const min = Number(input.min), max = Number(input.max);
+                    if (Number(input.value) !== value) input.value = String(value);
+                    input.style.setProperty('--fill', ((value - min) / (max - min) * 100).toFixed(1) + '%');
+                }
+                const valueEl = document.getElementById(valueId);
+                if (valueEl) valueEl.textContent = text;
+            }
+
+            // 「飾る」は広い画面でだけ効く。そのときの「なじませる」は、全面とは別に覚えておく
+            function isBgFrameActive(state) {
+                return state.layout !== 'full' && bgMatches(BG_WIDE_QUERY);
+            }
+
+            function syncBgRanges(state) {
+                const s = state || window.tsumikiBg.read();
+                const veil = isBgFrameActive(s) ? s.veilFrame : s.veil;
+                setBgRange('bgVeilRange', 'bgVeilValue', veil, `${veil}%`);
+                setBgRange('bgBlurRange', 'bgBlurValue', s.blur, `${s.blur}px`);
+                setBgRange('bgSurfaceAlphaRange', 'bgSurfaceAlphaValue', s.surfaceAlpha, `${s.surfaceAlpha}%`);
+            }
+
+            // 設定の中の画像は、実際に見えている範囲と同じ縦横比にする
+            function syncBgPreviewShape() {
+                const preview = document.getElementById('bgPreview');
+                if (!preview) return;
+                let ratio = window.innerWidth / Math.max(1, window.innerHeight);
+                const stage = document.getElementById('customBgStage');
+                if (window.tsumikiBg.on && stage) {
+                    const r = stage.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) ratio = r.width / r.height;
+                }
+                ratio = Math.max(0.5, Math.min(2.6, ratio));
+                preview.style.width = Math.round(200 * ratio) + 'px';
+            }
+
+            function renderBgSettingsUI(animate) {
+                const section = document.getElementById('bgSettingsSection');
+                if (!section) return;
+                const mutate = () => {
+                    const s = window.tsumikiBg.read();
+                    const show = (id, visible, display) => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.display = visible ? (display || '') : 'none';
+                    };
+                    setToggleActive('toggleBgEnabled', s.enabled);
+                    const body = document.getElementById('bgSettingBody');
+                    if (body) body.hidden = !s.enabled;
+                    const preview = document.getElementById('bgPreview');
+                    if (preview) preview.classList.toggle('is-empty', !s.hasImage);
+                    show('bgPreviewHint', s.hasImage);
+                    show('bgImageActions', s.hasImage);
+                    const options = document.getElementById('bgOptions');
+                    if (options) options.hidden = !s.hasImage;
+                    syncBgPreviewShape();
+
+                    const wide = bgMatches(BG_WIDE_QUERY);
+                    const frame = s.layout !== 'full';
+                    const layoutSeg = document.getElementById('bgLayoutSeg');
+                    if (layoutSeg) {
+                        layoutSeg.innerHTML = buildMenuSegHtml([
+                            { value: 'full', labelKey: 'bgLayoutFull' },
+                            { value: 'frame-left', labelKey: 'bgLayoutFrameLeft' },
+                            { value: 'frame-right', labelKey: 'bgLayoutFrameRight' }
+                        ], s.layout, 'setBgLayout');
+                    }
+                    show('bgLayoutSeg', wide);
+                    const layoutNote = document.getElementById('bgLayoutNote');
+                    if (layoutNote) layoutNote.textContent = !wide ? getText('bgLayoutNoteNarrow') : (frame ? getText('bgLayoutNoteFrame') : '');
+
+                    const contentSeg = document.getElementById('bgContentSeg');
+                    if (contentSeg) {
+                        contentSeg.innerHTML = buildMenuSegHtml([
+                            { value: 'left', labelKey: 'bgContentLeft' },
+                            { value: 'center', labelKey: 'bgContentCenter' },
+                            { value: 'right', labelKey: 'bgContentRight' }
+                        ], s.content, 'setBgContent');
+                    }
+                    show('bgContentCard', wide && !frame);
+
+                    const surfaceSeg = document.getElementById('bgSurfaceSeg');
+                    if (surfaceSeg) {
+                        surfaceSeg.innerHTML = buildMenuSegHtml([
+                            { value: 'none', labelKey: 'bgSurfaceNone' },
+                            { value: 'card', labelKey: 'bgSurfaceCard' },
+                            { value: 'column', labelKey: 'bgSurfaceColumn' }
+                        ], s.surface, 'setBgSurface');
+                    }
+                    show('bgSurfaceCard', bgMatches(BG_MID_QUERY) && !frame);
+                    show('bgSurfaceAlphaRow', s.surface !== 'none');
+                    syncBgRanges(s);
+
+                    setToggleActive('toggleBgTheme', s.theme);
+                    const colors = getBgColors();
+                    const swatches = document.getElementById('bgSwatches');
+                    if (swatches) {
+                        swatches.innerHTML = (s.theme && colors.length > 1) ? colors.map((c, i) => {
+                            const current = !!s.color && s.color.h === c.h && s.color.s === c.s;
+                            const hex = window.tsumikiBg.palette(c.h, c.s)['--primary-color'];
+                            return `<button type="button" class="bg-swatch${current ? ' is-current' : ''}" style="--c:${hex}" aria-pressed="${current}" aria-label="${escapeHtml(getText('bgSwatchAria').replace('{n}', String(i + 1)))}" onclick="pickBgThemeColor(${i})"></button>`;
+                        }).join('') : '';
+                    }
+
+                    const studySeg = document.getElementById('bgStudySeg');
+                    if (studySeg) {
+                        studySeg.innerHTML = buildMenuSegHtml([
+                            { value: 'none', labelKey: 'bgStudyNone' },
+                            { value: 'calm', labelKey: 'bgStudyCalm' },
+                            { value: 'hide', labelKey: 'bgStudyHide' }
+                        ], s.study, 'setBgStudy');
+                    }
+
+                    setToggleActive('toggleBgReveal', s.reveal);
+                    const revealNote = document.getElementById('bgRevealNote');
+                    if (revealNote) {
+                        revealNote.textContent = getText('bgRevealNote')
+                            .replace('{t}', formatChartHours(getBgRevealTargetMs() / 3600000));
+                    }
+                };
+                if (animate) animateHeightChange(section, mutate);
+                else mutate();
+
+                // テーマカラーの欄にも、いまは画像の色を使っていることを出す
+                const themed = !!window.tsumikiBg.themeHex;
+                const selector = document.querySelector('#settingsPage .theme-selector');
+                if (selector) selector.classList.toggle('is-overridden', themed);
+                const overrideNote = document.getElementById('bgThemeOverrideNote');
+                if (overrideNote) overrideNote.hidden = !themed;
+            }
+
+            function saveBgSetting(key, value, animate) {
+                bgSet(key, value);
+                applyCustomBg();
+                renderBgSettingsUI(animate);
+                // 置き方を変えると画像の枠の形がなめらかに変わるので、落ち着いてから合わせ直す
+                setTimeout(() => { syncBgPreviewShape(); updateBgReveal(); }, 320);
+            }
+
+            function toggleBgEnabled() {
+                saveBgSetting('bg_enabled', bgGet('bg_enabled') === 'true' ? 'false' : 'true', true);
+            }
+
+            function setBgLayout(value) {
+                saveBgSetting('bg_layout', window.tsumikiBg.LAYOUTS.includes(value) ? value : 'full', true);
+            }
+
+            function setBgContent(value) {
+                saveBgSetting('bg_content', window.tsumikiBg.CONTENTS.includes(value) ? value : 'center');
+            }
+
+            function setBgSurface(value) {
+                saveBgSetting('bg_surface', window.tsumikiBg.SURFACES.includes(value) ? value : 'none', true);
+            }
+
+            function setBgStudy(value) {
+                saveBgSetting('bg_study', window.tsumikiBg.STUDY.includes(value) ? value : 'none');
+            }
+
+            function toggleBgTheme() {
+                saveBgSetting('bg_theme', window.tsumikiBg.read().theme ? 'false' : 'true', true);
+            }
+
+            function toggleBgReveal() {
+                saveBgSetting('bg_reveal', window.tsumikiBg.read().reveal ? 'false' : 'true');
+            }
+
+            function pickBgThemeColor(index) {
+                const c = getBgColors()[index];
+                if (c) saveBgSetting('bg_theme_color', `${c.h},${c.s}`);
+            }
+
+            // つまみを動かしているあいだは、入力欄を作り直さずに値だけ反映する
+            function onBgRange(kind, raw) {
+                const value = Math.round(Number(raw));
+                if (!Number.isFinite(value)) return;
+                const s = window.tsumikiBg.read();
+                if (kind === 'veil') bgSet(isBgFrameActive(s) ? 'bg_veil_frame' : 'bg_veil', value);
+                else if (kind === 'blur') bgSet('bg_blur', value);
+                else if (kind === 'surfaceAlpha') bgSet('bg_surface_alpha', value);
+                syncBgRanges(window.tsumikiBg.apply());
+            }
+
+            // 設定の中の画像をドラッグ(または矢印キー)して、見せたい場所を決める
+            function initBgPreview() {
+                const preview = document.getElementById('bgPreview');
+                if (!preview) return;
+                const clamp = (v) => Math.max(0, Math.min(100, v));
+                const setPos = (x, y, save) => {
+                    document.body.style.setProperty('--cbg-x', x + '%');
+                    document.body.style.setProperty('--cbg-y', y + '%');
+                    if (save) {
+                        bgSet('bg_pos_x', x.toFixed(1));
+                        bgSet('bg_pos_y', y.toFixed(1));
+                    }
+                };
+                let drag = null;
+                preview.addEventListener('pointerdown', (e) => {
+                    if (preview.classList.contains('is-empty') || e.button > 0) return;
+                    const s = window.tsumikiBg.read();
+                    drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, fromX: s.x, fromY: s.y, x: s.x, y: s.y };
+                    try { preview.setPointerCapture(e.pointerId); } catch (err) { }
+                    preview.classList.add('is-dragging');
+                });
+                preview.addEventListener('pointermove', (e) => {
+                    if (!drag || e.pointerId !== drag.id) return;
+                    const r = preview.getBoundingClientRect();
+                    // 画像をつかんで動かす向き(右へ引くと、画像の左側が見えてくる)
+                    drag.x = clamp(drag.fromX - (e.clientX - drag.x0) / Math.max(1, r.width) * 100);
+                    drag.y = clamp(drag.fromY - (e.clientY - drag.y0) / Math.max(1, r.height) * 100);
+                    setPos(drag.x, drag.y, false);
+                });
+                const endDrag = (e) => {
+                    if (!drag || e.pointerId !== drag.id) return;
+                    setPos(drag.x, drag.y, true);
+                    drag = null;
+                    preview.classList.remove('is-dragging');
+                };
+                preview.addEventListener('pointerup', endDrag);
+                preview.addEventListener('pointercancel', endDrag);
+                preview.addEventListener('keydown', (e) => {
+                    if (preview.classList.contains('is-empty') || e.target !== preview) return;
+                    const step = { ArrowLeft: [-2, 0], ArrowRight: [2, 0], ArrowUp: [0, -2], ArrowDown: [0, 2] }[e.key];
+                    if (!step) return;
+                    e.preventDefault();
+                    const s = window.tsumikiBg.read();
+                    setPos(clamp(s.x + step[0]), clamp(s.y + step[1]), true);
+                });
+                // ファイルをここへ落としても選べる
+                preview.addEventListener('dragover', (e) => {
+                    if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes('Files')) return;
+                    e.preventDefault();
+                    preview.classList.add('is-dropping');
+                });
+                preview.addEventListener('dragleave', () => preview.classList.remove('is-dropping'));
+                preview.addEventListener('drop', (e) => {
+                    preview.classList.remove('is-dropping');
+                    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+                    if (!file) return;
+                    e.preventDefault();
+                    handleBgFile(file);
+                });
+            }
+
+            // 勉強中かどうか(一時停止中･フォーカスモードの休憩中は「勉強中」にしない)を body に伝える
+            function updateBgStudyState() {
+                const studying = !!startTime && !isPaused && !(focusEnabled && focusState === 'break');
+                if (document.body.classList.contains('bg-studying') !== studying) {
+                    document.body.classList.toggle('bg-studying', studying);
+                }
+            }
+
+            // ── 積み木でひらく ──
+            // 画像を12マスに分け、今日の勉強が進むほど下の段から見えるようにする(まだのマスはうっすら)。
+            // ぜんぶ見えたらマスの切れ目もなくなり、1枚の画像に戻る
+            function getBgRevealTargetMs() {
+                return (isGoalEnabled() ? getGoalMinutes() : BG_REVEAL_DEFAULT_MIN) * 60000;
+            }
+
+            function getBgRevealTiles(w, h) {
+                const cols = w >= h ? 4 : 3;
+                const rows = BG_REVEAL_TILES / cols;
+                const gap = 8;
+                const tw = (w - gap * (cols + 1)) / cols;
+                const th = (h - gap * (rows + 1)) / rows;
+                const r = Math.max(0, Math.min(24, tw / 4, th / 4));
+                const tiles = [];
+                for (let i = 0; i < BG_REVEAL_TILES; i++) {
+                    const row = rows - 1 - Math.floor(i / cols); // 下の段から積む
+                    const col = i % cols;
+                    tiles.push({ x: gap + col * (tw + gap), y: gap + row * (th + gap), w: tw, h: th, r });
+                }
+                return tiles;
+            }
+
+            function popBgRevealTiles(tiles) {
+                const layer = document.getElementById('customBg');
+                const stage = document.getElementById('customBgStage');
+                if (!layer || !stage || prefersReducedMotion()) return;
+                tiles.forEach(t => {
+                    const el = document.createElement('div');
+                    el.className = 'cbg-pop';
+                    el.style.left = (stage.offsetLeft + t.x) + 'px';
+                    el.style.top = (stage.offsetTop + t.y) + 'px';
+                    el.style.width = t.w + 'px';
+                    el.style.height = t.h + 'px';
+                    el.style.borderRadius = t.r + 'px';
+                    layer.appendChild(el);
+                    setTimeout(() => el.remove(), 400);
+                });
+            }
+
+            function updateBgReveal(force) {
+                const layer = document.getElementById('customBg');
+                const stage = document.getElementById('customBgStage');
+                if (!layer || !stage) return;
+                if (!window.tsumikiBg.on || !document.body.classList.contains('bg-reveal')) {
+                    if (bgRevealState.count !== -1) {
+                        layer.style.removeProperty('--cbg-mask');
+                        bgRevealState = { count: -1, w: 0, h: 0 };
+                    }
+                    return;
+                }
+                const w = Math.round(stage.offsetWidth), h = Math.round(stage.offsetHeight);
+                if (w < 40 || h < 40) return;
+                const done = getTodayRecordedMs() + goalLiveMs;
+                const count = Math.max(0, Math.min(BG_REVEAL_TILES,
+                    Math.floor(done / getBgRevealTargetMs() * BG_REVEAL_TILES + 1e-6)));
+                if (!force && count === bgRevealState.count && w === bgRevealState.w && h === bgRevealState.h) return;
+                bgRevealState = { count, w, h };
+
+                // 今日いちばん進んだところを覚えておき、そこを超えたマスだけ「出てくる」動きを付ける
+                const now = new Date();
+                const day = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+                if (bgRevealPeak.day !== day) bgRevealPeak = { day, count };
+                const from = bgRevealPeak.count;
+                if (count > from) bgRevealPeak.count = count;
+
+                const tiles = getBgRevealTiles(w, h);
+                if (count >= BG_REVEAL_TILES) {
+                    layer.style.setProperty('--cbg-mask', 'none');
+                } else {
+                    const f = (n) => n.toFixed(1);
+                    const rects = tiles.map((t, i) =>
+                        `<rect x='${f(t.x)}' y='${f(t.y)}' width='${f(t.w)}' height='${f(t.h)}' rx='${f(t.r)}' fill='#fff' fill-opacity='${i < count ? 1 : 0.1}'/>`).join('');
+                    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}' preserveAspectRatio='none'>${rects}</svg>`;
+                    layer.style.setProperty('--cbg-mask', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+                }
+                if (count > from && !document.hidden) popBgRevealTiles(tiles.slice(from, count));
+            }
+
+            function initCustomBg() {
+                bgLastThemeHex = window.tsumikiBg.themeHex;
+                applyCustomBg();
+                renderBgSettingsUI();
+                initBgPreview();
+                loadBgImage();
+                const stage = document.getElementById('customBgStage');
+                if (stage && typeof ResizeObserver === 'function') {
+                    new ResizeObserver(() => {
+                        updateBgReveal();
+                        syncBgPreviewShape();
+                    }).observe(stage);
+                }
+                // 画面の広さで選べる置き方が変わるので、またいだら設定の表示を作り直す
+                [BG_WIDE_QUERY, BG_MID_QUERY].forEach(query => {
+                    const mq = window.matchMedia ? window.matchMedia(query) : null;
+                    if (mq && mq.addEventListener) mq.addEventListener('change', () => renderBgSettingsUI());
+                });
+                window.addEventListener('resize', syncBgPreviewShape);
             }
 
             function isStopMusicOnTimerEndEnabled() {
@@ -18910,6 +21023,8 @@
             function onGoalChanged() {
                 applyGoalSettingUI();
                 updateGoalLine(true);
+                renderBgSettingsUI();
+                updateBgReveal(true);
                 if (getData('graph_enabled') === 'true') updateGraphs();
             }
 
@@ -18949,17 +21064,26 @@
                 if (!force && now - goalLastUpdateAt < 5000) return;
                 goalLastUpdateAt = now;
                 updateExamLine();
-                if (!isGoalEnabled()) {
-                    el.hidden = true;
+                updateBgReveal();
+                const goalOn = isGoalEnabled();
+                const classic = document.body.classList.contains('timer-classic');
+                const goalMs = goalOn ? getGoalMinutes() * 60000 : 0;
+                const done = getTodayRecordedMs() + goalLiveMs;
+                const text = document.getElementById('timerGoalText');
+                if (!goalOn) {
+                    // 前の表示では目標がなければ何も出さない。今の表示では「今日 ◯分」だけ出す
+                    const line = !classic && done >= 60000 ? getText('todayLine').replace('{t}', formatChartHours(done / 3600000)) : '';
+                    el.hidden = !line;
+                    el.classList.add('no-goal'); // 目標がないときは、進み具合の線は出さない
+                    el.classList.remove('reached');
+                    if (text) text.textContent = line;
                     return;
                 }
-                const goalMs = getGoalMinutes() * 60000;
-                const done = getTodayRecordedMs() + goalLiveMs;
                 const reached = done >= goalMs;
                 el.hidden = false;
+                el.classList.remove('no-goal');
                 el.classList.toggle('reached', reached);
                 el.style.setProperty('--goal', (Math.min(1, done / goalMs) * 100).toFixed(1) + '%');
-                const text = document.getElementById('timerGoalText');
                 if (text) {
                     text.textContent = getText(reached ? 'goalReached' : 'goalProgress')
                         .replace('{t}', formatChartHours(done / 3600000))
@@ -19926,6 +22050,14 @@
             function applyTimerClassic() {
                 const classic = isTimerClassic();
                 document.body.classList.toggle('timer-classic', classic);
+                // セッション情報(開始時刻など): 今の表示では台の中、前の表示ではボタンの上
+                const info = document.getElementById('sessionInfoWrap');
+                const foot = document.getElementById('timerStageFoot');
+                const controls = document.querySelector('#timerPage .controls');
+                if (info && foot && controls) {
+                    if (classic) controls.parentNode.insertBefore(info, controls);
+                    else if (info.parentNode !== foot) foot.appendChild(info);
+                }
                 const t = document.getElementById('toggleTimerClassic');
                 if (t) t.classList.toggle('active', classic);
             }
@@ -19934,6 +22066,7 @@
                 saveData('timer_layout_classic', isTimerClassic() ? 'false' : 'true');
                 applyTimerClassic();
                 renderSessionIdleInfo();
+                updateGoalLine(true);
             }
 
             // タイマー停止中のセッション情報表示
@@ -20439,6 +22572,7 @@
                 // 一時停止中に呼ばれても凍結した経過時間で描画する(フォーカス切替時など)
                 const wallElapsed = running ? getCurrentWallElapsed() : 0;
                 if (page) page.classList.toggle('focus-on', focusEnabled);
+                document.body.classList.toggle('session-paused', running && isPaused);
 
                 if (focusEnabled) {
                     const fc = computeFocusCycle(wallElapsed - focusAnchorMs);
@@ -20500,6 +22634,7 @@
                 const goalRunning = goalLiveMs > 0;
                 updateGoalLine(goalRunning !== updateTimer._goalRunning);
                 updateTimer._goalRunning = goalRunning;
+                updateBgStudyState();
             }
 
 
@@ -20661,7 +22796,7 @@
                 document.getElementById('pauseBtn').classList.add('hidden');
                 document.getElementById('endBtn').classList.add('hidden');
                 document.getElementById('pauseBtn').textContent = getText('pauseButton');
-                document.body.classList.remove('session-running');
+                document.body.classList.remove('session-running', 'session-paused');
                 if (groupInput) groupInput.value = '';
                 selectedTimerGroups.clear();
                 updateTimerGroupSelectUI();
@@ -24849,11 +26984,15 @@
             };
 
             function getCurrentThemeName() {
+                // 背景の画像に色を合わせているあいだは、7色のどれでもない
+                if (window.tsumikiBg && window.tsumikiBg.themeHex) return 'bgimage';
                 return normalizeThemeName(document.body.getAttribute('data-theme')) || 'blue';
             }
 
             function getThemeDefaultPriorityColors(themeName) {
-                const base = THEME_PRIORITY_BASE_HEX[themeName] || THEME_PRIORITY_BASE_HEX.blue;
+                const base = (themeName === 'bgimage' && window.tsumikiBg && window.tsumikiBg.themeHex)
+                    || (themeName === 'custom' && window.tsumikiBg && window.tsumikiBg.customHex)
+                    || THEME_PRIORITY_BASE_HEX[themeName] || THEME_PRIORITY_BASE_HEX.blue;
                 const hsv = hexToHsv(base);
                 const isGrayscale = hsv.s < 5;
                 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -24993,6 +27132,10 @@
                 const pureHue = hsvToRgb(todoPickerState.h, 100, 100);
                 board.style.backgroundColor = rgbToHex(pureHue.r, pureHue.g, pureHue.b);
                 hueInput.value = String(todoPickerState.h);
+                const toneInput = document.getElementById('priorityColorTone');
+                const toneNow = Math.max(0, Math.min(100, Math.round((todoPickerState.s - 12) / 0.36)));
+                if (toneInput && document.activeElement !== toneInput) toneInput.value = String(toneNow);
+                setPaleTracks(hueInput, toneInput, todoPickerState.h, toneInput ? (parseInt(toneInput.value, 10) || 0) : toneNow);
 
                 const x = (todoPickerState.s / 100) * 100;
                 const y = (1 - (todoPickerState.v / 100)) * 100;
@@ -25008,8 +27151,17 @@
             }
 
             // アプリの落ち着いた色合いに合わせた候補
-            const PRIORITY_COLOR_PRESETS = ['#E06C6C', '#E8956B', '#E2B65A', '#8DBF7A', '#5FB3A6', '#7FB2D9',
-                '#4F7FB0', '#7A7FC4', '#A88BC7', '#D98BAF', '#9AA4AE', '#5E6B78'];
+            // 候補はどれも淡い色(色あいを変えた10色と、灰色2つ)
+            const PRIORITY_COLOR_PRESETS = [0, 22, 45, 95, 150, 185, 210, 235, 270, 325].map(h => paleHex(h, 55).toUpperCase())
+                .concat(['#C2C6CC', '#A3A9B0']);
+
+            // 「自由に選ぶ」の2本(色あい･こさ)。こさ から、淡い範囲の彩度と明るさを決める
+            function applyPriorityTone() {
+                const tone = document.getElementById('priorityColorTone');
+                const t = tone ? (parseInt(tone.value, 10) || 0) : 50;
+                todoPickerState.s = Math.round(12 + 0.36 * t);
+                todoPickerState.v = Math.round(86 - 0.12 * t);
+            }
 
             function renderPriorityColorSwatches() {
                 const box = document.getElementById('priorityColorSwatches');
@@ -25232,9 +27384,27 @@
                 pop.className = 'group-color-pop';
                 pop.dataset.group = group;
                 pop.setAttribute('role', 'listbox');
+                const start = paleFromHex(current);
                 pop.innerHTML = GROUP_COLOR_PALETTE.map(c =>
                     `<button type="button" class="group-color-swatch${c === current ? ' is-current' : ''}" style="--c:${c}" data-color="${c}" role="option" aria-selected="${c === current}" aria-label="${c}"></button>`
-                ).join('');
+                ).join('')
+                    + `<div class="pale-picker"><input type="range" class="pale-range" data-k="h" min="0" max="359" value="${start.h}" aria-label="${escapeHtml(getText('paleHue'))}"><input type="range" class="pale-range" data-k="t" min="0" max="100" value="${start.t}" aria-label="${escapeHtml(getText('paleTone'))}"></div>`;
+                // 候補にない色は、下の2本(色あい･こさ)で作る。動かしているあいだもすぐ色が変わる
+                const hueInput = pop.querySelector('[data-k="h"]');
+                const toneInput = pop.querySelector('[data-k="t"]');
+                setPaleTracks(hueInput, toneInput, start.h, start.t);
+                pop.addEventListener('input', () => {
+                    const h = parseInt(hueInput.value, 10) || 0, t = parseInt(toneInput.value, 10) || 0;
+                    const hex = paleHex(h, t);
+                    const map = loadGroupColors();
+                    map[group] = hex;
+                    saveGroupColors(map);
+                    setPaleTracks(hueInput, toneInput, h, t);
+                    pop.querySelectorAll('.group-color-swatch.is-current').forEach(el => el.classList.remove('is-current'));
+                    document.querySelectorAll('.group-color-btn').forEach(b => {
+                        if (b.getAttribute('onclick') === `openGroupColorPalette(${i}, this)`) b.style.setProperty('--c', hex);
+                    });
+                });
                 pop.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const sw = e.target.closest('.group-color-swatch');
@@ -25839,7 +28009,15 @@
                 'music_current_playlist_id',
                 'music_current_track_id',
                 'todo_notified',
-                'settings_tab'
+                'settings_tab',
+                'qr_transfer_pending',
+                // 背景の画像そのものに付く値(画像は端末の中だけにある)
+                'bg_has_image',
+                'bg_thumb',
+                'bg_colors',
+                'bg_theme_color',
+                'bg_pos_x',
+                'bg_pos_y'
             ]);
 
             // インポート時に settings 経由で上書きしてはいけないキー
@@ -25860,7 +28038,15 @@
                 'studyPauseHistory',
                 'studyPauseStart',
                 'todo_notified',
-                'settings_tab'
+                'settings_tab',
+                'qr_transfer_pending',
+                // 背景の画像そのものに付く値(画像は端末の中だけにある)
+                'bg_has_image',
+                'bg_thumb',
+                'bg_colors',
+                'bg_theme_color',
+                'bg_pos_x',
+                'bg_pos_y'
             ]);
 
             function safeJsonParse(raw, fallback) {
@@ -26228,6 +28414,585 @@
                 }
             }
 
+            // 読み込んだデータ(ファイルでもQRコードでも同じ形)から、入れる項目を選んでもらって取り込む
+            async function runImportFlow(parsedData, noteKey = 'importReloadNote') {
+                const normalized = buildNormalizedImportData(parsedData);
+                const { studyHistory, todos, settings, legacy, music } = normalized;
+
+                // データに含まれる項目だけを選択肢として表示
+                const items = [];
+                if (normalized.hasSettings) items.push({ key: 'settings', labelKey: 'dataCatSettings' });
+                if (normalized.hasHistory) items.push({ key: 'history', labelKey: 'dataCatHistory', count: studyHistory.length });
+                if (normalized.hasTodos) items.push({ key: 'todos', labelKey: 'dataCatTodos', count: todos.length });
+                if (music.length > 0) items.push({ key: 'music', labelKey: 'dataCatMusic', count: music.reduce((n, p) => n + p.tracks.length, 0) });
+                if (items.length === 0) throw new Error(getText('invalidFileFormat'));
+
+                const selected = await openDataSelectDialog({
+                    titleKey: 'importSelectTitle',
+                    noteKey,
+                    items
+                });
+                if (!selected || selected.size === 0) return;
+
+                if (selected.has('history')) saveData('studyHistory', JSON.stringify(studyHistory));
+                if (selected.has('todos')) saveData('todos', JSON.stringify(todos));
+                if (selected.has('settings')) applyImportedSettings(settings, legacy);
+                if (selected.has('music')) mergeImportedMusic(music);
+
+                // 設定UIと実際の状態のズレ/言語混在を防ぐため、リロードで全体を再初期化する
+                await customConfirm(getText('importDoneReload'), getText('importDataTitle'), 'import.webp');
+                location.reload();
+            }
+
+            // ══ QRコード(自作。外部ライブラリなし) ══
+            // 誤り訂正はレベルL(画面に出して読むだけなので、いちばん多く入るもの)。
+            // URLの前半はバイト、データ部分は英数字モードで入れて、1枚に入る量をかせぐ。
+            const QR_ECC_LEN = [0, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30];
+            const QR_BLOCKS = [0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24, 25];
+            const QR_ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+
+            function qrRawModules(ver) {
+                let n = (16 * ver + 128) * ver + 64;
+                if (ver >= 2) {
+                    const a = Math.floor(ver / 7) + 2;
+                    n -= (25 * a - 10) * a - 55;
+                    if (ver >= 7) n -= 36;
+                }
+                return n;
+            }
+
+            function qrDataCodewords(ver) {
+                return Math.floor(qrRawModules(ver) / 8) - QR_ECC_LEN[ver] * QR_BLOCKS[ver];
+            }
+
+            // segs: [{ mode: 'byte' | 'alnum', text }]。入らないときは null
+            function qrSegmentBits(segs, ver) {
+                const bits = [];
+                const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+                for (const seg of segs) {
+                    if (seg.mode === 'alnum') {
+                        put(2, 4);
+                        put(seg.text.length, ver < 10 ? 9 : ver < 27 ? 11 : 13);
+                        let i = 0;
+                        for (; i + 1 < seg.text.length; i += 2) put(QR_ALNUM.indexOf(seg.text[i]) * 45 + QR_ALNUM.indexOf(seg.text[i + 1]), 11);
+                        if (i < seg.text.length) put(QR_ALNUM.indexOf(seg.text[i]), 6);
+                    } else {
+                        const bytes = new TextEncoder().encode(seg.text);
+                        put(4, 4);
+                        put(bytes.length, ver < 10 ? 8 : 16);
+                        bytes.forEach(b => put(b, 8));
+                    }
+                }
+                return bits;
+            }
+
+            function qrRsDivisor(degree) {
+                const result = new Uint8Array(degree);
+                result[degree - 1] = 1;
+                let root = 1;
+                for (let i = 0; i < degree; i++) {
+                    for (let j = 0; j < degree; j++) {
+                        result[j] = qrRsMul(result[j], root);
+                        if (j + 1 < degree) result[j] ^= result[j + 1];
+                    }
+                    root = qrRsMul(root, 2);
+                }
+                return result;
+            }
+
+            function qrRsMul(x, y) {
+                let z = 0;
+                for (let i = 7; i >= 0; i--) {
+                    z = (z << 1) ^ ((z >>> 7) * 0x11D);
+                    z ^= ((y >>> i) & 1) * x;
+                }
+                return z & 0xFF;
+            }
+
+            function qrRsRemainder(data, divisor) {
+                const result = new Uint8Array(divisor.length);
+                for (const b of data) {
+                    const factor = b ^ result[0];
+                    result.copyWithin(0, 1);
+                    result[result.length - 1] = 0;
+                    for (let i = 0; i < divisor.length; i++) result[i] ^= qrRsMul(divisor[i], factor);
+                }
+                return result;
+            }
+
+            // → { size, modules: Uint8Array(size*size) }。maxVer に入らなければ null
+            function qrEncode(segs, maxVer = 40) {
+                let ver = 1, bits = null;
+                for (; ver <= maxVer; ver++) {
+                    const b = qrSegmentBits(segs, ver);
+                    if (b.length <= qrDataCodewords(ver) * 8) { bits = b; break; }
+                }
+                if (!bits) return null;
+
+                // 終端・バイト境界・埋め草
+                const capacity = qrDataCodewords(ver) * 8;
+                for (let i = 0; i < 4 && bits.length < capacity; i++) bits.push(0);
+                while (bits.length % 8) bits.push(0);
+                const data = [];
+                for (let i = 0; i < bits.length; i += 8) {
+                    let v = 0;
+                    for (let j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
+                    data.push(v);
+                }
+                for (let pad = 0xEC; data.length < capacity / 8; pad ^= 0xEC ^ 0x11) data.push(pad);
+
+                // ブロックに分けて誤り訂正を付け、交互に並べる
+                const numBlocks = QR_BLOCKS[ver], eccLen = QR_ECC_LEN[ver];
+                const rawCodewords = Math.floor(qrRawModules(ver) / 8);
+                const numShort = numBlocks - rawCodewords % numBlocks;
+                const shortLen = Math.floor(rawCodewords / numBlocks) - eccLen;
+                const divisor = qrRsDivisor(eccLen);
+                const blocks = [];
+                for (let i = 0, k = 0; i < numBlocks; i++) {
+                    const dat = data.slice(k, k + shortLen + (i < numShort ? 0 : 1));
+                    k += dat.length;
+                    blocks.push({ dat, ecc: qrRsRemainder(dat, divisor) });
+                }
+                const all = [];
+                for (let i = 0; i <= shortLen; i++) blocks.forEach(b => { if (i < b.dat.length) all.push(b.dat[i]); });
+                for (let i = 0; i < eccLen; i++) blocks.forEach(b => all.push(b.ecc[i]));
+
+                const size = ver * 4 + 17;
+                const mod = new Uint8Array(size * size);
+                const fn = new Uint8Array(size * size); // 1 = 位置合わせなどの決まった模様(データを置かない)
+                const setFn = (x, y, dark) => { mod[y * size + x] = dark ? 1 : 0; fn[y * size + x] = 1; };
+
+                // タイミング
+                for (let i = 0; i < size; i++) { setFn(6, i, i % 2 === 0); setFn(i, 6, i % 2 === 0); }
+                // 位置検出(3つの角)
+                const finder = (cx, cy) => {
+                    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+                        const dist = Math.max(Math.abs(dx), Math.abs(dy));
+                        const x = cx + dx, y = cy + dy;
+                        if (x >= 0 && x < size && y >= 0 && y < size) setFn(x, y, dist !== 2 && dist !== 4);
+                    }
+                };
+                finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+                // 位置合わせ
+                const align = [];
+                if (ver > 1) {
+                    const numAlign = Math.floor(ver / 7) + 2;
+                    const step = ver === 32 ? 26 : Math.ceil((ver * 4 + 4) / (numAlign * 2 - 2)) * 2;
+                    align.push(6);
+                    for (let pos = size - 7; align.length < numAlign; pos -= step) align.splice(1, 0, pos);
+                }
+                const na = align.length;
+                for (let i = 0; i < na; i++) for (let j = 0; j < na; j++) {
+                    if ((i === 0 && j === 0) || (i === 0 && j === na - 1) || (i === na - 1 && j === 0)) continue;
+                    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setFn(align[i] + dx, align[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+                }
+                // 形式情報(マスクが決まってから書き直す)と型番情報
+                const drawFormat = (mask) => {
+                    const d = (1 << 3) | mask; // レベルL = 01
+                    let rem = d;
+                    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+                    const b = ((d << 10) | rem) ^ 0x5412;
+                    const bit = i => ((b >>> i) & 1) !== 0;
+                    for (let i = 0; i <= 5; i++) setFn(8, i, bit(i));
+                    setFn(8, 7, bit(6)); setFn(8, 8, bit(7)); setFn(7, 8, bit(8));
+                    for (let i = 9; i < 15; i++) setFn(14 - i, 8, bit(i));
+                    for (let i = 0; i < 8; i++) setFn(size - 1 - i, 8, bit(i));
+                    for (let i = 8; i < 15; i++) setFn(8, size - 15 + i, bit(i));
+                    setFn(8, size - 8, true);
+                };
+                drawFormat(0);
+                if (ver >= 7) {
+                    let rem = ver;
+                    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+                    const b = (ver << 12) | rem;
+                    for (let i = 0; i < 18; i++) {
+                        const dark = ((b >>> i) & 1) !== 0;
+                        const a = size - 11 + i % 3, c = Math.floor(i / 3);
+                        setFn(a, c, dark); setFn(c, a, dark);
+                    }
+                }
+
+                // データを右下からジグザグに置く
+                let bi = 0;
+                for (let right = size - 1; right >= 1; right -= 2) {
+                    if (right === 6) right = 5;
+                    for (let vert = 0; vert < size; vert++) {
+                        for (let j = 0; j < 2; j++) {
+                            const x = right - j;
+                            const upward = ((right + 1) & 2) === 0;
+                            const y = upward ? size - 1 - vert : vert;
+                            if (!fn[y * size + x] && bi < all.length * 8) {
+                                mod[y * size + x] = (all[bi >>> 3] >>> (7 - (bi & 7))) & 1;
+                                bi++;
+                            }
+                        }
+                    }
+                }
+
+                const maskAt = (m, x, y) => {
+                    switch (m) {
+                        case 0: return (x + y) % 2 === 0;
+                        case 1: return y % 2 === 0;
+                        case 2: return x % 3 === 0;
+                        case 3: return (x + y) % 3 === 0;
+                        case 4: return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0;
+                        case 5: return x * y % 2 + x * y % 3 === 0;
+                        case 6: return (x * y % 2 + x * y % 3) % 2 === 0;
+                        default: return ((x + y) % 2 + x * y % 3) % 2 === 0;
+                    }
+                };
+                const applyMask = (m) => {
+                    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+                        if (!fn[y * size + x] && maskAt(m, x, y)) mod[y * size + x] ^= 1;
+                    }
+                };
+                // 読みやすさの減点(同じ色の連続・2×2のかたまり・位置検出に似た並び・白黒のかたより)
+                const penalty = () => {
+                    let p = 0;
+                    const line = (get) => {
+                        for (let a = 0; a < size; a++) {
+                            let run = 1, hist = 0;
+                            for (let b = 0; b < size; b++) {
+                                const c = get(a, b);
+                                if (b > 0) {
+                                    if (c === get(a, b - 1)) { run++; if (run === 5) p += 3; else if (run > 5) p++; }
+                                    else run = 1;
+                                }
+                                hist = ((hist << 1) | c) & 0x7FF;
+                                if (b >= 10 && (hist === 0x05D || hist === 0x5D0)) p += 40;
+                            }
+                        }
+                    };
+                    line((y, x) => mod[y * size + x]);
+                    line((x, y) => mod[y * size + x]);
+                    let dark = 0;
+                    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+                        const c = mod[y * size + x];
+                        dark += c;
+                        if (x + 1 < size && y + 1 < size && c === mod[y * size + x + 1] && c === mod[(y + 1) * size + x] && c === mod[(y + 1) * size + x + 1]) p += 3;
+                    }
+                    p += Math.floor(Math.abs(dark * 20 - size * size * 10) / (size * size)) * 10;
+                    return p;
+                };
+                let best = 0, bestP = Infinity;
+                for (let m = 0; m < 8; m++) {
+                    applyMask(m);
+                    drawFormat(m);
+                    const p = penalty();
+                    if (p < bestP) { bestP = p; best = m; }
+                    applyMask(m); // 元に戻す
+                }
+                applyMask(best);
+                drawFormat(best);
+                return { size, modules: mod, version: ver, mask: best };
+            }
+
+            // ══ データをQRコード向けの文字列にする(0-9とA-Zだけ。英数字モードにそのまま入る) ══
+            const QRX_B36_LEN = [0, 2, 4, 5, 7, 8, 10, 11, 13, 14]; // nバイト → 何文字
+
+            function qrxBytesToB36(bytes) {
+                let out = '';
+                for (let i = 0; i < bytes.length; i += 9) {
+                    const n = Math.min(9, bytes.length - i);
+                    let v = 0n;
+                    for (let j = 0; j < n; j++) v = (v << 8n) | BigInt(bytes[i + j]);
+                    out += v.toString(36).toUpperCase().padStart(QRX_B36_LEN[n], '0');
+                }
+                return out;
+            }
+
+            function qrxB36ToBytes(str) {
+                const out = [];
+                for (let i = 0; i < str.length; i += 14) {
+                    const part = str.slice(i, i + 14);
+                    const n = QRX_B36_LEN.indexOf(part.length);
+                    if (n < 1) throw new Error('bad length');
+                    let v = 0n;
+                    for (const ch of part) {
+                        const d = parseInt(ch, 36);
+                        if (Number.isNaN(d)) throw new Error('bad char');
+                        v = v * 36n + BigInt(d);
+                    }
+                    if (v >> BigInt(n * 8) !== 0n) throw new Error('bad value');
+                    for (let j = n - 1; j >= 0; j--) out.push(Number((v >> BigInt(j * 8)) & 0xFFn));
+                }
+                return new Uint8Array(out);
+            }
+
+            function qrxChecksum(bytes) {
+                let h = 0x811C9DC5;
+                for (const b of bytes) { h ^= b; h = Math.imul(h, 0x01000193); }
+                return h >>> 0;
+            }
+
+            async function qrxPipe(bytes, stream) {
+                const out = new Blob([bytes]).stream().pipeThrough(stream);
+                return new Uint8Array(await new Response(out).arrayBuffer());
+            }
+
+            // 勉強記録を数字の並びに詰める(日時は前の記録との差、ミリ秒まで。元と1文字も変わらない形に戻せる)
+            function qrxPackHistory(list) {
+                const groups = [], groupIndex = new Map(), d = [], raw = [];
+                let prev = 0;
+                list.forEach((it, idx) => {
+                    const row = qrxPackHistoryItem(it, prev, groups, groupIndex);
+                    if (!row) { raw.push([idx, it]); return; }
+                    d.push(...row.nums);
+                    prev = row.start;
+                });
+                return { n: list.length, g: groups, d, x: raw };
+            }
+
+            function qrxPackHistoryItem(it, prev, groups, groupIndex) {
+                if (!it || typeof it !== 'object' || Array.isArray(it)) return null;
+                const keys = Object.keys(it);
+                if (keys.some(k => !['start', 'end', 'duration', 'group', 'pauses'].includes(k))) return null;
+                const iso = v => { const t = Date.parse(v); return typeof v === 'string' && !Number.isNaN(t) && new Date(t).toISOString() === v ? t : null; };
+                const start = iso(it.start), end = iso(it.end);
+                if (start === null || end === null || !Number.isInteger(it.duration) || typeof it.group !== 'string' || !Array.isArray(it.pauses)) return null;
+                const nums = [prev - start, it.duration, end - start - it.duration, 0, it.pauses.length];
+                let at = start;
+                for (const p of it.pauses) {
+                    if (!p || Object.keys(p).length !== 2) return null;
+                    const ps = iso(p.start), pe = iso(p.end);
+                    if (ps === null || pe === null) return null;
+                    nums.push(ps - at, pe - ps);
+                    at = pe;
+                }
+                if (!groupIndex.has(it.group)) { groupIndex.set(it.group, groups.length); groups.push(it.group); }
+                nums[3] = groupIndex.get(it.group);
+                return { nums, start };
+            }
+
+            function qrxUnpackHistory(h) {
+                const out = new Array(h.n);
+                (h.x || []).forEach(([idx, it]) => { out[idx] = it; });
+                let k = 0, prev = 0;
+                for (let i = 0; i < h.n; i++) {
+                    if (out[i] !== undefined) continue;
+                    const start = prev - h.d[k++], duration = h.d[k++], slack = h.d[k++], g = h.d[k++], np = h.d[k++];
+                    const pauses = [];
+                    let at = start;
+                    for (let j = 0; j < np; j++) {
+                        const ps = at + h.d[k++], pe = ps + h.d[k++];
+                        pauses.push({ start: new Date(ps).toISOString(), end: new Date(pe).toISOString() });
+                        at = pe;
+                    }
+                    out[i] = { start: new Date(start).toISOString(), end: new Date(start + duration + slack).toISOString(), duration, group: h.g[g], pauses };
+                    prev = start;
+                }
+                if (k !== h.d.length) throw new Error('bad history');
+                return out;
+            }
+
+            // エクスポートと同じ形のデータ → 文字列
+            async function qrxPack(data) {
+                const body = { v: 1 };
+                if (data.settings) body.s = data.settings;
+                if (data.todos) body.t = data.todos;
+                if (data.music) body.m = data.music;
+                if (data.studyHistory) body.h = qrxPackHistory(data.studyHistory);
+                const packed = await qrxPipe(new TextEncoder().encode(JSON.stringify(body)), new CompressionStream('deflate-raw'));
+                const sum = qrxChecksum(packed);
+                const bytes = new Uint8Array(packed.length + 4);
+                bytes.set([sum >>> 24, (sum >>> 16) & 255, (sum >>> 8) & 255, sum & 255]);
+                bytes.set(packed, 4);
+                return qrxBytesToB36(bytes);
+            }
+
+            async function qrxUnpack(str) {
+                const bytes = qrxB36ToBytes(str);
+                const packed = bytes.subarray(4);
+                const sum = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+                if (bytes.length < 5 || sum !== qrxChecksum(packed)) throw new Error('checksum');
+                const body = JSON.parse(new TextDecoder().decode(await qrxPipe(packed, new DecompressionStream('deflate-raw'))));
+                if (!body || body.v !== 1) throw new Error('version');
+                const data = { version: EXPORT_SCHEMA_VERSION, app: 'tsumiki-study' };
+                if (body.s && typeof body.s === 'object') data.settings = body.s;
+                if (Array.isArray(body.t)) data.todos = body.t;
+                if (body.m && typeof body.m === 'object') data.music = body.m;
+                if (body.h) data.studyHistory = qrxUnpackHistory(body.h);
+                return data;
+            }
+
+
+            // ══ QRコードでスマホへ移す ══
+            // PC: データを詰めた文字列を何枚かのQRコードに分けて出す(中身は「このアプリのURL#q=データ」)。
+            // スマホ: カメラで読むとこのページが開くので、# の後ろを受け取ってためていき、全部そろったら取り込む。
+            // # の後ろはサーバーへ送られないので、データが外に出ることはない。
+            const QRX_MAX_VERSION = 30;  // QRコードの細かさの上限(145マス四方。これより細かいとカメラで読みにくい)
+            const QRX_HEAD_LEN = 8;      // 合言葉4文字 + 何枚目2文字 + 全部で何枚2文字
+            const QRX_MAX_PARTS = 40;
+            const QRX_PENDING_KEY = 'qr_transfer_pending';
+            let qrxState = null;         // PC側: { parts, index }
+            let qrxArrived = false;      // スマホ側: このページがQRコードから開かれた
+
+            // QRコードを出せる広さ(ピクセル)
+            function qrxRoom() {
+                return Math.min(window.innerWidth - 96, window.innerHeight - 390, 640);
+            }
+
+            function qrxBaseUrl() {
+                // 手元で開いているとき(localhost や file)は、スマホから開ける本番のアドレスにする
+                const local = location.protocol !== 'https:' || /^(localhost|127\.|\[::1\])/.test(location.host);
+                return (local ? 'https://tsumiki.app/' : location.origin + location.pathname) + '#q=';
+            }
+
+            async function openQrTransfer() {
+                if (typeof CompressionStream === 'undefined' || typeof BigInt === 'undefined') {
+                    await customConfirm(getText('qrUnsupported'), getText('qrTitle'));
+                    return;
+                }
+                const studyHistory = safeJsonParse(getData('studyHistory') || '[]', []);
+                const todos = safeJsonParse(getData('todos') || '[]', []);
+                const music = collectExportMusic();
+                const selected = await openDataSelectDialog({
+                    titleKey: 'qrSelectTitle',
+                    noteKey: 'qrSelectNote',
+                    items: [
+                        { key: 'settings', labelKey: 'dataCatSettings' },
+                        { key: 'history', labelKey: 'dataCatHistory', count: Array.isArray(studyHistory) ? studyHistory.length : 0 },
+                        { key: 'todos', labelKey: 'dataCatTodos', count: Array.isArray(todos) ? todos.length : 0 },
+                        { key: 'music', labelKey: 'dataCatMusic', count: music.playlists.reduce((n, p) => n + p.tracks.length, 0) }
+                    ]
+                });
+                if (!selected || selected.size === 0) return;
+
+                const data = {};
+                if (selected.has('history')) data.studyHistory = Array.isArray(studyHistory) ? studyHistory : [];
+                if (selected.has('todos')) data.todos = Array.isArray(todos) ? todos : [];
+                if (selected.has('settings')) data.settings = collectExportSettings();
+                if (selected.has('music')) data.music = music;
+
+                let text;
+                try {
+                    text = await qrxPack(data);
+                } catch (e) {
+                    await customConfirm(getText('qrMakeFailed'), getText('qrTitle'));
+                    return;
+                }
+                // 1マスを3ピクセル以上で出せる細かさにする(画面が小さいときは、1枚を粗くして枚数を増やす)
+                let ver = QRX_MAX_VERSION;
+                while (ver > 12 && (ver * 4 + 17 + 8) * 3 > qrxRoom()) ver--;
+                const prefixBits = 4 + 16 + new TextEncoder().encode(qrxBaseUrl()).length * 8;
+                const partLen = Math.floor((qrDataCodewords(ver) * 8 - prefixBits - 17) / 5.5) - 1;
+                const bodyLen = partLen - QRX_HEAD_LEN;
+                const total = Math.ceil(text.length / bodyLen);
+                if (total > QRX_MAX_PARTS) {
+                    await customConfirm(getText('qrTooMany').replace('{n}', total), getText('qrTitle'));
+                    return;
+                }
+                const b36 = (n, len) => n.toString(36).toUpperCase().padStart(len, '0');
+                const id = b36(Math.floor(Math.random() * 36 ** 4), 4);
+                const parts = [];
+                for (let i = 0; i < total; i++) parts.push(id + b36(i + 1, 2) + b36(total, 2) + text.slice(i * bodyLen, (i + 1) * bodyLen));
+                qrxState = { parts, index: 0 };
+                renderQrTransfer();
+                document.getElementById('qrTransferOverlay').classList.add('show');
+            }
+
+            function renderQrTransfer() {
+                const st = qrxState;
+                const canvas = document.getElementById('qrTransferCanvas');
+                if (!st || !canvas) return;
+                const total = st.parts.length;
+                const qr = qrEncode([{ mode: 'byte', text: qrxBaseUrl() }, { mode: 'alnum', text: st.parts[st.index] }]);
+                if (!qr) return;
+                // 1マスは整数ピクセルで(にじむと読み取りにくい)。まわりに白い余白を4マス
+                const quiet = 4, n = qr.size + quiet * 2;
+                const scale = Math.max(2, Math.floor(qrxRoom() / n));
+                canvas.width = canvas.height = n * scale;
+                canvas.style.width = canvas.style.height = n * scale + 'px';
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#000000';
+                for (let y = 0; y < qr.size; y++) {
+                    for (let x = 0; x < qr.size; x++) {
+                        if (qr.modules[y * qr.size + x]) ctx.fillRect((x + quiet) * scale, (y + quiet) * scale, scale, scale);
+                    }
+                }
+
+                const last = st.index === total - 1;
+                document.getElementById('qrTransferMessage').textContent = total === 1
+                    ? getText('qrMsgOne')
+                    : getText('qrMsgMany').replace('{n}', total);
+                const nav = document.getElementById('qrTransferNav');
+                nav.hidden = total === 1;
+                document.getElementById('qrTransferCount').textContent = `${st.index + 1} / ${total}`;
+                document.getElementById('qrTransferPrev').disabled = st.index === 0;
+                document.getElementById('qrTransferNextSmall').disabled = last;
+                const next = document.getElementById('qrTransferNext');
+                next.textContent = getText(last ? 'qrDone' : 'qrNext');
+                document.getElementById('qrTransferClose').hidden = last;
+            }
+
+            function stepQrTransfer(delta) {
+                if (!qrxState) return;
+                const to = qrxState.index + delta;
+                if (to >= qrxState.parts.length) { closeQrTransfer(); return; }
+                qrxState.index = Math.max(0, to);
+                renderQrTransfer();
+            }
+
+            function closeQrTransfer() {
+                document.getElementById('qrTransferOverlay').classList.remove('show');
+                qrxState = null;
+            }
+
+            // スマホ側: ページを開いた直後に # の後ろを受け取ってためる(画面はまだ出さない)
+            function qrxReadHash() {
+                const m = /^#q=([0-9A-Za-z]+)$/.exec(location.hash || '');
+                if (!m) return;
+                // 読み直しても同じものをもう一度取り込まないように、アドレスから消す
+                try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+                const raw = m[1].toUpperCase();
+                const id = raw.slice(0, 4);
+                const idx = parseInt(raw.slice(4, 6), 36);
+                const total = parseInt(raw.slice(6, 8), 36);
+                if (raw.length <= QRX_HEAD_LEN || !(total >= 1 && total <= QRX_MAX_PARTS && idx >= 1 && idx <= total)) return;
+                let pend = safeJsonParse(localStorage.getItem(QRX_PENDING_KEY), null);
+                // 別の組のQRコード・1時間以上前の読みかけは捨てて、最初から
+                if (!pend || pend.id !== id || pend.total !== total || !pend.parts || Date.now() - pend.at > 3600000) {
+                    pend = { id, total, parts: {} };
+                }
+                pend.parts[idx] = raw.slice(QRX_HEAD_LEN);
+                pend.at = Date.now();
+                try { localStorage.setItem(QRX_PENDING_KEY, JSON.stringify(pend)); } catch (e) { return; }
+                qrxArrived = true;
+            }
+
+            // スマホ側: アプリの準備ができてから、続きを案内するか、そろっていれば取り込む
+            async function qrxHandleArrival() {
+                if (!qrxArrived) return;
+                qrxArrived = false;
+                const pend = safeJsonParse(localStorage.getItem(QRX_PENDING_KEY), null);
+                if (!pend || !pend.parts) return;
+                const missing = [];
+                for (let i = 1; i <= pend.total; i++) if (typeof pend.parts[i] !== 'string') missing.push(i);
+                if (missing.length) {
+                    await customConfirm(
+                        getText('qrGotPart').replace('{got}', pend.total - missing.length).replace('{n}', pend.total).replace('{list}', missing.join(', ')),
+                        getText('qrReceiveTitle'), 'import.webp');
+                    return;
+                }
+                localStorage.removeItem(QRX_PENDING_KEY);
+                try {
+                    let text = '';
+                    for (let i = 1; i <= pend.total; i++) text += pend.parts[i];
+                    const data = await qrxUnpack(text);
+                    await runImportFlow(data, 'qrImportNote');
+                } catch (e) {
+                    await customConfirm(getText('qrReadFailed'), getText('qrReceiveTitle'));
+                }
+            }
+            qrxReadHash();
+            // 開いたままのタブで次のQRコードを読んだとき(ページは読み直されず、# の後ろだけ変わる)
+            window.addEventListener('hashchange', () => {
+                qrxReadHash();
+                qrxHandleArrival();
+            });
+
             function importData(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -26235,33 +29000,7 @@
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
-                        const parsedData = JSON.parse(e.target.result);
-                        const normalized = buildNormalizedImportData(parsedData);
-                        const { studyHistory, todos, settings, legacy, music } = normalized;
-
-                        // ファイルに含まれる項目だけを選択肢として表示
-                        const items = [];
-                        if (normalized.hasSettings) items.push({ key: 'settings', labelKey: 'dataCatSettings' });
-                        if (normalized.hasHistory) items.push({ key: 'history', labelKey: 'dataCatHistory', count: studyHistory.length });
-                        if (normalized.hasTodos) items.push({ key: 'todos', labelKey: 'dataCatTodos', count: todos.length });
-                        if (music.length > 0) items.push({ key: 'music', labelKey: 'dataCatMusic', count: music.reduce((n, p) => n + p.tracks.length, 0) });
-                        if (items.length === 0) throw new Error(getText('invalidFileFormat'));
-
-                        const selected = await openDataSelectDialog({
-                            titleKey: 'importSelectTitle',
-                            noteKey: 'importReloadNote',
-                            items
-                        });
-                        if (!selected || selected.size === 0) return;
-
-                        if (selected.has('history')) saveData('studyHistory', JSON.stringify(studyHistory));
-                        if (selected.has('todos')) saveData('todos', JSON.stringify(todos));
-                        if (selected.has('settings')) applyImportedSettings(settings, legacy);
-                        if (selected.has('music')) mergeImportedMusic(music);
-
-                        // 設定UIと実際の状態のズレ/言語混在を防ぐため、リロードで全体を再初期化する
-                        await customConfirm(getText('importDoneReload'), getText('importDataTitle'), 'import.webp');
-                        location.reload();
+                        await runImportFlow(JSON.parse(e.target.result));
                     } catch (error) {
                         await customConfirm(`${getText('importFailed')}: ${error.message}`, getText('errorTitle'), 'warning.webp');
                     }
@@ -27621,6 +30360,10 @@
                 // 現在時刻の時計(デフォルトON)
                 syncClockToggle();
                 applyClockVisibility();
+                // カスタム背景(デフォルトOFF)
+                initCustomBg();
+                renderThemeCustomUI();
+                setTimeout(qrxHandleArrival, 400);
                 // ダーク/ライト切り替えボタンの常時表示(デフォルトON)
                 syncThemeToggleBtnSetting();
                 applyThemeToggleBtnVisibility();
@@ -27903,6 +30646,11 @@
             };
             document.getElementById('priorityColorHue')?.addEventListener('input', (e) => {
                 todoPickerState.h = Math.max(0, Math.min(360, parseInt(e.target.value, 10) || 0));
+                applyPriorityTone(); // 色あいを動かしたら、淡い範囲の色にそろえる
+                updateTodoPickerUIFromState();
+            });
+            document.getElementById('priorityColorTone')?.addEventListener('input', () => {
+                applyPriorityTone();
                 updateTodoPickerUIFromState();
             });
             document.getElementById('priorityColorHexInput')?.addEventListener('input', (e) => {
@@ -28772,7 +31520,9 @@
             }
 
             function getPrimaryColor() {
+                if (window.tsumikiBg && window.tsumikiBg.themeHex) return window.tsumikiBg.themeHex;
                 const theme = document.body.getAttribute('data-theme') || 'blue';
+                if (theme === 'custom' && window.tsumikiBg && window.tsumikiBg.customHex) return window.tsumikiBg.customHex;
                 const colors = {
                     'blue': '#9db4c8',
                     'green': '#a8c9a8',
@@ -28938,6 +31688,27 @@
                 const avgHours = dayCount ? totalHours / dayCount : 0;
                 const dailyBars = range === 'week' || range === 'month';
 
+                // 前の期間との差。今の期間はまだ途中なので、前の期間も同じ日数まで進んだところで比べる
+                let deltaHours = null;
+                if (range !== 'all' && firstDay) {
+                    let pStart, pEndFull;
+                    if (range === 'week') { pStart = addDays(start, -7); pEndFull = addDays(start, -1); }
+                    else if (range === 'month') { pStart = new Date(start.getFullYear(), start.getMonth() - 1, 1); pEndFull = addDays(start, -1); }
+                    else { pStart = new Date(start.getFullYear() - 1, 0, 1); pEndFull = new Date(start.getFullYear() - 1, 11, 31); }
+                    let pEnd = pEndFull;
+                    if (end > today) {
+                        pEnd = range === 'year'
+                            ? new Date(pStart.getFullYear(), today.getMonth(), today.getDate())
+                            : addDays(pStart, Math.round((today - start) / 86400000));
+                        if (pEnd > pEndFull) pEnd = pEndFull;
+                    }
+                    if (pEndFull >= firstDay) {
+                        let prevHours = 0;
+                        for (let d = pStart; d <= pEnd; d = addDays(d, 1)) prevHours += dayValue(d);
+                        deltaHours = totalHours - prevHours;
+                    }
+                }
+
                 renderChartHead(canvas, {
                     range,
                     title,
@@ -28945,7 +31716,7 @@
                     canNext: range !== 'all' && offset > 0
                 });
                 const hasData = totalHours > 0;
-                renderChartSummary(canvas, hasData ? { totalHours, avgHours, bestHours, avgLine: dailyBars } : null);
+                renderChartSummary(canvas, hasData ? { totalHours, avgHours, bestHours, avgLine: dailyBars, deltaHours, range } : null);
                 renderCustomChart(canvas, {
                     labels: hasData ? labels : [],
                     values: hasData ? values : [],
@@ -28989,16 +31760,22 @@
                 }
                 sum.hidden = !s;
                 if (!s) return;
-                const items = [
-                    [getText('chartTotal'), formatChartHours(s.totalHours)],
-                    [getText('chartDailyAvg'), formatChartHours(s.avgHours)],
-                    [getText('chartBest'), formatChartHours(s.bestHours)]
-                ];
-                sum.innerHTML = items.map((it, i) =>
-                    '<div class="chart-stat"><span class="chart-stat-label">' + it[0]
-                    + (i === 1 && s.avgLine ? '<span class="chart-avg-key" aria-hidden="true"></span>' : '')
-                    + '</span><span class="chart-stat-value">' + it[1] + '</span></div>'
-                ).join('');
+                // 合計を大きく、その横に前の期間との差。1日平均と1日最長は小さく添える
+                let delta = '';
+                const deltaMin = s.deltaHours == null ? 0 : Math.round(s.deltaHours * 60);
+                if (deltaMin !== 0) {
+                    const key = s.range === 'week' ? 'chartDeltaWeek' : s.range === 'month' ? 'chartDeltaMonth' : 'chartDeltaYear';
+                    const d = (deltaMin > 0 ? '+' : '\u2212') + formatChartHours(Math.abs(deltaMin) / 60);
+                    delta = '<span class="chart-delta' + (deltaMin > 0 ? ' up' : '') + '">' + escapeHtml(getText(key).replace('{d}', d)) + '</span>';
+                }
+                sum.innerHTML =
+                    '<div class="chart-total"><span class="chart-total-label">' + getText('chartTotal') + '</span>'
+                    + '<span class="chart-total-row"><span class="chart-total-value">' + formatChartHours(s.totalHours) + '</span>' + delta + '</span></div>'
+                    + '<div class="chart-substats">'
+                    + '<span class="chart-stat"><span class="chart-stat-label">' + getText('chartDailyAvg')
+                    + (s.avgLine ? '<span class="chart-avg-key" aria-hidden="true"></span>' : '') + '</span><span class="chart-stat-value">' + formatChartHours(s.avgHours) + '</span></span>'
+                    + '<span class="chart-stat"><span class="chart-stat-label">' + getText('chartBest') + '</span><span class="chart-stat-value">' + formatChartHours(s.bestHours) + '</span></span>'
+                    + '</div>';
             }
 
             // ========== 自作グラフレンダラー(Chart.js非依存) ==========
@@ -29017,6 +31794,8 @@
                     muted: isDark ? 'rgba(232,232,232,0.55)' : 'rgba(50,50,50,0.55)',
                     grid: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
                     base: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.14)',
+                    track: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.055)',
+                    trackFuture: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
                     primary,
                     surface
                 };
@@ -29050,6 +31829,20 @@
                 ctx.lineTo(x + w - r, y);
                 ctx.arcTo(x + w, y, x + w, y + r, r);
                 ctx.lineTo(x + w, y + h);
+                ctx.closePath();
+            }
+
+            // 上も下も丸い、細長い丸(棒の受け皿)
+            function chartPillPath(ctx, x, y, w, h) {
+                const r = Math.min(w / 2, h / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.arcTo(x + w, y, x + w, y + r, r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+                ctx.arcTo(x, y + h, x, y + h - r, r);
+                ctx.lineTo(x, y + r);
+                ctx.arcTo(x, y, x + r, y, r);
                 ctx.closePath();
             }
 
@@ -29165,7 +31958,7 @@
                 const outerHolder = ensureChartScrollWrap(canvas);
                 const wrap = canvas.parentElement;
                 const cssW = Math.max(200, Math.floor(wrap.clientWidth || 400));
-                const cssH = cssW < 480 ? 200 : 240;
+                const cssH = cssW < 480 ? 210 : 250;
                 const ctx = canvas.getContext('2d');
                 const col = chartColors(outerHolder);
                 const values = state.values;
@@ -29236,11 +32029,13 @@
                 ctx.textBaseline = 'middle';
                 for (const t of ticks) {
                     const y = Math.round(yFor(t)) + 0.5;
-                    ctx.strokeStyle = t === 0 ? col.base : col.grid;
-                    ctx.beginPath();
-                    ctx.moveTo(plotX, y);
-                    ctx.lineTo(plotX + plotW, y);
-                    ctx.stroke();
+                    if (state.type !== 'bar') {
+                        ctx.strokeStyle = t === 0 ? col.base : col.grid;
+                        ctx.beginPath();
+                        ctx.moveTo(plotX, y);
+                        ctx.lineTo(plotX + plotW, y);
+                        ctx.stroke();
+                    }
                     ctx.fillStyle = col.muted;
                     ctx.fillText(formatChartAxis(t), plotX - 8, y);
                 }
@@ -29271,16 +32066,23 @@
                 const hasHover = hv >= 0 && hv < n;
 
                 if (state.type === 'bar') {
-                    const bw = Math.max(2, Math.min(32, cell * 0.62));
-                    const radius = Math.min(6, bw / 2);
+                    // 列ごとに細長い丸の受け皿を置き、その中に下から色をためる(まだ来ていない日は受け皿だけ、さらに薄く)
+                    const bw = Math.max(3, Math.min(30, cell * 0.6));
                     for (let i = 0; i < n; i++) {
-                        const v = values[i] * animT;
-                        if (values[i] <= 0) continue;
-                        const hgt = Math.max(2, plotY + plotH - yFor(v));
-                        chartRoundRectPath(ctx, xFor(i) - bw / 2, plotY + plotH - hgt, bw, hgt, radius);
+                        const x = xFor(i) - bw / 2;
+                        chartPillPath(ctx, x, plotY, bw, plotH);
+                        ctx.fillStyle = values[i] == null ? col.trackFuture : col.track;
+                        ctx.fill();
+                        if (!(values[i] > 0)) continue;
+                        const hgt = Math.max(3, plotY + plotH - yFor(values[i] * animT));
+                        ctx.save();
+                        chartPillPath(ctx, x, plotY, bw, plotH);
+                        ctx.clip();
+                        chartRoundRectPath(ctx, x, plotY + plotH - hgt, bw, hgt, bw / 2);
                         // 指している棒以外は少し薄くして、どれを見ているか分かるように
                         ctx.fillStyle = (hasHover && i !== hv) ? hexToRgba(col.primary, 0.4) : col.primary;
                         ctx.fill();
+                        ctx.restore();
                     }
                 } else {
                     // 線は今日(最後に値がある列)まで
@@ -29308,7 +32110,7 @@
                         ctx.beginPath();
                         chartMonotonePath(ctx, pts);
                         ctx.strokeStyle = col.primary;
-                        ctx.lineWidth = 2;
+                        ctx.lineWidth = 2.5;
                         ctx.lineJoin = 'round';
                         ctx.lineCap = 'round';
                         ctx.stroke();
@@ -29325,6 +32127,7 @@
                     }
                     // 今日(最新)と指している所だけ点を打つ。まわりに背景色の輪を付けて線から浮かせる
                     const dots = new Set();
+                    if (np > 1 && np <= 12) for (let i = 0; i < np; i++) dots.add(i);
                     if (state.todayIndex >= 0 && state.todayIndex < np) dots.add(state.todayIndex);
                     if (hasHover && hv < np) dots.add(hv);
                     dots.forEach(i => {
