@@ -14518,6 +14518,178 @@
             margin-right: auto;
         }
 
+        /* ===== 記録の手動入力･編集(設定でオンにしたときだけ) ===== */
+        .list-action-btn[hidden] {
+            display: none;
+        }
+
+        .manual-record-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .manual-record-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 44px;
+        }
+
+        .manual-record-row.top {
+            align-items: flex-start;
+        }
+
+        .manual-record-row.top .manual-record-label {
+            padding-top: 11px;
+        }
+
+        .manual-record-label {
+            flex: 0 0 auto;
+            min-width: 6.4em;
+            white-space: nowrap;
+            font-size: 0.88rem;
+            opacity: 0.75;
+        }
+
+        .manual-record-field {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .manual-record-field > span {
+            font-size: 0.88rem;
+            opacity: 0.75;
+        }
+
+        .manual-record-dialog input,
+        .manual-record-date {
+            height: 44px;
+            padding: 0 16px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background: var(--panel-light);
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .dark .manual-record-dialog input,
+        .dark .manual-record-date {
+            background: var(--panel-dark-2);
+            color-scheme: dark;
+        }
+
+        .manual-record-dialog input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .dark .manual-record-dialog input:focus {
+            border-color: var(--primary-color-dark);
+        }
+
+        .manual-record-field.duration {
+            flex-wrap: nowrap;
+        }
+
+        .manual-record-field.duration > span {
+            flex: 0 0 auto;
+        }
+
+        .manual-record-dialog input[type="number"] {
+            flex: 1 1 3em;
+            width: 3em;
+            min-width: 2.6em;
+            max-width: 4.6em;
+            padding: 0 8px;
+            text-align: center;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .manual-record-dialog input[type="number"]::-webkit-outer-spin-button,
+        .manual-record-dialog input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .manual-record-dialog input[type="text"] {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .manual-record-date {
+            cursor: pointer;
+            font-weight: 400;
+        }
+
+        .manual-record-groups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 96px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .manual-record-groups:empty {
+            display: none;
+        }
+
+        .manual-record-chip {
+            height: 36px;
+            padding: 0 14px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background: var(--panel-light);
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .dark .manual-record-chip {
+            background: var(--panel-dark-2);
+        }
+
+        .manual-record-chip[aria-pressed="true"] {
+            border-color: var(--primary-color);
+            background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+            font-weight: 500;
+        }
+
+        .dark .manual-record-chip[aria-pressed="true"] {
+            border-color: var(--primary-color-dark);
+            background: color-mix(in srgb, var(--primary-color-dark) 24%, transparent);
+        }
+
+        .manual-record-preview {
+            min-height: 2.9em;
+            margin-bottom: 18px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            opacity: 0.85;
+        }
+
+        .manual-record-dialog .custom-confirm-ok:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
         /* QRコードは明るい背景でないと読めないので、ダークでも白い台にのせる */
         .qr-transfer-code {
             display: inline-block;
@@ -15269,6 +15441,51 @@
         </div>
     </div>
 
+    <div class="custom-confirm-overlay" id="manualRecordOverlay">
+        <div class="custom-confirm-dialog manual-record-dialog">
+            <div class="custom-confirm-title" id="manualRecordTitle"></div>
+            <div class="manual-record-form">
+                <div class="manual-record-row">
+                    <span class="manual-record-label" data-i18n="manualDate">日付</span>
+                    <div class="manual-record-field">
+                        <button type="button" class="manual-record-date" id="manualRecordDateBtn" onclick="openManualRecordDatePicker()"></button>
+                    </div>
+                </div>
+                <div class="manual-record-row">
+                    <label class="manual-record-label" for="manualRecordStart" data-i18n="manualStart">始めた時刻</label>
+                    <div class="manual-record-field">
+                        <input type="time" id="manualRecordStart" oninput="updateManualRecordPreview()">
+                    </div>
+                </div>
+                <div class="manual-record-row">
+                    <span class="manual-record-label" data-i18n="manualDuration">勉強した時間</span>
+                    <div class="manual-record-field duration">
+                        <input type="number" id="manualRecordHours" min="0" max="23" step="1" inputmode="numeric"
+                            aria-label="時間" data-i18n-aria="manualHours" oninput="updateManualRecordPreview()">
+                        <span data-i18n="manualHours">時間</span>
+                        <input type="number" id="manualRecordMinutes" min="0" max="59" step="1" inputmode="numeric"
+                            aria-label="分" data-i18n-aria="manualMinutes" oninput="updateManualRecordPreview()">
+                        <span data-i18n="manualMinutes">分</span>
+                    </div>
+                </div>
+                <div class="manual-record-row top">
+                    <span class="manual-record-label" data-i18n="group">グループ</span>
+                    <div class="manual-record-field">
+                        <div class="manual-record-groups" id="manualRecordGroups"></div>
+                        <input type="text" id="manualRecordNewGroup" maxlength="30" autocomplete="off"
+                            placeholder="新しいグループ名" data-i18n-placeholder="manualNewGroup"
+                            aria-label="新しいグループ" data-i18n-aria="manualNewGroupAria">
+                    </div>
+                </div>
+            </div>
+            <div class="manual-record-preview" id="manualRecordPreview" aria-live="polite"></div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-cancel" onclick="closeManualRecord()" data-i18n="cancelButton">キャンセル</button>
+                <button class="custom-confirm-ok" id="manualRecordSave" onclick="saveManualRecord()" data-i18n="saveButton">保存</button>
+            </div>
+        </div>
+    </div>
+
     <div class="custom-confirm-overlay" id="qrTransferOverlay">
         <div class="custom-confirm-dialog qr-transfer-dialog">
             <div class="custom-confirm-title" data-i18n="qrTitle">スマホへ移す</div>
@@ -15832,6 +16049,9 @@
                             <div class="select-arrow">▾</div>
                         </div>
                     </div>
+                    <!-- 設定で「記録の手動入力と編集」をオンにしたときだけ出る -->
+                    <button type="button" class="secondary list-action-btn" id="manualAddBtn" hidden
+                        onclick="openManualRecord()" data-i18n="manualAddButton">記録を追加</button>
                 </div>
 
                 <!-- 絞り込み中だけ: 件数と合計時間 -->
@@ -15849,6 +16069,8 @@
                         </svg>
                     </button>
                     <span class="list-selection-count" id="listSelectionCount"></span>
+                    <button type="button" class="secondary list-action-btn" id="editRecordBtn" hidden
+                        onclick="editSelectedRecord()" data-i18n="manualEditButton">編集</button>
                     <button type="button" class="secondary list-action-btn" id="selectAllBtn" onclick="toggleSelectAll()"
                         data-i18n="selectAll">すべて選択</button>
                     <button type="button" class="trash-btn" id="deleteBtn" onclick="deleteSelected()"
@@ -16487,7 +16709,7 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
-                <div class="setting-note" data-i18n="timerClassicNote">数字をのせる台と今日の積み木を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。</div>
+                <div class="setting-note" data-i18n="timerClassicNote">数字をのせる台を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。</div>
                 <div class="toggle-item">
                     <span data-i18n="autoStopMenuBtnSetting">自動停止</span>
                     <div class="toggle-switch active" id="toggleAutoStopMenuBtn" onclick="toggleAutoStopMenuBtnSetting()">
@@ -16638,6 +16860,13 @@
                     style="display: none;">
                     4/22より前の記録は表示されません。
                 </div>
+                <div class="toggle-item">
+                    <span data-i18n="manualRecordToggle">記録の手動入力と編集</span>
+                    <div class="toggle-switch" id="toggleManualRecord" onclick="toggleManualRecordSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="manualRecordNote">リストに「記録を追加」が出ます。記録を1つだけ選ぶと「編集」もできます。タイマーを押し忘れたときや、時間を直したいときに。</div>
             </div>
 
             <div class="settings-section" id="graphSettingsSection">
@@ -17421,7 +17650,7 @@
                     autoStopMenuBtnSetting: '自動停止',
                     autoStopCompactSetting: '自動停止の表示をコンパクトにする',
                     timerClassicSetting: 'タイマー画面を前の表示にする',
-                    timerClassicNote: '数字をのせる台と今日の積み木を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
+                    timerClassicNote: '数字をのせる台を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
                     autoStopCompactNote: 'アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。',
                     endConfirmSetting: '長いセッション終了時に確認',
                     endConfirmThresholdLabel: '確認するしきい値(分)',
@@ -17593,6 +17822,25 @@
                     posBottomRight: '右下',
                     posBottomLeft: '左下',
                     seconds: '秒',
+                    manualRecordToggle: '記録の手動入力と編集',
+                    manualRecordNote: 'リストに「記録を追加」が出ます。記録を1つだけ選ぶと「編集」もできます。タイマーを押し忘れたときや、時間を直したいときに。',
+                    manualAddButton: '記録を追加',
+                    manualEditButton: '編集',
+                    manualAddTitle: '記録を追加',
+                    manualEditTitle: '記録を編集',
+                    manualDate: '日付',
+                    manualStart: '始めた時刻',
+                    manualDuration: '勉強した時間',
+                    manualHours: '時間',
+                    manualMinutes: '分',
+                    manualNewGroup: '新しいグループ名',
+                    manualNewGroupAria: '新しいグループ',
+                    manualPickerTitle: '日付を選択',
+                    manualPreview: '{s} から {e} まで',
+                    manualErrTime: '始めた時刻を入れてください',
+                    manualErrZero: '勉強した時間を1分以上にしてください',
+                    manualErrFuture: '終わりがいまより先になっています',
+                    manualPausesDrop: '時間を変えると、この記録の一時停止の記録はなくなります',
                     historyTimelineToggle: 'タイムラインバー表示(履歴カード･統計の日別)',
                     historyTimelineLegacyNote: '一時停止データがない履歴ではタイムラインバーは表示されません。4月22日より前の記録は表示されません。',
                     graphDisplay: 'グラフ表示',
@@ -18408,7 +18656,7 @@
                     autoStopMenuBtnSetting: 'Auto-stop',
                     autoStopCompactSetting: 'Compact auto-stop button',
                     timerClassicSetting: 'Use the previous timer layout',
-                    timerClassicNote: 'Drops the timer card and the row of blocks for today, shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
+                    timerClassicNote: 'Drops the timer card, shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
                     autoStopCompactNote: 'Shows only an icon: at the lower left of the clock on the timer, and to the right of the title in the music player. It turns colored while a stop is scheduled.',
                     endConfirmSetting: 'Confirm before ending long sessions',
                     endConfirmThresholdLabel: 'Confirm threshold (minutes)',
@@ -18550,6 +18798,25 @@
                     posBottomRight: 'Bottom Right',
                     posBottomLeft: 'Bottom Left',
                     seconds: 'sec',
+                    manualRecordToggle: 'Add and edit records by hand',
+                    manualRecordNote: 'Adds an "Add record" button to the list. Select a single record to edit it. Handy when you forgot to start the timer or need to fix a time.',
+                    manualAddButton: 'Add record',
+                    manualEditButton: 'Edit',
+                    manualAddTitle: 'Add record',
+                    manualEditTitle: 'Edit record',
+                    manualDate: 'Date',
+                    manualStart: 'Started at',
+                    manualDuration: 'Time studied',
+                    manualHours: 'h',
+                    manualMinutes: 'min',
+                    manualNewGroup: 'New group name',
+                    manualNewGroupAria: 'New group',
+                    manualPickerTitle: 'Select date',
+                    manualPreview: '{s} to {e}',
+                    manualErrTime: 'Enter the time you started',
+                    manualErrZero: 'Time studied must be at least 1 minute',
+                    manualErrFuture: 'The end time is in the future',
+                    manualPausesDrop: 'Changing the time removes the pause log of this record',
                     historyTimelineToggle: 'Show timeline bars (history cards & daily stats)',
                     historyTimelineLegacyNote: 'Timeline bars are hidden for records without pause data. Records before 4/22 are not shown in this bar feature.',
                     graphDisplay: 'Graph Display',
@@ -22065,6 +22332,7 @@
             function toggleTimerClassicSetting() {
                 saveData('timer_layout_classic', isTimerClassic() ? 'false' : 'true');
                 applyTimerClassic();
+                if (typeof applyManualRecordSetting === 'function') applyManualRecordSetting();
                 renderSessionIdleInfo();
                 updateGoalLine(true);
             }
@@ -26040,6 +26308,7 @@
                     : type === 'end' ? 'selectEndDate'
                         : type === 'dailyTimeline' ? 'dailyTimelinePickerTitle'
                         : type === 'exam' ? 'examPickerTitle'
+                        : type === 'manual' ? 'manualPickerTitle'
                             : (type === 'multi' || type === 'calendarMulti') ? 'selectMultiDates'
                                 : 'selectEndDate';
                 const isMulti = type === 'multi' || type === 'calendarMulti';
@@ -26139,6 +26408,13 @@
                     saveData('exam_date', dateStr);
                     closeAllDatePickers();
                     applyExamSettingUI();
+                    return;
+                }
+
+                if (type === 'manual') {
+                    closeAllDatePickers();
+                    if (manualRecordState) manualRecordState.date = dateStr;
+                    updateManualRecordPreview();
                     return;
                 }
 
@@ -26894,6 +27170,9 @@
                 if (moveRow) moveRow.classList.toggle('active', hasSelection);
                 if (deleteBtn && !deleteBtn.firstElementChild) deleteBtn.innerHTML = getTrashIconSvg();
                 if (cancelBtn) cancelBtn.classList.toggle('dim', !hasSelection);
+                // 編集は、手動入力をオンにしていて、1つだけ選んでいるときに出す
+                const editBtn = document.getElementById('editRecordBtn');
+                if (editBtn) editBtn.hidden = !(selectedCount === 1 && typeof isManualRecordEnabled === 'function' && isManualRecordEnabled());
                 const countEl = document.getElementById('listSelectionCount');
                 if (countEl) countEl.textContent = hasSelection ? getText('historySelectedCount').replace('{n}', selectedCount) : '';
                 // 全部選んでいるときは「選択解除」に変える
@@ -26909,6 +27188,208 @@
                     .map(cb => parseInt(cb.getAttribute('data-index'), 10))
                     .filter(i => !isNaN(i) && selectedItems.has(i));
             }
+
+            // ── 記録の手動入力･編集(設定でオンにしたときだけ使える。初期値はオフ) ──
+            let manualRecordState = null; // { index: 編集中の記録の位置(追加は-1), orig, date: 'YYYY-MM-DD', groups: Set }
+
+            function isManualRecordEnabled() {
+                return getData('manual_record_enabled') === 'true';
+            }
+
+            function applyManualRecordSetting() {
+                const on = isManualRecordEnabled();
+                const t = document.getElementById('toggleManualRecord');
+                if (t) t.classList.toggle('active', on);
+                const add = document.getElementById('manualAddBtn');
+                if (add) add.hidden = !on;
+                updateActionButtons();
+            }
+
+            function toggleManualRecordSetting() {
+                saveData('manual_record_enabled', isManualRecordEnabled() ? 'false' : 'true');
+                applyManualRecordSetting();
+            }
+
+            function manualPad(n) { return String(n).padStart(2, '0'); }
+
+            // index を渡すと編集、渡さないと追加
+            function openManualRecord(index) {
+                if (!isManualRecordEnabled()) return;
+                let history = safeJsonParse(getData('studyHistory') || '[]', []);
+                if (!Array.isArray(history)) history = [];
+                const editing = Number.isInteger(index) && !!history[index];
+                const orig = editing ? history[index] : null;
+                let start, durationMs, groups;
+                if (orig) {
+                    start = new Date(orig.start);
+                    if (isNaN(start.getTime())) return;
+                    durationMs = Math.max(0, Number(orig.duration) || 0);
+                    groups = getItemGroups(orig);
+                } else {
+                    // 追加: 「いまから1時間前に始めて1時間」を最初の値にする(ほとんどの場合、少し直すだけで済む)
+                    start = new Date(Date.now() - 3600000);
+                    start.setSeconds(0, 0);
+                    durationMs = 3600000;
+                    groups = [];
+                }
+                manualRecordState = { index: editing ? index : -1, orig, date: toLocalDateKey(start), groups: new Set(groups) };
+                const totalMin = Math.floor(durationMs / 60000);
+                document.getElementById('manualRecordTitle').textContent = getText(editing ? 'manualEditTitle' : 'manualAddTitle');
+                document.getElementById('manualRecordStart').value = `${manualPad(start.getHours())}:${manualPad(start.getMinutes())}`;
+                document.getElementById('manualRecordHours').value = Math.floor(totalMin / 60);
+                document.getElementById('manualRecordMinutes').value = totalMin % 60;
+                document.getElementById('manualRecordNewGroup').value = '';
+                renderManualRecordGroups();
+                updateManualRecordPreview();
+                document.getElementById('manualRecordOverlay').classList.add('show');
+            }
+
+            function closeManualRecord() {
+                document.getElementById('manualRecordOverlay').classList.remove('show');
+                manualRecordState = null;
+            }
+
+            function editSelectedRecord() {
+                const targets = getVisibleSelectedHistoryIndices();
+                if (targets.length !== 1) return;
+                openManualRecord(targets[0]);
+            }
+
+            function openManualRecordDatePicker() {
+                if (!manualRecordState) return;
+                selectedDate.manual = manualRecordState.date;
+                datePickerCurrentDate.manual = parseLocalDate(manualRecordState.date) || new Date();
+                openDatePicker('manual');
+            }
+
+            function renderManualRecordGroups() {
+                const box = document.getElementById('manualRecordGroups');
+                if (!box || !manualRecordState) return;
+                const names = [...new Set([...getAllKnownGroups(), ...manualRecordState.groups])];
+                box.innerHTML = names.map((g, i) =>
+                    `<button type="button" class="manual-record-chip" data-i="${i}" aria-pressed="${manualRecordState.groups.has(g)}">${escapeHtml(g)}</button>`
+                ).join('');
+                box.querySelectorAll('.manual-record-chip').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const g = names[parseInt(btn.dataset.i, 10)];
+                        if (manualRecordState.groups.has(g)) manualRecordState.groups.delete(g);
+                        else manualRecordState.groups.add(g);
+                        btn.setAttribute('aria-pressed', String(manualRecordState.groups.has(g)));
+                    });
+                });
+            }
+
+            // 入力欄から「保存する記録」を組み立てる。だめなときは { error } を返す
+            function readManualRecord() {
+                const st = manualRecordState;
+                if (!st) return { error: '' };
+                const day = parseLocalDate(st.date);
+                const tm = /^(\d{1,2}):(\d{2})/.exec(document.getElementById('manualRecordStart').value || '');
+                if (!day || !tm) return { error: getText('manualErrTime') };
+                const h = Math.min(23, Math.max(0, parseInt(document.getElementById('manualRecordHours').value, 10) || 0));
+                const m = Math.min(59, Math.max(0, parseInt(document.getElementById('manualRecordMinutes').value, 10) || 0));
+                const orig = st.orig;
+                const origStart = orig ? new Date(orig.start) : null;
+                const origEnd = orig ? new Date(orig.end) : null;
+                const origDuration = orig ? Math.max(0, Number(orig.duration) || 0) : 0;
+
+                // 触っていない項目は秒まで元のまま残す(分単位に丸めて、開いて保存しただけで数字が変わるのを防ぐ)
+                let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), parseInt(tm[1], 10), parseInt(tm[2], 10), 0, 0);
+                if (origStart && toLocalDateKey(origStart) === st.date
+                    && origStart.getHours() === start.getHours() && origStart.getMinutes() === start.getMinutes()) {
+                    start = origStart;
+                }
+                const durationSame = !!orig && Math.floor(origDuration / 60000) === h * 60 + m;
+                const duration = durationSame ? origDuration : (h * 60 + m) * 60000;
+                if (duration < 60000 && !durationSame) return { error: getText('manualErrZero') };
+
+                let end, pauses, pausesDropped = false;
+                if (durationSame && origEnd && !isNaN(origEnd.getTime())) {
+                    // 時間はそのまま: 終わりと一時停止を、始まりと同じだけずらす
+                    const delta = start.getTime() - origStart.getTime();
+                    end = new Date(origEnd.getTime() + delta);
+                    if (Array.isArray(orig.pauses)) {
+                        pauses = orig.pauses.map(p => {
+                            const ps = new Date(p.start), pe = new Date(p.end);
+                            if (isNaN(ps.getTime()) || isNaN(pe.getTime())) return p;
+                            return { start: new Date(ps.getTime() + delta).toISOString(), end: new Date(pe.getTime() + delta).toISOString() };
+                        });
+                    }
+                } else {
+                    end = new Date(start.getTime() + duration);
+                    pauses = [];
+                    pausesDropped = !!orig && Array.isArray(orig.pauses) && orig.pauses.length > 0;
+                }
+                if (end.getTime() > Date.now() + 60000) return { error: getText('manualErrFuture'), start, end };
+
+                const groups = new Set(st.groups);
+                const extra = document.getElementById('manualRecordNewGroup').value.replace(/[,\s]+/g, ' ').trim();
+                if (extra) groups.add(extra);
+                const record = { start: start.toISOString(), end: end.toISOString(), duration, group: [...groups].join(', ') };
+                if (pauses) record.pauses = pauses;
+                return { record, start, end, pausesDropped, newGroup: extra };
+            }
+
+            function updateManualRecordPreview() {
+                if (!manualRecordState) return;
+                const day = parseLocalDate(manualRecordState.date);
+                const dateBtn = document.getElementById('manualRecordDateBtn');
+                if (dateBtn && day) dateBtn.textContent = formatDate(day);
+                const res = readManualRecord();
+                const preview = document.getElementById('manualRecordPreview');
+                const save = document.getElementById('manualRecordSave');
+                if (save) save.disabled = !!res.error || !res.record;
+                if (!preview) return;
+                if (res.error) { preview.textContent = res.error; return; }
+                const sameDay = toLocalDateKey(res.start) === toLocalDateKey(res.end);
+                const line = getText('manualPreview')
+                    .replace('{s}', formatDateTime(res.start))
+                    .replace('{e}', sameDay ? formatDateTime(res.end) : formatDateTimeLong(res.end));
+                preview.innerHTML = escapeHtml(line) + (res.pausesDropped ? `<br>${escapeHtml(getText('manualPausesDrop'))}` : '');
+            }
+
+            function saveManualRecord() {
+                const st = manualRecordState;
+                if (!st) return;
+                const res = readManualRecord();
+                if (res.error || !res.record) { updateManualRecordPreview(); return; }
+                let history = safeJsonParse(getData('studyHistory') || '[]', []);
+                if (!Array.isArray(history)) history = [];
+                if (st.index >= 0) {
+                    // 開いている間に別のタブなどで記録が変わっていたら、違う記録を書きかえないようにやめる
+                    if (JSON.stringify(history[st.index]) !== JSON.stringify(st.orig)) {
+                        closeManualRecord();
+                        selectedItems.clear();
+                        loadHistory();
+                        return;
+                    }
+                    history.splice(st.index, 1);
+                }
+                // 記録は新しい順に並んでいる(先頭が「前回の学習」)。始まりの時刻に合う位置へ入れる
+                const startMs = res.start.getTime();
+                let at = history.findIndex(it => new Date(it.start).getTime() <= startMs);
+                if (at === -1) at = history.length;
+                history.splice(at, 0, res.record);
+                saveData('studyHistory', JSON.stringify(history));
+                getItemGroups(res.record).forEach(g => rememberCustomGroup(g));
+                closeManualRecord();
+                selectedItems.clear();
+                updateGroupFilter();
+                if (typeof updateTimerGroupSelectUI === 'function') updateTimerGroupSelectUI();
+                loadHistory();
+                loadStats();
+                renderSessionIdleInfo();
+            }
+
+            (function () {
+                const overlay = document.getElementById('manualRecordOverlay');
+                if (!overlay) return;
+                overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) closeManualRecord(); });
+                overlay.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') closeManualRecord();
+                    else if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); saveManualRecord(); }
+                });
+            })();
 
             async function deleteSelected() {
                 const targets = getVisibleSelectedHistoryIndices();
@@ -27905,6 +28386,7 @@
                 'feature_clock',
                 'feature_theme_toggle_btn',
                 'feature_history_timeline',
+                'manual_record_enabled',
                 'feature_loading_anim',
                 'feature_stop_music_on_timer_end',
                 'feature_music_resume_on_tap_after_reload',
@@ -27970,6 +28452,7 @@
                 'feature_clock',
                 'feature_theme_toggle_btn',
                 'feature_history_timeline',
+                'manual_record_enabled',
                 'feature_loading_anim',
                 'feature_stop_music_on_timer_end',
                 'feature_music_resume_on_tap_after_reload',
@@ -30235,6 +30718,7 @@
                 syncGroupInputToggle();
                 applyAutoStopMenuBtnVisibility();
                 applyTimerClassic();
+                if (typeof applyManualRecordSetting === 'function') applyManualRecordSetting();
                 applyAutoStopCompact();
                 applyHistoryListVisibility();
                 syncHistoryListToggle();
