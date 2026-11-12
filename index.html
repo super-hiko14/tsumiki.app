@@ -5164,6 +5164,51 @@
             display: none;
         }
 
+        /* 同じカードの中の2つめの見出し */
+        .menu-setting-label-next {
+            margin-top: 16px;
+        }
+
+        /* めったに使わない「折り返し」は、たたんでおく */
+        .menu-setting-more > summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            list-style: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .menu-setting-more > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .menu-setting-more > summary svg {
+            flex-shrink: 0;
+            opacity: 0.6;
+            transition: transform 0.2s ease;
+        }
+
+        .menu-setting-more[open] > summary svg {
+            transform: rotate(180deg);
+        }
+
+        .menu-setting-more[open] > summary {
+            margin-bottom: 10px;
+        }
+
+        .menu-setting-more .menu-add-break-btn {
+            margin-top: 10px;
+        }
+
+        .menu-setting-more .toggle-item {
+            margin-top: 12px;
+            background: var(--ctl-bg);
+        }
+
         .menu-order-warning {
             color: #e06c6c;
             opacity: 1;
@@ -13060,10 +13105,11 @@
             justify-content: center;
         }
 
-        /* 絵の大きさも about と同じ 22px */
+        /* 線の絵は、同じ大きさでもドット絵より大きく重く見えるので、ひとまわり小さくして少し薄くする */
         body.icons-svg .top-buttons button img {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
+            opacity: 0.8;
         }
 
         body.icons-svg img[src$="moon.webp"] { --svg-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23323232%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z%22/%3E%3C/svg%3E"); }
@@ -14247,6 +14293,13 @@
             bottom: auto !important;
         }
 
+        /* 自動停止のコンパクト表示: 全画面ボタンと同じ高さの、反対側(台の左上)に置く */
+        body.auto-stop-compact:not(.timer-classic) #timerPage .timer-wrapper > .auto-stop-pill {
+            top: -40px;
+            left: -10px;
+            bottom: auto;
+        }
+
         body:not(.timer-classic) #timerPage .focus-progress-bar {
             max-width: 280px;
             margin: -4px auto 14px;
@@ -14375,6 +14428,235 @@
             body:not(.timer-classic) #timerPage #fullscreenTimerBtn {
                 right: -8px !important;
             }
+
+            body.auto-stop-compact:not(.timer-classic) #timerPage .timer-wrapper > .auto-stop-pill {
+                left: -6px;
+            }
+        }
+
+        /* ═══ 音楽ページ(新しい表示) ═══
+           設定の「音楽ページを前の表示にする」で body.music-classic が付くと、ここは効かなくなる。
+           ボタンの置き場所(ループ･シャッフル･自動停止)は applyMusicClassic が動かす */
+        .music-sub-display,
+        .playlist-add-btn {
+            display: none;
+        }
+
+        /* 追加は、プレイリストの見出しの右から(いちばん上の大きなボタンはやめる) */
+        body:not(.music-classic) #musicPage .music-file-section {
+            display: none;
+        }
+
+        body:not(.music-classic) #musicPage .playlist-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        /* プレイヤー: 曲名をまん中に大きく、その下に操作を1列で */
+        body:not(.music-classic) #musicPage .music-display-panel {
+            padding: 28px 24px 18px;
+            border-radius: 32px;
+        }
+
+        body:not(.music-classic) #musicPage .music-info-header {
+            margin-bottom: 8px;
+        }
+
+        body:not(.music-classic) #musicPage .music-title-display {
+            padding: 0 8px;
+            margin-bottom: 4px;
+            font-size: 1.15rem;
+            text-align: center;
+            opacity: 1;
+        }
+
+        body:not(.music-classic) #musicPage .music-sub-display {
+            display: block;
+            min-height: 1.4em;
+            margin-bottom: 14px;
+            padding: 0 8px;
+            font-size: 0.78rem;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            opacity: 0.6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body:not(.music-classic) #musicPage #ytMusicZone {
+            border-radius: 24px;
+            margin: 4px 0 14px;
+        }
+
+        body:not(.music-classic) #musicPage .player-main-controls {
+            gap: 14px;
+            margin: 4px 0 12px;
+        }
+
+        body:not(.music-classic) #musicPage .player-main-controls .player-btn:not(.main-play-btn) {
+            width: 44px;
+            height: 44px;
+        }
+
+        body:not(.music-classic) #musicPage .player-main-controls .player-btn:not(.main-play-btn) img {
+            width: 22px;
+            height: 22px;
+        }
+
+        body:not(.music-classic) #musicPage .main-play-btn {
+            width: 64px;
+            height: 64px;
+            padding: 0;
+        }
+
+        body:not(.music-classic) #musicPage .main-play-btn img {
+            width: 26px;
+            height: 26px;
+        }
+
+        body:not(.music-classic) #musicPage .player-main-controls .control-btn {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* 下の段: 左に音量、右に自動停止。自動停止のパネルは、開いたときだけ次の行いっぱいに出す */
+        body:not(.music-classic) #musicPage .player-sub-controls {
+            flex-wrap: wrap;
+            min-height: 40px;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        body:not(.music-classic) #musicPage .player-sub-controls > .auto-stop-control {
+            display: contents;
+        }
+
+        body:not(.music-classic) #musicPage .player-sub-controls .auto-stop-pill {
+            margin-left: auto;
+            background: transparent;
+        }
+
+        body:not(.music-classic) #musicPage .player-sub-controls .auto-stop-panel-wrap {
+            flex: 0 0 100%;
+            margin-top: 6px;
+        }
+
+        /* 自動停止をアイコンだけにしているとき(曲名の右上)は、曲名をまん中に保つ */
+        body.auto-stop-compact:not(.music-classic) #musicPage .music-info-header .music-title-display {
+            padding: 0 40px;
+        }
+
+        body.auto-stop-compact:not(.music-classic) #musicPage .music-info-header > .auto-stop-pill {
+            top: -14px;
+            right: -8px;
+        }
+
+        /* 曲の並び: 枠で囲まず、かさなりを軽く。いま選んでいる曲は、塗りつぶさずにうすい色で */
+        body:not(.music-classic) #musicPage .playlist {
+            max-height: 420px;
+            gap: 2px;
+        }
+
+        body:not(.music-classic) #musicPage .playlist-item {
+            min-height: 52px;
+            padding: 8px 10px 8px 12px;
+            background: transparent;
+        }
+
+        body:not(.music-classic) #musicPage .playlist-item:hover {
+            background: rgba(128, 128, 128, 0.09);
+        }
+
+        body:not(.music-classic) #musicPage .playlist-item.playing {
+            background: color-mix(in srgb, var(--primary-color) 22%, transparent);
+            color: inherit;
+        }
+
+        body.dark:not(.music-classic) #musicPage .playlist-item.playing {
+            background: color-mix(in srgb, var(--primary-color-dark) 30%, transparent);
+        }
+
+        body:not(.music-classic) #musicPage .playlist-item.playing .playlist-item-title {
+            color: inherit;
+            font-weight: 500;
+        }
+
+        /* 選んでいる曲のしるし(3本の棒) */
+        body:not(.music-classic) #musicPage .playlist-item.playing .title-text::before {
+            content: '';
+            display: inline-block;
+            width: 13px;
+            height: 12px;
+            margin-right: 8px;
+            --bar: var(--primary-hover, var(--primary-color));
+            background:
+                linear-gradient(var(--bar), var(--bar)) 0 100% / 3px 6px no-repeat,
+                linear-gradient(var(--bar), var(--bar)) 5px 100% / 3px 12px no-repeat,
+                linear-gradient(var(--bar), var(--bar)) 10px 100% / 3px 8px no-repeat;
+        }
+
+        body.dark:not(.music-classic) #musicPage .playlist-item.playing .title-text::before {
+            --bar: var(--primary-color-dark);
+        }
+
+        /* 塗りつぶしをやめたので、白かった鉛筆とゴミ箱を、ほかの行と同じ色に戻す */
+        body:not(.music-classic) #musicPage .playlist-item.playing .todo-icon-btn,
+        body:not(.music-classic) #musicPage .playlist-item.playing .trash-btn:not(:hover) {
+            color: inherit;
+            opacity: 0.55;
+        }
+
+        body:not(.music-classic) #musicPage .playlist-item.playing .todo-icon-btn:hover {
+            opacity: 1;
+            background-color: rgba(128, 128, 128, 0.14);
+        }
+
+        /* 塗りつぶしをやめたので、ライトでは白いつまみを黒にする */
+        body.light:not(.music-classic) #musicPage .playlist-item.playing .drag-handle {
+            filter: invert(1);
+        }
+
+        /* YouTube の曲は、動画の絵を小さな丸で出す */
+        .pl-thumb {
+            flex: 0 0 auto;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: rgba(128, 128, 128, 0.2);
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* マウスのとき: 名前の変更と削除は、その行にのせたときだけ出す(スマホではいつも出す) */
+        @media (hover: hover) and (pointer: fine) {
+            body:not(.music-classic) #musicPage .playlist-item .playlist-item-buttons {
+                opacity: 0;
+                transition: opacity 0.15s ease;
+            }
+
+            body:not(.music-classic) #musicPage .playlist-item:hover .playlist-item-buttons,
+            body:not(.music-classic) #musicPage .playlist-item:focus-within .playlist-item-buttons {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body:not(.music-classic) #musicPage .music-display-panel {
+                padding: 24px 16px 14px;
+                border-radius: 28px;
+            }
+
+            body:not(.music-classic) #musicPage .player-main-controls {
+                gap: 8px;
+            }
         }
 
         /* ===== 淡い色だけを選ぶ小さなピッカー(色あい と こさ の2本) ===== */
@@ -14493,8 +14775,15 @@
         }
 
         /* グループの色: 候補の下に2本 */
-        .group-color-pop .pale-picker {
+        .group-color-pop .pale-picker,
+        .group-color-pop .group-color-reset {
             grid-column: 1 / -1;
+        }
+
+        .group-color-pop .group-color-reset {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: 999px;
         }
 
         /* 優先度の色: 四角い色の板とカラーコードはやめて、2本だけ */
@@ -14683,6 +14972,37 @@
             text-align: center;
             font-variant-numeric: tabular-nums;
             opacity: 0.85;
+        }
+
+        .manual-record-preview {
+            white-space: pre-line;
+        }
+
+        /* セッション情報の中の小さな「直す」 */
+        .session-fix-btn {
+            margin: 0 0 0 8px;
+            padding: 2px 10px;
+            min-height: 0;
+            border: none;
+            border-radius: 999px;
+            background: rgba(128, 128, 128, 0.14);
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 400;
+            line-height: 1.6;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: opacity 0.15s ease, background-color 0.15s ease;
+        }
+
+        .session-fix-btn:hover {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.24);
+        }
+
+        br + .session-fix-btn {
+            margin: 6px 0 0;
         }
 
         .manual-record-dialog .custom-confirm-ok:disabled {
@@ -15486,6 +15806,26 @@
         </div>
     </div>
 
+    <div class="custom-confirm-overlay" id="timeFixOverlay">
+        <div class="custom-confirm-dialog manual-record-dialog">
+            <div class="custom-confirm-title" id="timeFixTitle"></div>
+            <div class="manual-record-form">
+                <div class="manual-record-row">
+                    <label class="manual-record-label" for="timeFixInput" id="timeFixLabel"></label>
+                    <div class="manual-record-field">
+                        <input type="time" id="timeFixInput" oninput="updateTimeFixPreview()">
+                    </div>
+                </div>
+                <div class="manual-record-groups" id="timeFixChips"></div>
+            </div>
+            <div class="manual-record-preview" id="timeFixPreview" aria-live="polite"></div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-cancel" onclick="closeTimeFix()" data-i18n="cancelButton">キャンセル</button>
+                <button class="custom-confirm-ok" id="timeFixSave" onclick="saveTimeFix()" data-i18n="saveButton">保存</button>
+            </div>
+        </div>
+    </div>
+
     <div class="custom-confirm-overlay" id="qrTransferOverlay">
         <div class="custom-confirm-dialog qr-transfer-dialog">
             <div class="custom-confirm-title" data-i18n="qrTitle">スマホへ移す</div>
@@ -16148,6 +16488,8 @@
                     <div class="music-info-header">
                         <div class="music-title-display" id="musicTitleDisplay" data-i18n="musicSelectPrompt">
                             楽曲を選択してください</div>
+                        <!-- 新しい表示だけ: プレイリスト名と「何曲目か」 -->
+                        <div class="music-sub-display" id="musicSubDisplay"></div>
                         <div class="auto-stop-control" id="musicAutoStopControl">
                             <button type="button" class="auto-stop-pill" id="musicAutoStopPill" aria-expanded="false"
                                 aria-controls="musicAutoStopPanelWrap" onclick="toggleAutoStopPanel('music')">
@@ -16221,6 +16563,9 @@
                             <span class="playlist-count" id="playlistCount">0</span>
                         </div>
                         <div class="playlist-header-actions">
+                            <!-- 新しい表示だけ: 追加はここから(上の大きなボタンの代わり) -->
+                            <button type="button" class="secondary playlist-add-btn" id="playlistAddBtn"
+                                onclick="openMusicAddMenu(this)" aria-haspopup="menu"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-i18n="playlistAddShort">追加</span></button>
                             <button id="playlistSelectModeBtn" class="secondary playlist-select-toggle"
                                 onclick="togglePlaylistSelectMode()" data-i18n="playlistSelectMode">選択</button>
                             <button type="button" class="pl-more-btn" id="playlistMoreBtn"
@@ -16313,20 +16658,41 @@
 
             <div class="settings-panel" data-settings-tab="general">
                 <div class="settings-panel-title" data-i18n="settingsTabGeneral">基本</div>
-            <div class="settings-section" id="displaySettingsSection">
-                <h2 data-i18n="settingsFeatures">使う機能</h2>
-                <div class="toggle-item">
-                    <span data-i18n="musicPlayer">音楽プレイヤー</span>
-                    <div class="toggle-switch" id="toggleMusic" onclick="toggleFeature('music')">
-                        <div class="toggle-slider"></div>
-                    </div>
+            <!-- メニュー: 「使う機能」(音楽･ToDo のオン/オフ)と「メニューカスタマイズ」を1か所にまとめた。
+                 使うページを選ぶのも、並び順も、見た目も、ここだけで決める -->
+            <div class="settings-section" id="menuCustomizeSection">
+                <h2 data-i18n="menuCustomizeTitle">メニュー</h2>
+
+                <div class="menu-setting-card">
+                    <div class="menu-setting-label" data-i18n="menuOrderLabel">使うページと並び順</div>
+                    <div class="menu-setting-note" data-i18n="menuOrderNote">スイッチで使うページを選び、左のつまみを動かして並べ替えます。</div>
+                    <div class="menu-order-list" id="menuOrderList"></div>
+                    <div class="menu-setting-note menu-order-warning" id="menuOrderWarning"></div>
                 </div>
-                <div class="toggle-item">
-                    <span data-i18n="todoList">ToDoリスト</span>
-                    <div class="toggle-switch" id="toggleTodo" onclick="toggleFeature('todo')">
-                        <div class="toggle-slider"></div>
-                    </div>
+
+                <div class="menu-setting-card">
+                    <div class="menu-setting-label" data-i18n="menuDisplayStyleLabel">表示のしかた</div>
+                    <div class="todo-seg" id="menuDisplaySeg" role="radiogroup"></div>
+                    <div class="menu-setting-label menu-setting-label-next" data-i18n="menuPositionLabel">位置</div>
+                    <div class="todo-seg" id="menuPositionSeg" role="radiogroup"></div>
+                    <div class="menu-setting-note" id="menuPositionNote"></div>
                 </div>
+
+                <details class="menu-setting-card menu-setting-more" id="menuWrapDetails">
+                    <summary><span data-i18n="menuWrapSummary">折り返しを自分で決める</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg></summary>
+                    <div class="menu-setting-note" data-i18n="menuWrapNote">ふだんは何もしなくて大丈夫です。入りきらないときは、行の長さがそろうように自動で折り返します。</div>
+                    <button type="button" class="secondary menu-add-break-btn" onclick="addMenuBreak()"
+                        data-i18n="menuAddBreak">＋ 改行を入れる</button>
+                    <div class="menu-setting-note" data-i18n="menuBreakNote">入れた改行は上の一覧に出ます。つまみを動かして、折り返したい位置に置きます。</div>
+                    <div class="toggle-item" id="menuWideOverflowItem">
+                        <span data-i18n="menuWideOverflowLabel">広い画面では1行にまとめる</span>
+                        <div class="toggle-switch" id="toggleMenuWideOverflow" onclick="onMenuWideOverflowToggle()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="menu-setting-note" id="menuWideOverflowNote" data-i18n="menuWideOverflowNote">
+                        画面が広いとき、メニューを折り返さずに1行で表示します</div>
+                </details>
             </div>
 
             <div class="settings-section">
@@ -16623,39 +16989,6 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="settings-section" id="menuCustomizeSection">
-                <h2 data-i18n="menuCustomizeTitle">メニューカスタマイズ</h2>
-
-                <div class="menu-setting-card">
-                    <div class="menu-setting-label" data-i18n="menuDisplayStyleLabel">メニューの表示方法</div>
-                    <div class="todo-seg" id="menuDisplaySeg" role="radiogroup"></div>
-                </div>
-
-                <div class="menu-setting-card">
-                    <div class="menu-setting-label" data-i18n="menuPositionLabel">メニューの位置</div>
-                    <div class="todo-seg" id="menuPositionSeg" role="radiogroup"></div>
-                    <div class="menu-setting-note" id="menuPositionNote"></div>
-                </div>
-
-                <div class="menu-setting-card">
-                    <div class="menu-setting-label" data-i18n="menuOrderLabel">メニュー項目/順序</div>
-                    <div class="menu-setting-note" data-i18n="menuOrderNote">ドラッグで並び替え、スイッチで表示/非表示を切り替えます。</div>
-                    <div class="menu-order-list" id="menuOrderList"></div>
-                    <div class="menu-setting-note menu-order-warning" id="menuOrderWarning"></div>
-                    <button type="button" class="secondary menu-add-break-btn" onclick="addMenuBreak()"
-                        data-i18n="menuAddBreak">＋ 改行を入れる</button>
-                </div>
-
-                <div class="toggle-item" id="menuWideOverflowItem">
-                    <span data-i18n="menuWideOverflowLabel">広い画面では1行にまとめる</span>
-                    <div class="toggle-switch" id="toggleMenuWideOverflow" onclick="onMenuWideOverflowToggle()">
-                        <div class="toggle-slider"></div>
-                    </div>
-                </div>
-                <div class="setting-note" id="menuWideOverflowNote" data-i18n="menuWideOverflowNote">
-                    画面が広いとき、メニューを折り返さずに1行で表示します</div>
             </div>
 
             </div>
@@ -16972,11 +17305,18 @@
             <div class="settings-panel" data-settings-tab="music">
                 <div class="settings-panel-title" data-i18n="settingsTabMusic">音楽</div>
             <div class="setting-note" id="musicDisabledNote" data-i18n="musicDisabledNote" style="display: none;">
-                音楽プレイヤーは「基本」の「使う機能」でオンにできます。</div>
+                音楽プレイヤーは「基本」の「メニュー」でオンにできます。</div>
 
             <div class="settings-section" id="musicSettingsSection">
                 <h2 data-i18n="musicSettingsTitle">音楽プレイヤー</h2>
                 <div id="musicRelatedSettings">
+                    <div class="toggle-item">
+                        <span data-i18n="musicClassicSetting">音楽ページを前の表示にする</span>
+                        <div class="toggle-switch" id="toggleMusicClassic" onclick="toggleMusicClassicSetting()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="setting-note" data-i18n="musicClassicNote">追加ボタンをいちばん上に置き、曲を1つずつ枠で囲む、前の並べ方に戻します。</div>
                     <div class="toggle-item">
                         <span data-i18n="stopMusicOnTimerEnd">タイマー終了時に音楽を一時停止</span>
                         <div class="toggle-switch" id="toggleStopMusicOnTimerEnd" onclick="toggleStopMusicOnTimerEnd()">
@@ -17453,8 +17793,11 @@
                     menuTodo: 'ToDo',
 
                     // メニューカスタマイズ
-                    menuCustomizeTitle: 'メニューカスタマイズ',
-                    menuDisplayStyleLabel: 'メニューの表示方法',
+                    menuCustomizeTitle: 'メニュー',
+                    menuWrapSummary: '折り返しを自分で決める',
+                    menuWrapNote: 'ふだんは何もしなくて大丈夫です。入りきらないときは、行の長さがそろうように自動で折り返します。',
+                    menuBreakNote: '入れた改行は上の一覧に出ます。つまみを動かして、折り返したい位置に置きます。',
+                    menuDisplayStyleLabel: '表示のしかた',
                     menuDisplayText: 'テキスト',
                     menuDisplayIcon: 'アイコンのみ',
                     menuDisplayIconText: 'アイコン＋テキスト',
@@ -17464,8 +17807,8 @@
                     menuWideOverflowNote: '画面が広いとき、メニューを折り返さずに1行で表示します',
                     menuBreakLineLabel: '改行',
                     menuBreakLineNote: 'ONにすると、メニュー項目/順序の中に改行線を置いて折り返し位置を調整できます',
-                    menuOrderLabel: 'メニュー項目/順序',
-                    menuOrderNote: 'ドラッグで並び替え、スイッチで表示/非表示を切り替えます。改行を入れるとその位置でメニューが折り返します。',
+                    menuOrderLabel: '使うページと並び順',
+                    menuOrderNote: 'スイッチで使うページを選び、左のつまみを動かして並べ替えます。',
                     clearSearch: '検索をクリア',
                     clearInput: '入力を消去',
 
@@ -17841,6 +18184,19 @@
                     manualErrZero: '勉強した時間を1分以上にしてください',
                     manualErrFuture: '終わりがいまより先になっています',
                     manualPausesDrop: '時間を変えると、この記録の一時停止の記録はなくなります',
+                    musicClassicSetting: '音楽ページを前の表示にする',
+                    musicClassicNote: '追加ボタンをいちばん上に置き、曲を1つずつ枠で囲む、前の並べ方に戻します。',
+                    playlistAddShort: '追加',
+                    timeFixLink: '直す',
+                    timeFixEndLink: '終わりの時刻を直す',
+                    timeFixStartTitle: '始めた時刻を直す',
+                    timeFixEndTitle: '終わった時刻を直す',
+                    timeFixEndLabel: '終わった時刻',
+                    timeFixAgo: '{n}分前',
+                    timeFixPreview: '勉強時間は {t} になります',
+                    timeFixErrFuture: 'いまより先の時刻にはできません',
+                    timeFixErrPaused: '一時停止したあとは、前の時刻にだけ直せます',
+                    timeFixErrBeforeStart: '始めた時刻より後にしてください',
                     historyTimelineToggle: 'タイムラインバー表示(履歴カード･統計の日別)',
                     historyTimelineLegacyNote: '一時停止データがない履歴ではタイムラインバーは表示されません。4月22日より前の記録は表示されません。',
                     graphDisplay: 'グラフ表示',
@@ -17933,7 +18289,7 @@
                     groupClearSelection: '選択解除',
                     groupManagementHint: 'グループを削除しても記録は消えず「未分類」になります。記録を消してもグループは残ります。',
                     groupAddPlaceholder: '新しいグループ名',
-                    menuPositionLabel: 'メニューの位置',
+                    menuPositionLabel: '位置',
                     menuPositionNormal: '上',
                     menuPositionFixed: '上に固定',
                     menuPositionBottom: '下に固定',
@@ -18016,7 +18372,7 @@
                     tourMenuTitle: 'ページの切り替え',
                     tourMenuMessage: '統計では合計時間や積み木、リストでは過去の記録が見られます。音楽やToDoは、設定でオンにするとここに並びます。',
                     tourTopTitle: '表示と設定',
-                    tourTopMessage: 'ライト/ダークの切り替えと、設定はここから。設定では、使う機能やテーマカラーを変えられます。',
+                    tourTopMessage: 'ライト/ダークの切り替えと、設定はここから。設定では、使うページやテーマカラーを変えられます。',
                     tourDoneTitle: '準備ができました',
                     tourDoneMessage: 'さっそく勉強をはじめましょう。この説明は、設定の「ヘルプ」からいつでも見られます。<br>くわしい使い方は <a href="https://about.tsumiki.app" target="_blank" rel="noopener">about.tsumiki.app</a> へ。',
                     tourDoneButton: 'はじめる',
@@ -18180,7 +18536,7 @@
                     settingsHistory: '履歴',
                     settingsTodo: 'ToDo',
                     settingsSafety: '安心して使うために',
-                    musicDisabledNote: '音楽プレイヤーは「基本」の「使う機能」でオンにできます。',
+                    musicDisabledNote: '音楽プレイヤーは「基本」の「メニュー」でオンにできます。',
                     notifyMaster: '通知を有効にする',
                     notifyEvent: '通知するタイミング',
                     notifyChannelBrowser: 'ブラウザ通知',
@@ -18220,6 +18576,8 @@
                     totalSessions: '総セッション数',
                     groupStats: 'グループ統計',
                     uncategorized: '未分類',
+                    groupColorNoneMeta: 'グループなしの記録の積み木',
+                    groupColorNoneReset: 'テーマの色に戻す',
                     days: '日',
                     sessions: 'セッション',
 
@@ -18481,8 +18839,11 @@
                     menuTodo: 'ToDo',
 
                     // Menu Customization
-                    menuCustomizeTitle: 'Menu Customization',
-                    menuDisplayStyleLabel: 'Menu Display Style',
+                    menuCustomizeTitle: 'Menu',
+                    menuWrapSummary: 'Set the wrapping yourself',
+                    menuWrapNote: 'You can usually leave this alone. When the menu does not fit, it wraps automatically into rows of similar length.',
+                    menuBreakNote: 'A line break appears in the list above. Drag its handle to where the menu should wrap.',
+                    menuDisplayStyleLabel: 'Style',
                     menuDisplayText: 'Text',
                     menuDisplayIcon: 'Icon Only',
                     menuDisplayIconText: 'Icon + Text',
@@ -18492,8 +18853,8 @@
                     menuWideOverflowNote: 'On wide screens, the menu stays on one line instead of wrapping',
                     menuBreakLineLabel: 'Line break',
                     menuBreakLineNote: 'When ON, you can place break lines in Menu Items & Order to control wrapping points',
-                    menuOrderLabel: 'Menu Items & Order',
-                    menuOrderNote: 'Drag to reorder and use the switches to show or hide items. A line break wraps the menu at that point.',
+                    menuOrderLabel: 'Pages and order',
+                    menuOrderNote: 'Use the switches to choose the pages you use, and drag the handle to reorder.',
                     clearSearch: 'Clear search',
                     clearInput: 'Clear input',
 
@@ -18817,6 +19178,19 @@
                     manualErrZero: 'Time studied must be at least 1 minute',
                     manualErrFuture: 'The end time is in the future',
                     manualPausesDrop: 'Changing the time removes the pause log of this record',
+                    musicClassicSetting: 'Use the previous music page layout',
+                    musicClassicNote: 'Puts the add button back at the top and shows each track in its own box, as before.',
+                    playlistAddShort: 'Add',
+                    timeFixLink: 'Fix',
+                    timeFixEndLink: 'Fix the end time',
+                    timeFixStartTitle: 'Fix the start time',
+                    timeFixEndTitle: 'Fix the end time',
+                    timeFixEndLabel: 'Ended at',
+                    timeFixAgo: '{n} min earlier',
+                    timeFixPreview: 'Study time becomes {t}',
+                    timeFixErrFuture: 'The time cannot be in the future',
+                    timeFixErrPaused: 'After a pause, the start can only be moved earlier',
+                    timeFixErrBeforeStart: 'It must be after the start time',
                     historyTimelineToggle: 'Show timeline bars (history cards & daily stats)',
                     historyTimelineLegacyNote: 'Timeline bars are hidden for records without pause data. Records before 4/22 are not shown in this bar feature.',
                     graphDisplay: 'Graph Display',
@@ -18909,7 +19283,7 @@
                     groupClearSelection: 'Clear Selection',
                     groupManagementHint: 'Deleting a group keeps its records (they become uncategorized). Groups stay even if their records are deleted.',
                     groupAddPlaceholder: 'New group name',
-                    menuPositionLabel: 'Menu position',
+                    menuPositionLabel: 'Position',
                     menuPositionNormal: 'Top',
                     menuPositionFixed: 'Pinned top',
                     menuPositionBottom: 'Pinned bottom',
@@ -19104,7 +19478,7 @@
                     settingsHistory: 'History',
                     settingsTodo: 'ToDo',
                     settingsSafety: 'Wellbeing',
-                    musicDisabledNote: 'Turn on the music player in General → Features.',
+                    musicDisabledNote: 'Turn on the music player in General → Menu.',
                     notifyMaster: 'Enable notifications',
                     notifyEvent: 'When',
                     notifyChannelBrowser: 'Browser',
@@ -19149,6 +19523,8 @@
                     totalSessions: 'Total Sessions',
                     groupStats: 'Group Statistics',
                     uncategorized: 'Uncategorized',
+                    groupColorNoneMeta: 'Blocks for records without a group',
+                    groupColorNoneReset: 'Back to the theme color',
                     days: 'days',
                     sessions: 'sessions',
 
@@ -19492,6 +19868,12 @@
                 currentLanguage = lang;
                 saveData('app_language', lang);
                 applyTranslations();
+                // 一時停止中は、ボタンの文字を「再開」のままにする(data-i18n の「一時停止」に戻さない)
+                if (typeof isPaused !== 'undefined' && isPaused) {
+                    const pb = document.getElementById('pauseBtn');
+                    if (pb) pb.textContent = getText('resumeButton');
+                }
+                if (startTime && typeof renderRunningSessionInfo === 'function') renderRunningSessionInfo();
 
                 // 動的に生成される要素も更新
                 if (getData('graph_enabled') === 'true') {
@@ -22333,6 +22715,7 @@
                 saveData('timer_layout_classic', isTimerClassic() ? 'false' : 'true');
                 applyTimerClassic();
                 if (typeof applyManualRecordSetting === 'function') applyManualRecordSetting();
+                if (typeof applyMusicClassic === 'function') applyMusicClassic();
                 renderSessionIdleInfo();
                 updateGoalLine(true);
             }
@@ -22938,7 +23321,8 @@
                 document.body.classList.add('session-running');
                 closeSessionInfoEditor();
                 document.getElementById('sessionInfo').classList.remove('custom-text');
-                document.getElementById('sessionInfo').textContent = `${getText('startTime')}: ${formatDateTime(new Date())}`;
+                lastEndedRecord = null;
+                renderRunningSessionInfo();
                 setSessionInfoState('running');
                 timerInterval = setInterval(updateTimer, 100);
                 updateSettingsButtonState();
@@ -23037,10 +23421,9 @@
                         updateGroupFilter();
                         loadHistory();
                         loadStats();
-                        const startDisplay = formatSessionEdgeTime(start, endTime);
-                        const endDisplay = formatSessionEdgeTime(endTime, start);
                         setSessionInfoState('');
-                        document.getElementById('sessionInfo').innerHTML = `${getText('startTime')}: ${startDisplay}<br>${getText('endTime')}: ${endDisplay}<br>${getText('studyTime')}: ${formatTime(actualStudyTime)}${groupName ? '<br>' + getText('group') + ': ' + groupName : ''}`;
+                        lastEndedRecord = { start: history[0].start, end: history[0].end };
+                        renderEndedSessionInfo(history[0]);
                     }
                 }
                 // セッション終了時は一時保存データを削除
@@ -23475,6 +23858,7 @@
             <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
                 <img src="${getDragHandleSrc(index === currentMusicIndex)}" class="drag-handle" data-index="${index}" draggable="true" aria-label="${getText('dragHandle')}" data-i18n-aria="dragHandle" alt="">
                 ${playlistSelectMode ? `<input type="checkbox" class="playlist-item-checkbox" data-index="${index}" ${selectedMusicItems.has(index) ? 'checked' : ''} onclick="event.stopPropagation(); togglePlaylistItemSelection(event, ${index}, this.checked)">` : ''}
+                ${item.youtubeId && !isMusicClassic() && /^[\w-]{11}$/.test(item.youtubeId) ? `<img class="pl-thumb" src="https://i.ytimg.com/vi/${item.youtubeId}/default.jpg" loading="lazy" decoding="async" alt="" draggable="false" onerror="this.remove()">` : ''}
                 <div class="playlist-item-info" style="flex:1; min-width:0;">
                     <div class="playlist-item-title">
                         <span class="title-text">${escapeHtml(item.title)}</span>${item.youtubeId ? '<svg class="yt-svg-badge" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" viewBox="0 0 256 180" width="20" height="14" aria-label="YouTube"><path class="yt-path" d="M250.346 28.075A32.18 32.18 0 0 0 227.69 5.418C207.824 0 127.87 0 127.87 0S47.912.164 28.046 5.582A32.18 32.18 0 0 0 5.39 28.24c-6.009 35.298-8.34 89.084.165 122.97a32.18 32.18 0 0 0 22.656 22.657c19.866 5.418 99.822 5.418 99.822 5.418s79.955 0 99.82-5.418a32.18 32.18 0 0 0 22.657-22.657c6.338-35.348 8.291-89.1-.164-123.134Z"/><path class="yt-tri" d="m102.421 128.06 66.328-38.418-66.328-38.418z"/></svg>' : ''}${item.isVideo ? '<svg class="video-svg-badge" xmlns="http://www.w3.org/2000/svg" width="19" height="14" viewBox="0 0 26 19" aria-label="Video"><rect x="1" y="3" width="16" height="13" rx="4" fill="currentColor" fill-opacity="0.55"/><path d="M18.5 7.9 L22.9 5.2 Q24.5 4.3 24.5 5.9 V13.1 Q24.5 14.7 22.9 13.8 L18.5 11.1 Z" fill="currentColor" fill-opacity="0.55"/></svg>' : ''}
@@ -24375,13 +24759,59 @@
 
             function updateMusicTitleDisplay() {
                 const titleDisplay = document.getElementById('musicTitleDisplay');
+                const has = currentMusicIndex >= 0 && !!musicFiles[currentMusicIndex];
                 if (titleDisplay) {
-                    if (currentMusicIndex >= 0 && musicFiles[currentMusicIndex]) {
+                    if (has) {
                         titleDisplay.textContent = musicFiles[currentMusicIndex].title || 'Unknown track';
                     } else {
                         titleDisplay.textContent = getText(isYoutubeVideoEnabled() ? 'musicSelectPromptYt' : 'musicSelectPrompt');
                     }
                 }
+                // 新しい表示: 曲名の下に「プレイリスト名 ･ 2 / 6」
+                const sub = document.getElementById('musicSubDisplay');
+                if (sub) {
+                    const active = typeof getActivePlaylistMeta === 'function' ? getActivePlaylistMeta() : null;
+                    const name = (active && active.name) ? active.name : getText('playlist');
+                    sub.textContent = has ? `${name} ･ ${currentMusicIndex + 1} / ${musicFiles.length}` : '';
+                }
+            }
+
+            // ── 音楽ページを前の表示にする(追加ボタンを上に･ループとシャッフルを音量の横に･自動停止を曲名の下に) ──
+            function isMusicClassic() {
+                return getData('music_layout_classic') === 'true';
+            }
+
+            function applyMusicClassic() {
+                const classic = isMusicClassic();
+                document.body.classList.toggle('music-classic', classic);
+                const t = document.getElementById('toggleMusicClassic');
+                if (t) t.classList.toggle('active', classic);
+                const main = document.querySelector('#musicPage .player-main-controls');
+                const sub = document.querySelector('#musicPage .player-sub-controls');
+                const side = document.querySelector('#musicPage .playlist-controls');
+                const header = document.querySelector('#musicPage .music-info-header');
+                const loop = document.getElementById('loopBtn');
+                const shuffle = document.getElementById('shuffleBtn');
+                const autoStop = document.getElementById('musicAutoStopControl');
+                const ytZone = document.getElementById('ytMusicZone');
+                if (!main || !sub || !side || !header || !loop || !shuffle || !autoStop) return;
+                if (classic) {
+                    side.appendChild(loop);
+                    side.appendChild(shuffle);
+                    header.insertBefore(autoStop, ytZone || header.querySelector('.music-progress-section'));
+                } else {
+                    // シャッフル ･ 前 ･ 再生 ･ 次 ･ ループ と1列に並べ、自動停止は音量と同じ段の右へ
+                    main.insertBefore(shuffle, main.firstChild);
+                    main.appendChild(loop);
+                    sub.appendChild(autoStop);
+                }
+            }
+
+            function toggleMusicClassicSetting() {
+                saveData('music_layout_classic', isMusicClassic() ? 'false' : 'true');
+                applyMusicClassic();
+                loadPlaylist();
+                if (typeof repositionYtPlayer === 'function') repositionYtPlayer();
             }
 
             // Media Session API 更新
@@ -27391,6 +27821,182 @@
                 });
             })();
 
+            // ── 押し忘れ･止め忘れの救済: 動いているタイマーの「始めた時刻」と、終えた直後の「終わった時刻」を直す ──
+            let timeFixState = null;   // { kind: 'start' | 'end', origMs, startMs }
+            let lastEndedRecord = null; // 終えた直後の記録を見つけるための { start, end }
+
+            function timeFixButtonHtml(kind) {
+                return `<button type="button" class="session-fix-btn" onclick="event.stopPropagation(); openTimeFix('${kind}')">${escapeHtml(getText(kind === 'start' ? 'timeFixLink' : 'timeFixEndLink'))}</button>`;
+            }
+
+            // 動いているあいだのセッション情報(開始時刻と「直す」)
+            function renderRunningSessionInfo() {
+                const info = document.getElementById('sessionInfo');
+                const startMs = Date.parse(getData('studyStartTime') || '');
+                if (!info || !startTime || Number.isNaN(startMs)) return;
+                info.classList.remove('custom-text');
+                info.innerHTML = `${escapeHtml(getText('startTime'))}: ${formatSessionEdgeTime(new Date(startMs), new Date())}${timeFixButtonHtml('start')}`;
+            }
+
+            // 終えた直後のセッション情報(開始･終了･学習時間と「終わりの時刻を直す」)
+            function renderEndedSessionInfo(record) {
+                const info = document.getElementById('sessionInfo');
+                if (!info || !record) return;
+                const s = new Date(record.start), e = new Date(record.end);
+                info.innerHTML = `${escapeHtml(getText('startTime'))}: ${formatSessionEdgeTime(s, e)}<br>${escapeHtml(getText('endTime'))}: ${formatSessionEdgeTime(e, s)}<br>${escapeHtml(getText('studyTime'))}: ${formatTime(record.duration)}${record.group ? '<br>' + escapeHtml(getText('group')) + ': ' + escapeHtml(record.group) : ''}<br>${timeFixButtonHtml('end')}`;
+            }
+
+            function findLastEndedRecord(history) {
+                if (!lastEndedRecord) return -1;
+                return history.findIndex(it => it && it.start === lastEndedRecord.start && it.end === lastEndedRecord.end);
+            }
+
+            function openTimeFix(kind) {
+                let origMs, startMs = null;
+                if (kind === 'start') {
+                    if (!startTime) return;
+                    origMs = Date.parse(getData('studyStartTime') || '');
+                } else {
+                    const history = safeJsonParse(getData('studyHistory') || '[]', []);
+                    const i = Array.isArray(history) ? findLastEndedRecord(history) : -1;
+                    if (i < 0) return;
+                    origMs = Date.parse(history[i].end);
+                    startMs = Date.parse(history[i].start);
+                }
+                if (Number.isNaN(origMs)) return;
+                timeFixState = { kind, origMs, startMs };
+                const orig = new Date(origMs);
+                document.getElementById('timeFixTitle').textContent = getText(kind === 'start' ? 'timeFixStartTitle' : 'timeFixEndTitle');
+                document.getElementById('timeFixLabel').textContent = getText(kind === 'start' ? 'manualStart' : 'timeFixEndLabel');
+                document.getElementById('timeFixInput').value = `${manualPad(orig.getHours())}:${manualPad(orig.getMinutes())}`;
+                document.getElementById('timeFixChips').innerHTML = [5, 10, 15, 30].map(n =>
+                    `<button type="button" class="manual-record-chip" onclick="setTimeFixAgo(${n})">${escapeHtml(getText('timeFixAgo').replace('{n}', n))}</button>`
+                ).join('');
+                updateTimeFixPreview();
+                document.getElementById('timeFixOverlay').classList.add('show');
+            }
+
+            function closeTimeFix() {
+                document.getElementById('timeFixOverlay').classList.remove('show');
+                timeFixState = null;
+            }
+
+            // もとの時刻から n 分前にする(何度押しても、もとの時刻から数える)
+            function setTimeFixAgo(n) {
+                if (!timeFixState) return;
+                const d = new Date(timeFixState.origMs - n * 60000);
+                document.getElementById('timeFixInput').value = `${manualPad(d.getHours())}:${manualPad(d.getMinutes())}`;
+                updateTimeFixPreview();
+            }
+
+            // 入力された 時:分 を、もとの時刻にいちばん近い日時にする。だめなときは { error }
+            function readTimeFix() {
+                const st = timeFixState;
+                if (!st) return { error: '' };
+                const tm = /^(\d{1,2}):(\d{2})/.exec(document.getElementById('timeFixInput').value || '');
+                if (!tm) return { error: getText('manualErrTime') };
+                const orig = new Date(st.origMs);
+                const now = Date.now();
+                let ms;
+                if (orig.getHours() === parseInt(tm[1], 10) && orig.getMinutes() === parseInt(tm[2], 10)) {
+                    ms = st.origMs; // 触っていなければ秒までそのまま
+                } else {
+                    const base = new Date(orig.getFullYear(), orig.getMonth(), orig.getDate(), parseInt(tm[1], 10), parseInt(tm[2], 10), 0, 0).getTime();
+                    const ok = [base + 86400000, base, base - 86400000]
+                        .filter(c => c <= now + 30000 && (st.startMs === null || c > st.startMs));
+                    if (!ok.length) return { error: getText(st.kind === 'end' && base <= st.startMs ? 'timeFixErrBeforeStart' : 'timeFixErrFuture') };
+                    ms = ok.reduce((a, b) => Math.abs(b - st.origMs) < Math.abs(a - st.origMs) ? b : a);
+                }
+                if (st.kind === 'start') {
+                    const delta = st.origMs - ms; // 正: 前へ(勉強時間が増える)
+                    if (delta < 0 && (isPaused || pauseHistory.length > 0)) return { error: getText('timeFixErrPaused') };
+                    const elapsed = getCurrentWallElapsed() + delta;
+                    if (elapsed < 0) return { error: getText('timeFixErrFuture') };
+                    return { ms, delta, duration: elapsed };
+                }
+                const history = safeJsonParse(getData('studyHistory') || '[]', []);
+                const i = Array.isArray(history) ? findLastEndedRecord(history) : -1;
+                if (i < 0) return { error: '' };
+                const record = retimeRecordEnd(history[i], ms);
+                return { ms, record, index: i, duration: record.duration };
+            }
+
+            // 記録の終わりを newEndMs にする。早めたぶんの勉強時間を引き、その後ろの一時停止を落とす
+            function retimeRecordEnd(item, newEndMs) {
+                const start = new Date(item.start), end = new Date(item.end);
+                const out = Object.assign({}, item, { end: new Date(newEndMs).toISOString() });
+                const duration = Math.max(0, Number(item.duration) || 0);
+                if (newEndMs >= end.getTime()) {
+                    out.duration = Math.round(duration + (newEndMs - end.getTime()));
+                    return out;
+                }
+                const pauses = normalizeHistoryPauseRanges(item, start, end);
+                const segments = buildStudySegmentsFromPauses(start, end, pauses);
+                const total = segments.reduce((sum, s) => sum + (s.end - s.start), 0);
+                const cut = segments.reduce((sum, s) => sum + Math.max(0, s.end - Math.max(s.start, newEndMs)), 0);
+                // フォーカスモードの休憩ぶんは記録に残っていないので、同じ割合で引く
+                out.duration = Math.max(0, Math.round(duration - (total > 0 ? cut * Math.min(1, duration / total) : 0)));
+                if (Array.isArray(item.pauses)) {
+                    out.pauses = pauses.filter(p => p.start < newEndMs).map(p => ({
+                        start: new Date(p.start).toISOString(),
+                        end: new Date(Math.min(p.end, newEndMs)).toISOString()
+                    }));
+                }
+                return out;
+            }
+
+            function updateTimeFixPreview() {
+                if (!timeFixState) return;
+                const res = readTimeFix();
+                const preview = document.getElementById('timeFixPreview');
+                const save = document.getElementById('timeFixSave');
+                if (save) save.disabled = !!res.error || res.ms === undefined;
+                if (!preview) return;
+                preview.textContent = res.error !== undefined
+                    ? res.error
+                    : `${formatDateTimeLong(new Date(res.ms))}\n${getText('timeFixPreview').replace('{t}', formatTime(res.duration))}`;
+            }
+
+            function saveTimeFix() {
+                const st = timeFixState;
+                if (!st) return;
+                const res = readTimeFix();
+                if (res.error !== undefined || res.ms === undefined) { updateTimeFixPreview(); return; }
+                if (st.kind === 'start') {
+                    if (!startTime) { closeTimeFix(); return; }
+                    saveData('studyStartTime', new Date(res.ms).toISOString());
+                    if (res.delta >= 0) pausedTime += res.delta;   // 前へ: 勉強時間を足す
+                    else startTime -= res.delta;                    // 後ろへ(一時停止前だけ): 数えはじめを遅らせる
+                    saveData('studyPausedAccum', String(pausedTime));
+                    saveData('studyRunningAnchor', String(Math.max(startTime, res.ms)));
+                    closeTimeFix();
+                    renderRunningSessionInfo();
+                    updateTimer();
+                    updateTimerAutoStopDisplays();
+                    return;
+                }
+                const history = safeJsonParse(getData('studyHistory') || '[]', []);
+                if (!Array.isArray(history) || findLastEndedRecord(history) !== res.index) { closeTimeFix(); return; }
+                history[res.index] = res.record;
+                saveData('studyHistory', JSON.stringify(history));
+                lastEndedRecord = { start: res.record.start, end: res.record.end };
+                closeTimeFix();
+                selectedItems.clear();
+                loadHistory();
+                loadStats();
+                if (!startTime) renderEndedSessionInfo(res.record);
+            }
+
+            (function () {
+                const overlay = document.getElementById('timeFixOverlay');
+                if (!overlay) return;
+                overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) closeTimeFix(); });
+                overlay.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') closeTimeFix();
+                    else if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); saveTimeFix(); }
+                });
+            })();
+
             async function deleteSelected() {
                 const targets = getVisibleSelectedHistoryIndices();
                 if (targets.length === 0) return;
@@ -27854,22 +28460,45 @@
                 groupColorPop = null;
             }
 
+            // 未分類(グループなし)の積み木の色。決めていなければ null(テーマの色をくすませた色になる)
+            function getUngroupedColor() {
+                const c = getData('group_color_none');
+                return typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c) ? c : null;
+            }
+
+            function resetUngroupedColor() {
+                localStorage.removeItem('group_color_none');
+                setCookie('group_color_none', '', -1);
+                closeGroupColorPalette();
+                renderGroupManagement();
+            }
+
+            // i が -1 のときは「未分類」の色
             function openGroupColorPalette(i, btn) {
-                const group = managedGroupsCache[i];
-                if (!group) return;
-                const wasOpen = groupColorPop && groupColorPop.dataset.group === group;
+                const isNone = i === -1;
+                const group = isNone ? '' : managedGroupsCache[i];
+                if (!isNone && !group) return;
+                const popKey = isNone ? '\u0000none' : group;
+                const wasOpen = groupColorPop && groupColorPop.dataset.group === popKey;
                 closeGroupColorPalette();
                 if (wasOpen) return;
-                const current = ensureGroupColors([group])[group];
+                const current = isNone ? getUngroupedColor() : ensureGroupColors([group])[group];
+                const setColor = (hex) => {
+                    if (isNone) { saveData('group_color_none', hex); return; }
+                    const map = loadGroupColors();
+                    map[group] = hex;
+                    saveGroupColors(map);
+                };
                 const pop = document.createElement('div');
                 pop.className = 'group-color-pop';
-                pop.dataset.group = group;
+                pop.dataset.group = popKey;
                 pop.setAttribute('role', 'listbox');
-                const start = paleFromHex(current);
+                const start = paleFromHex(current || GROUP_COLOR_PALETTE[0]);
                 pop.innerHTML = GROUP_COLOR_PALETTE.map(c =>
                     `<button type="button" class="group-color-swatch${c === current ? ' is-current' : ''}" style="--c:${c}" data-color="${c}" role="option" aria-selected="${c === current}" aria-label="${c}"></button>`
                 ).join('')
-                    + `<div class="pale-picker"><input type="range" class="pale-range" data-k="h" min="0" max="359" value="${start.h}" aria-label="${escapeHtml(getText('paleHue'))}"><input type="range" class="pale-range" data-k="t" min="0" max="100" value="${start.t}" aria-label="${escapeHtml(getText('paleTone'))}"></div>`;
+                    + `<div class="pale-picker"><input type="range" class="pale-range" data-k="h" min="0" max="359" value="${start.h}" aria-label="${escapeHtml(getText('paleHue'))}"><input type="range" class="pale-range" data-k="t" min="0" max="100" value="${start.t}" aria-label="${escapeHtml(getText('paleTone'))}"></div>`
+                    + (isNone && current ? `<button type="button" class="secondary group-color-reset" onclick="resetUngroupedColor()">${escapeHtml(getText('groupColorNoneReset'))}</button>` : '');
                 // 候補にない色は、下の2本(色あい･こさ)で作る。動かしているあいだもすぐ色が変わる
                 const hueInput = pop.querySelector('[data-k="h"]');
                 const toneInput = pop.querySelector('[data-k="t"]');
@@ -27877,9 +28506,7 @@
                 pop.addEventListener('input', () => {
                     const h = parseInt(hueInput.value, 10) || 0, t = parseInt(toneInput.value, 10) || 0;
                     const hex = paleHex(h, t);
-                    const map = loadGroupColors();
-                    map[group] = hex;
-                    saveGroupColors(map);
+                    setColor(hex);
                     setPaleTracks(hueInput, toneInput, h, t);
                     pop.querySelectorAll('.group-color-swatch.is-current').forEach(el => el.classList.remove('is-current'));
                     document.querySelectorAll('.group-color-btn').forEach(b => {
@@ -27890,9 +28517,7 @@
                     e.stopPropagation();
                     const sw = e.target.closest('.group-color-swatch');
                     if (!sw) return;
-                    const map = loadGroupColors();
-                    map[group] = sw.dataset.color;
-                    saveGroupColors(map);
+                    setColor(sw.dataset.color);
                     closeGroupColorPalette();
                     renderGroupManagement();
                 });
@@ -28009,6 +28634,15 @@
                         <button type="button" class="trash-btn" title="${getText('deleteButton')}" aria-label="${getText('deleteButton')}" onclick="deleteManagedGroupAt(${i})">${getTrashIconSvg()}</button>
                     </div>`;
                 }).join('');
+
+                // 未分類(グループなし)の積み木の色も、ここで決められる
+                if (colorOn && !groupSelectMode) {
+                    const u = ungroupedBlockHsl();
+                    const noneColor = getUngroupedColor() || `hsl(${u.h}, ${u.s}%, ${u.l}%)`;
+                    listEl.innerHTML += `<div class="group-row group-row-none">
+                        <button type="button" class="group-color-btn" style="--c:${noneColor}" title="${getText('groupColorChange')}" aria-label="${getText('groupColorChange')}" onclick="openGroupColorPalette(-1, this)"></button><div class="group-row-main"><span class="group-row-name">${escapeHtml(getText('uncategorized'))}</span><span class="group-row-meta">${escapeHtml(getText('groupColorNoneMeta'))}</span></div>
+                    </div>`;
+                }
 
                 renderGroupBulkBar();
                 const editInput = document.getElementById('groupRenameInput');
@@ -28387,6 +29021,7 @@
                 'feature_theme_toggle_btn',
                 'feature_history_timeline',
                 'manual_record_enabled',
+                'music_layout_classic',
                 'feature_loading_anim',
                 'feature_stop_music_on_timer_end',
                 'feature_music_resume_on_tap_after_reload',
@@ -28413,6 +29048,7 @@
                 'feature_todo_repeat_calendar',
                 'tsumiki_group_colors',
                 'group_colors',
+                'group_color_none',
                 'icon_style',
                 'notify_master',
                 'notify_todo_browser',
@@ -28453,6 +29089,7 @@
                 'feature_theme_toggle_btn',
                 'feature_history_timeline',
                 'manual_record_enabled',
+                'music_layout_classic',
                 'feature_loading_anim',
                 'feature_stop_music_on_timer_end',
                 'feature_music_resume_on_tap_after_reload',
@@ -30248,8 +30885,43 @@
                 // クリック/右クリックのクイック設定バインドを再適用(ボタンは作り直されるため)
                 setTimeout(attachEditorTargets, 50);
 
-                requestAnimationFrame(syncBottomMenuPadding);
-                requestAnimationFrame(updateMenuFixedTopOffset);
+                requestAnimationFrame(() => {
+                    balanceMenuWrap();
+                    syncBottomMenuPadding();
+                    updateMenuFixedTopOffset();
+                });
+            }
+
+            // 入りきらずに折り返すとき、最後の行に1つだけ残らないよう、行の長さをそろえる(5個なら 4+1 ではなく 3+2)。
+            // 自分で改行を入れているときは、そちらを優先して何もしない
+            function balanceMenuWrap() {
+                const menu = document.getElementById('mainMenu');
+                if (!menu) return;
+                menu.querySelectorAll('.menu-auto-break').forEach(el => el.remove());
+                if (menu.querySelector('.menu-break-marker')) return;
+                const btns = Array.from(menu.querySelectorAll('button[data-page-key]'));
+                if (btns.length < 3 || !menu.getClientRects().length) return;
+                const rowCount = () => new Set(btns.map(b => b.offsetTop)).size;
+                const rows = rowCount();
+                if (rows <= 1) return;
+                const per = Math.ceil(btns.length / rows);
+                for (let i = per; i < btns.length; i += per) {
+                    const br = document.createElement('div');
+                    br.className = 'menu-break-marker menu-auto-break';
+                    menu.insertBefore(br, btns[i]);
+                }
+                // そろえたせいで行が増えるなら、やめる
+                if (rowCount() > rows) menu.querySelectorAll('.menu-auto-break').forEach(el => el.remove());
+            }
+
+            let menuBalanceTimer = null;
+            window.addEventListener('resize', () => {
+                if (menuBalanceTimer) clearTimeout(menuBalanceTimer);
+                menuBalanceTimer = setTimeout(() => { balanceMenuWrap(); syncBottomMenuPadding(); }, 120);
+            });
+            // 字の形が読み込まれるとボタンの幅が変わるので、そのあとでもう一度そろえる
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => { balanceMenuWrap(); syncBottomMenuPadding(); }).catch(() => { });
             }
 
             // ===== メニューモード =====
@@ -30705,8 +31377,8 @@
                     });
                 });
 
-                if (musicEnabled) document.getElementById('toggleMusic').classList.add('active');
-                if (todoEnabled) document.getElementById('toggleTodo').classList.add('active');
+                if (musicEnabled) document.getElementById('toggleMusic')?.classList.add('active');
+                if (todoEnabled) document.getElementById('toggleTodo')?.classList.add('active');
                 updateMusicRelatedSettingsVisibility();
                 initMenuCustomization();
 
@@ -30719,6 +31391,7 @@
                 applyAutoStopMenuBtnVisibility();
                 applyTimerClassic();
                 if (typeof applyManualRecordSetting === 'function') applyManualRecordSetting();
+                if (typeof applyMusicClassic === 'function') applyMusicClassic();
                 applyAutoStopCompact();
                 applyHistoryListVisibility();
                 syncHistoryListToggle();
@@ -30796,6 +31469,7 @@
                     startTime = (runningAnchor >= startTime_ms && runningAnchor <= now) ? runningAnchor : startTime_ms;
                     pausedTime = pausedAccum;
                     isPaused = pausedFlag;
+                    renderRunningSessionInfo();
 
                     // フォーカスモードのセッション内状態を復元
                     focusAnchorMs = Math.max(0, parseInt(getData('studyFocusAnchor') || '0', 10) || 0);
@@ -30831,11 +31505,11 @@
                     document.getElementById('toggleLockSettings').classList.add('active');
                 }
                 if (getData('feature_music') === 'true') {
-                    document.getElementById('toggleMusic').classList.add('active');
+                    document.getElementById('toggleMusic')?.classList.add('active');
                     addMenuButton('music');
                 }
                 if (getData('feature_todo') === 'true') {
-                    document.getElementById('toggleTodo').classList.add('active');
+                    document.getElementById('toggleTodo')?.classList.add('active');
                     addMenuButton('todo');
                 }
                 if (getData('feature_title_time') !== 'false') { // デフォルトON
@@ -33100,6 +33774,9 @@
 
             // グループなしの積み木の色。グループを使っている人には、色つきのグループと見分けやすいよう、テーマの色をくすませる
             function ungroupedBlockHsl() {
+                // 自分で色を決めてあれば、それを使う(設定 > 記録 > グループ の「未分類」)
+                const custom = getUngroupedColor();
+                if (custom) return groupBlockHsl(custom);
                 const b = tsumikiThemeHsl();
                 return { h: b.h, s: b.s * 0.3, l: b.l };
             }
@@ -34757,7 +35434,8 @@
             }
 
             function parseYoutubeId(url) {
-                const m = url.match(/(?:youtube\.com\/watch\?(?:[^#&]*&)*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                // ふつうのURL･短縮URLのほか、ショート･ライブ･埋め込み用のURLも受け付ける
+                const m = url.match(/(?:youtube\.com\/(?:watch\?(?:[^#&]*&)*v=|shorts\/|live\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
                 return m ? m[1] : null;
             }
 
@@ -34812,7 +35490,7 @@
                     if (!zone || zone.style.display === 'none') { container.style.display = 'none'; return; }
                     const rect = zone.getBoundingClientRect();
                     if (rect.width < 2 || rect.height < 2) { container.style.display = 'none'; return; }
-                    container.style.cssText = `display:block; position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; border-radius:8px; z-index:100; background:#000; overflow:hidden; pointer-events:auto;`;
+                    container.style.cssText = `display:block; position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; border-radius:${document.body.classList.contains('music-classic') ? 8 : 24}px; z-index:100; background:#000; overflow:hidden; pointer-events:auto;`;
                 } else if (miniVisible) {
                     const zone = document.getElementById('ytMiniZone');
                     if (!zone || zone.style.display === 'none') { container.style.display = 'none'; return; }
