@@ -16822,15 +16822,11 @@
             opacity: 0.6;
         }
 
-        /* カードは前と同じ余白･並び。同じ日の記録どうしは、すきまを詰めてまとまりに見せる */
+        /* カードは前と同じ余白･並び。カードどうしのすきまは、いつも同じ */
         .history-item.hrec {
             padding: 18px 20px;
             margin-bottom: 15px;
             cursor: pointer;
-        }
-
-        .history-item.hrec.is-same-day {
-            margin-top: -7px;
         }
 
         .history-item.hrec .history-item-date {
@@ -17255,6 +17251,32 @@
             .sp-login {
                 transition: none;
             }
+        }
+
+        /* 時刻のドラム: 真ん中の数字は .time-drum-val で見せる。入力欄は同じ場所に透明で重ねる */
+        .time-drum .time-drum-col .time-drum-val {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: var(--drum-row);
+            height: var(--drum-row);
+            line-height: var(--drum-row);
+            text-align: center;
+            font-size: max(16px, 1.1rem);
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
+            transform: translateY(var(--drum-shift, 0px));
+        }
+
+        .time-drum.is-large .time-drum-col .time-drum-val {
+            font-size: max(16px, 1.5rem);
+        }
+
+        .time-drum .time-drum-col input.time-drum-num {
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            transform: none;
         }
     </style>
 
@@ -18996,6 +19018,13 @@
             <div class="settings-section">
                 <h2 data-i18n="settingsHistory">履歴</h2>
                 <div class="toggle-item">
+                    <span data-i18n="listClassicSetting">リストを前の表示にする</span>
+                    <div class="toggle-switch" id="toggleListClassic" onclick="toggleListClassicSetting()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-note" data-i18n="listClassicNote">記録のカードを、開始･一時停止･終了を1行ずつ並べる前の形にします。</div>
+                <div class="toggle-item">
                     <span data-i18n="historyTimelineToggle">タイムラインバー表示(履歴カード･統計の日別)</span>
                     <div class="toggle-switch" id="toggleHistoryTimeline" onclick="toggleHistoryTimeline()">
                         <div class="toggle-slider"></div>
@@ -19822,6 +19851,8 @@
                     autoStopMenuBtnSetting: '自動停止',
                     autoStopCompactSetting: '自動停止の表示をコンパクトにする',
                     timerClassicSetting: 'タイマー画面を前の表示にする',
+                    listClassicSetting: 'リストを前の表示にする',
+                    listClassicNote: '記録のカードを、開始･一時停止･終了を1行ずつ並べる前の形にします。',
                     timerClassicNote: '数字をのせる台を使わず、自動停止とグループを別々の段に並べます。止まっているときも「開始ボタンを押して…」や前回の学習を表示します。',
                     autoStopCompactNote: 'アイコンだけにして、タイマーでは時計の左下、音楽では曲名の右に置きます。予約中は色が付きます。',
                     endConfirmSetting: '長いセッション終了時に確認',
@@ -20859,6 +20890,8 @@
                     autoStopMenuBtnSetting: 'Auto-stop',
                     autoStopCompactSetting: 'Compact auto-stop button',
                     timerClassicSetting: 'Use the previous timer layout',
+                    listClassicSetting: 'Use the previous list layout',
+                    listClassicNote: 'Shows each record card the old way, with start, pauses and end on separate lines.',
                     timerClassicNote: 'Drops the timer card, shows auto-stop and group on separate rows, and keeps the start hint and previous session visible while stopped.',
                     autoStopCompactNote: 'Shows only an icon: at the lower left of the clock on the timer, and to the right of the title in the music player. It turns colored while a stop is scheduled.',
                     endConfirmSetting: 'Confirm before ending long sessions',
@@ -23706,7 +23739,7 @@
 
             // ── 今日の残りのタスク: タイマーの下の1行と、そこから開く小さな一覧 ──
             function isTodoTimerLineEnabled() {
-                return getData('feature_todo_timer_line') !== 'false';
+                return getData('feature_todo_timer_line') === 'true';
             }
 
             function toggleTodoTimerLine() {
@@ -24569,13 +24602,16 @@
 
             function applySessionInfoVisibility() {
                 const wrap = document.getElementById('sessionInfoWrap');
-                if (wrap) wrap.style.display = isSessionInfoVisible() ? '' : 'none';
+                // 時刻を「直す」ボタンが出ているあいだは、隠す設定でも見せる(押し忘れを直せなくなるため)
+                const fix = wrap && wrap.querySelector('.session-fix-btn');
+                if (wrap) wrap.style.display = (isSessionInfoVisible() || fix) ? '' : 'none';
             }
 
             function toggleSessionInfoVisible() {
                 saveData('session_info_visible', isSessionInfoVisible() ? 'false' : 'true');
                 applySessionInfoVisibility();
                 syncSessionInfoToggle();
+                syncListClassicToggle();
             }
 
             // ── グループの複数選択 & 入力方式ヘルパー ──
@@ -24908,6 +24944,8 @@
                 if (startTime) return; // タイマー動作中は上書きしない
                 const info = document.getElementById('sessionInfo');
                 if (!info) return;
+                // この関数が文を書きかえたあとで、見せる/隠すを合わせ直す(「直す」が消えたら、隠す設定に戻す)
+                setTimeout(applySessionInfoVisibility, 0);
                 const custom = getData('session_info_custom_text');
                 if (custom) {
                     info.classList.add('custom-text');
@@ -29788,6 +29826,65 @@
             }
 
             // 記録1件の帯: 始まりから終わりまでのうち、勉強していたところだけ色がつく(休んだところはすきまになる)
+            // ── リストを前の表示にする(設定 → 記録)。1.22 までのカード: 開始･一時停止･終了を1行ずつ、学習時間は 00:00:00 の形 ──
+            function isListClassic() {
+                return getData('list_layout_classic') === 'true';
+            }
+
+            function syncListClassicToggle() {
+                setToggleActive('toggleListClassic', isListClassic());
+            }
+
+            function toggleListClassicSetting() {
+                saveData('list_layout_classic', isListClassic() ? 'false' : 'true');
+                syncListClassicToggle();
+                loadHistory();
+            }
+
+            function buildHistoryPauseInfoClassicHtml(item, start, end) {
+                if (!hasPauseMetadata(item)) return '';
+                const pauseRanges = normalizeHistoryPauseRanges(item, start, end);
+                if (pauseRanges.length === 0) return `${getText('pauseLog')}: ${getText('noPauseRecords')}`;
+                return pauseRanges.map((range, index) => {
+                    const label = formatHistoryTimeRangeLabel(new Date(range.start), new Date(range.end));
+                    return index === 0 ? `${getText('pauseLog')}: ${label}` : `${index + 1}. ${label}`;
+                }).join('<br>');
+            }
+
+            function buildHistoryTimelineClassicHtml(item, start, end) {
+                if (!isHistoryTimelineEnabled() || !hasPauseMetadata(item)) return '';
+                const startMs = start.getTime();
+                const totalSpan = end.getTime() - startMs;
+                if (!Number.isFinite(totalSpan) || totalSpan <= 0) return '';
+                const segments = buildStudySegmentsFromPauses(start, end, normalizeHistoryPauseRanges(item, start, end));
+                const segmentHtml = segments.map(segment => {
+                    const left = ((segment.start - startMs) / totalSpan) * 100;
+                    const width = ((segment.end - segment.start) / totalSpan) * 100;
+                    return `<span class="history-timeline-segment" style="left:${left}%;width:${Math.max(width, 0.12)}%;"></span>`;
+                }).join('');
+                return `<div class="history-timeline"><div class="history-timeline-scale"><span>${formatDateTime(start)}</span><span>${formatDateTime(end)}</span></div><div class="history-timeline-track">${segmentHtml}</div></div>`;
+            }
+
+            function buildHistoryItemClassicHtml(item, actualIndex) {
+                const start = new Date(item.start);
+                const end = new Date(item.end);
+                const itemGroups = getItemGroups(item);
+                const groupBadge = itemGroups.length > 0
+                    ? `<div class="group-badges-wrap">${itemGroups.map(g => `<div class="group-badge">${escapeHtml(g)}</div>`).join('')}</div>`
+                    : '';
+                const isSelected = selectedItems.has(actualIndex);
+                const dateDisplay = (formatDate(start) === formatDate(end)) ? formatDate(start) : `${formatDate(start)}<br><small>→ ${formatDate(end)}</small>`;
+                const pauseInfoHtml = buildHistoryPauseInfoClassicHtml(item, start, end);
+                return `<div class="history-item ${isSelected ? 'selected' : ''}" onclick="toggleSelection(event, ${actualIndex})">`
+                    + `<input type="checkbox" class="history-item-checkbox" data-index="${actualIndex}" ${isSelected ? 'checked' : ''} aria-label="${getText('historySelectLabel')}" onclick="toggleSelection(event, ${actualIndex})">`
+                    + `<div class="history-item-date">${dateDisplay}</div>`
+                    + `<div class="history-item-time">${getText('start')}: ${formatDateTime(start)}${pauseInfoHtml ? `<br>${pauseInfoHtml}` : ''}<br>${getText('end')}: ${formatDateTime(end)}</div>`
+                    + `<div class="history-item-duration">${getText('studyTime')}: ${formatTime(item.duration)}</div>`
+                    + buildHistoryTimelineClassicHtml(item, start, end)
+                    + groupBadge
+                    + `</div>`;
+            }
+
             function buildHistoryTimelineHtml(item, start, end) {
                 if (!isHistoryTimelineEnabled() || !hasPauseMetadata(item)) return '';
 
@@ -30002,8 +30099,18 @@
                     updateActionButtons();
                     return;
                 }
+                if (isListClassic()) {
+                    historyList.innerHTML = history.map(item => buildHistoryItemClassicHtml(item, allHistoryItems.indexOf(item))).join('');
+                    updateActionButtons();
+                    if (searchTerm) {
+                        splitSearchTerms(searchTerm).map(parseSearchQuery).forEach(criteria => {
+                            if (criteria && criteria.fallback) highlightTextMatches(historyList, criteria.fallback, 'list-search-hl');
+                        });
+                    }
+                    return;
+                }
                 // カードの並びは前と同じ(日付 → 時刻 → 学習時間 → 帯 → グループ)。
-                // 日付の順のときだけ、同じ日の記録を寄せて、その日の最初のカードに「この日の合計」を小さく添える
+                // 日付の順のときだけ、その日の最初のカードに「この日の合計」を小さく添える
                 const byDay = currentSort === 'date-desc' || currentSort === 'date-asc';
                 const dayTotals = new Map();
                 const dayCounts = new Map();
@@ -30021,7 +30128,6 @@
                     const end = new Date(item.end);
                     const dayKey = formatDate(start);
                     const firstOfDay = byDay && dayKey !== lastDay;
-                    const sameDayAsPrev = byDay && dayKey === lastDay;
                     lastDay = dayKey;
                     const itemGroups = getItemGroups(item);
                     const isSelected = selectedItems.has(actualIndex);
@@ -30032,7 +30138,7 @@
                     const tags = (badges || pause.chip) ? `<div class="hrec-tags">${badges}${pause.chip}</div>` : '';
                     const dayTotal = (firstOfDay && dayCounts.get(dayKey) > 1)
                         ? `<span class="hrec-day-total">${getText('historyDayTotal').replace('{t}', formatGroupDuration(dayTotals.get(dayKey) || 0))}</span>` : '';
-                    html += `<div class="history-item hrec ${isSelected ? 'selected' : ''}${sameDayAsPrev ? ' is-same-day' : ''}" onclick="toggleSelection(event, ${actualIndex})">`
+                    html += `<div class="history-item hrec ${isSelected ? 'selected' : ''}" onclick="toggleSelection(event, ${actualIndex})">`
                         + `<input type="checkbox" class="history-item-checkbox" data-index="${actualIndex}" ${isSelected ? 'checked' : ''} aria-label="${getText('historySelectLabel')}" onclick="toggleSelection(event, ${actualIndex})">`
                         + `<div class="history-item-date">${dayKey}<span class="hday-week">${escapeHtml(weekdayOf(start))}</span>${dayTotal}</div>`
                         + `<div class="hrec-time history-item-time">${formatDateTime(start)}<span class="hrec-dash">–</span>${endText}</div>`
@@ -30228,6 +30334,7 @@
             // ── 時刻のドラム: 上下にずらす･前後の数字を押す･ホイール･矢印キー･直接入力で時刻を決める ──
             // 置き方: <div class="time-drum" data-mode="time|duration" data-value="HH:MM"></div>
             // 値は data-value に 'HH:MM' で持ち、変わるたびにその要素で 'timedrumchange' が起きる(バブルする)
+            // 真ん中の数字は .time-drum-val(ふつうの文字)で見せ、入力欄は打つためだけに上へ透明で重ねてある
             const TIME_DRUM_STEP_PX = 26;   // この長さずらすごとに数字が1つ進む
             const TIME_DRUM_MAX = 24 * 60;
 
@@ -30270,6 +30377,7 @@
                     const col = part => `<div class="time-drum-col" data-part="${part}">`
                         + `<button type="button" class="time-drum-adj" data-step="-1" tabindex="-1" aria-hidden="true"></button>`
                         + `<input type="text" class="time-drum-num" inputmode="numeric" maxlength="2" autocomplete="off" role="spinbutton" aria-valuemin="0" aria-valuemax="${part === 'h' ? 23 : 59}">`
+                        + `<span class="time-drum-val" aria-hidden="true"></span>`
                         + `<button type="button" class="time-drum-adj" data-step="1" tabindex="-1" aria-hidden="true"></button></div>`;
                     el.innerHTML = duration
                         ? `${col('h')}<span class="time-drum-unit" data-unit="h"></span>${col('m')}<span class="time-drum-unit" data-unit="m"></span>`
@@ -30282,6 +30390,8 @@
                     const part = col.dataset.part;
                     const input = col.querySelector('.time-drum-num');
                     if (input !== skipInput) input.value = timeDrumPartText(el, part, total);
+                    // 見える数字はこちら。入力欄の文字は見せない(iPhone で、ずらしたあとに入力欄の文字が消えることがある)
+                    col.querySelector('.time-drum-val').textContent = timeDrumPartText(el, part, total);
                     input.setAttribute('aria-valuenow', part === 'h' ? Math.floor(total / 60) : total % 60);
                     input.setAttribute('aria-label', getText(duration
                         ? (part === 'h' ? 'manualHours' : 'manualMinutes')
@@ -30827,6 +30937,7 @@
                 if (!info || !startTime || Number.isNaN(startMs)) return;
                 info.classList.remove('custom-text');
                 info.innerHTML = `${escapeHtml(getText('startTime'))}: ${formatSessionEdgeTime(new Date(startMs), new Date())}${timeFixButtonHtml('start')}`;
+                applySessionInfoVisibility();
             }
 
             // 終えた直後のセッション情報(開始･終了･学習時間と「終わりの時刻を直す」)
@@ -30834,6 +30945,12 @@
                 const info = document.getElementById('sessionInfo');
                 if (!info || !record) return;
                 const s = new Date(record.start), e = new Date(record.end);
+                if (!isSessionInfoVisible()) {
+                    // セッション情報を隠しているときは、「終わりの時刻を直す」だけ出す
+                    info.innerHTML = timeFixButtonHtml('end');
+                    applySessionInfoVisibility();
+                    return;
+                }
                 info.innerHTML = `${escapeHtml(getText('startTime'))}: ${formatSessionEdgeTime(s, e)}<br>${escapeHtml(getText('endTime'))}: ${formatSessionEdgeTime(e, s)}<br>${escapeHtml(getText('studyTime'))}: ${formatTime(record.duration)}${record.group ? '<br>' + escapeHtml(getText('group')) + ': ' + escapeHtml(record.group) : ''}<br>${timeFixButtonHtml('end')}`;
             }
 
@@ -34503,6 +34620,7 @@
                 renderSessionIdleInfo();
                 applySessionInfoVisibility();
                 syncSessionInfoToggle();
+                syncListClassicToggle();
                 applyGroupInputVisibility();
                 syncGroupInputToggle();
                 applyAutoStopMenuBtnVisibility();
