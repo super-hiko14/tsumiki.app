@@ -13379,6 +13379,155 @@
             background: var(--primary-color-dark);
         }
 
+        /* ── 元に戻す: 削除やインポートのあと、下に出る小さなバー ── */
+        .undo-bar {
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            width: max-content;
+            max-width: min(calc(100vw - 24px), 440px);
+            z-index: 10002;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 6px 6px 18px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease, visibility 0s linear 0.25s;
+        }
+
+        .undo-bar.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease, visibility 0s;
+        }
+
+        body.menu-mode-bottom .undo-bar {
+            bottom: calc(var(--bottom-menu-h, 56px) + 16px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .light .undo-bar {
+            background: var(--bg-light);
+            color: #323232;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .dark .undo-bar {
+            background: var(--panel-dark-2);
+            color: #e8e8e8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .undo-bar-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 6px;
+        }
+
+        .undo-bar .storage-persist-btn {
+            font-weight: 500;
+        }
+
+        .undo-bar-close {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: inherit;
+            opacity: 0.6;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .undo-bar-close:hover {
+            opacity: 1;
+            background: rgba(128, 128, 128, 0.14);
+        }
+
+        .undo-bar .storage-persist-btn,
+        .undo-row .storage-persist-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .undo-bar,
+            .undo-bar.show {
+                transition: none;
+            }
+        }
+
+        /* 設定のデータ管理: 5分以内の操作の一覧 */
+        .undo-list-wrap {
+            margin: 4px 0 14px;
+        }
+
+        .undo-list-wrap[hidden] {
+            display: none;
+        }
+
+        .undo-list-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.75;
+            text-align: left;
+            padding: 0 16px;
+            margin-bottom: 8px;
+        }
+
+        .undo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .undo-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 8px 8px 20px;
+            border-radius: 999px;
+            background: var(--panel-light);
+        }
+
+        .dark .undo-row {
+            background: var(--panel-dark);
+        }
+
+        .undo-row-text {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.88rem;
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        .undo-row-label {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .undo-row-time {
+            display: block;
+            font-size: 0.76rem;
+            opacity: 0.6;
+        }
+
         /* ── セーフティサポート: 相談窓口の案内 ── */
         .safety-support-banner {
             position: fixed;
@@ -17525,6 +17674,12 @@
         </div>
     </div>
 
+    <div class="undo-bar" id="undoBar" role="status" aria-live="polite">
+        <span class="undo-bar-text" id="undoBarText"></span>
+        <button type="button" class="storage-persist-btn" id="undoBarBtn" data-i18n="undoButton">元に戻す</button>
+        <button type="button" class="undo-bar-close" id="undoBarClose" aria-label="閉じる" data-i18n-aria="closeButton"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+
     <div class="custom-confirm-overlay" id="manualRecordOverlay">
         <div class="custom-confirm-dialog manual-record-dialog">
             <div class="custom-confirm-title" id="manualRecordTitle"></div>
@@ -19334,6 +19489,10 @@
                     onclick="openQrTransfer()" data-i18n="qrButton">スマホへ移す(QRコード)</button>
                 <div class="setting-note" style="margin-top: 8px;" data-i18n="qrButtonNote">この画面にQRコードを出し、スマホのカメラで読み取って移します。データはQRコードの中に入っていて、サーバーには送られません。</div>
                 <div class="setting-note" id="lastBackupNote" style="margin: 10px 0 14px;"></div>
+                <div class="undo-list-wrap" id="undoListWrap" hidden>
+                    <div class="undo-list-title" data-i18n="undoListTitle">元に戻せる操作(5分以内)</div>
+                    <div class="undo-list" id="undoList"></div>
+                </div>
                 <div class="toggle-item storage-persist-row">
                     <span class="storage-persist-text">
                         <span data-i18n="storagePersistTitle">記録を消えにくくする</span>
@@ -20194,7 +20353,7 @@
                     qrReceiveTitle: 'QRコードから受け取る',
                     qrGotPart: '{n}枚のうち{got}枚を受け取りました。残り: {list}枚目。PCで次のQRコードに進み、カメラで読み取ってください。',
                     qrReadFailed: 'QRコードのデータを読み取れませんでした。PCでQRコードを出し直して、1枚目からやり直してください。',
-                    qrImportNote: '選んだ項目は、このスマホに今あるものと置きかわります。音楽は今あるものを残して、YouTube動画だけ追加されます。取り込んだあとページを再読み込みします。',
+                    qrImportNote: '選んだ項目は、このスマホに今あるものと置きかわります(足し合わせではありません)。音楽は今あるものを残して、YouTube動画だけ追加されます。取り込んだあとページを再読み込みします。5分以内なら元に戻せます。',
                     importData: 'データをインポート',
                     helpSection: 'ヘルプ',
                     showGuide: '使い方ガイドを再表示',
@@ -20278,8 +20437,9 @@
                     dataCatTodos: 'ToDo',
                     dataCatMusic: '音楽(YouTube動画のみ)',
                     exportMusicNote: '音楽はYouTube動画のみエクスポートされます。端末に保存した音声/動画ファイルは含まれません。',
-                    importReloadNote: '音楽は既存のものを残したまま、YouTube動画のみ追加されます。インポート後にページを再読み込みします。',
-                    importDoneReload: 'インポートが完了しました。ページを再読み込みします。',
+                    importReloadNote: '選んだ項目は、この端末に今あるものと置きかわります(足し合わせではありません)。音楽は今あるものを残して、YouTube動画だけ追加されます。取り込んだあとページを再読み込みします。5分以内なら元に戻せます。',
+                    importDoneReload: 'インポートが完了しました。ページを再読み込みします。5分以内なら元に戻せます。',
+                    importCountChange: '今 {c} → {n}',
                     videoAddTitle: '動画ファイルの追加',
                     videoAddMessage: '動画をどのように追加しますか?',
                     videoAddAsVideo: '動画として追加',
@@ -20325,7 +20485,7 @@
                     aboutTodoSample3: 'ノートの見直し',
                     qaContent: `<div class="qa-list">
                             <details class="qa-item"><summary>ツミキappの記録などはどこに保存されますか?</summary><p>すべてのデータはブラウザのローカルストレージに保存されます。サーバーには一切送信されません。</p></details>
-                            <details class="qa-item"><summary>他のデバイスへデータを移行したい、バックアップを取りたい。</summary><p>エクスポートから JSON ファイルをダウンロードできます。インポートで他のデバイスへの移行やバックアップとして保存できます。</p></details>
+                            <details class="qa-item"><summary>他のデバイスへデータを移行したい、バックアップを取りたい。</summary><p>エクスポートで、データを JSON ファイルとして保存できます。別のデバイスでそのファイルをインポートすると移せます。インポートした項目は、そのデバイスに今あるものと置きかわります(足し合わせではありません)。まちがえたときは、5分以内なら元に戻せます。</p></details>
                             <details class="qa-item"><summary>音楽プレイヤーで再生できるファイル形式は?</summary><p>mp3, wav, flac, m4a, aac, ogg, webm などの一般的な音楽ファイルに対応しています。</p></details>
                             <details class="qa-item"><summary>タイマーを一時停止したままサイトを閉じてしまった場合は?</summary><p>大丈夫です。サイトを閉じてもタイマーは作動し続けます。</p></details>
                             <details class="qa-item"><summary>プレイヤーにYouTube動画を追加したい</summary><p>デフォルトだと設定でOFFになってるので、ONにすると動画/音楽追加のメニューにYouTubeの項目が追加されます。</p></details>
@@ -21203,7 +21363,7 @@
                     qrReceiveTitle: 'Receive from QR code',
                     qrGotPart: 'Received {got} of {n}. Remaining: {list}. Go to the next QR code on your computer and scan it.',
                     qrReadFailed: 'Could not read the QR code data. Show the QR codes again on your computer and start from the first one.',
-                    qrImportNote: 'The items you choose replace what is on this phone now. Existing music is kept; only YouTube videos are added. The page reloads after importing.',
+                    qrImportNote: 'The items you choose replace what is on this phone now (they are not merged). Existing music is kept; only YouTube videos are added. The page reloads after importing. You can undo this within 5 minutes.',
                     importData: 'Import Data',
                     helpSection: 'Help',
                     showGuide: 'Show User Guide',
@@ -21282,8 +21442,9 @@
                     dataCatTodos: 'To-Do',
                     dataCatMusic: 'Music (YouTube only)',
                     exportMusicNote: 'Only YouTube videos are exported for music. Audio/video files stored on this device are not included.',
-                    importReloadNote: 'Existing music is kept; only YouTube videos are added. The page will reload after importing.',
-                    importDoneReload: 'Import complete. The page will now reload.',
+                    importReloadNote: 'The items you choose replace what is on this device now (they are not merged). Existing music is kept; only YouTube videos are added. The page reloads after importing. You can undo this within 5 minutes.',
+                    importDoneReload: 'Import complete. The page will now reload. You can undo this within 5 minutes.',
+                    importCountChange: 'now {c} → {n}',
                     videoAddTitle: 'Add Video Files',
                     videoAddMessage: 'How would you like to add the video(s)?',
                     videoAddAsVideo: 'Add as Video',
@@ -21659,7 +21820,7 @@
                     aboutTodoSample3: 'Review notes',
                     qaContent: `<div class="qa-list">
                             <details class="qa-item"><summary>Where is data saved?</summary><p>All data is saved in your browser's local storage. Nothing is sent to any server.</p></details>
-                            <details class="qa-item"><summary>I want to migrate or back up my data.</summary><p>You can download a JSON file from Export. Use Import to restore or migrate to another device.</p></details>
+                            <details class="qa-item"><summary>I want to migrate or back up my data.</summary><p>Export saves your data as a JSON file. Import that file on another device to move it there. Imported items replace what is on that device now (they are not merged). If you make a mistake, you can undo it within 5 minutes.</p></details>
                             <details class="qa-item"><summary>What music file formats are supported?</summary><p>Supports mp3, wav, flac, m4a, aac, ogg, webm, and more.</p></details>
                             <details class="qa-item"><summary>What if I close the site while the timer is paused?</summary><p>No worries. The timer continues running even if the site is closed.</p></details>
                             <details class="qa-item"><summary>I want to add YouTube videos to the player</summary><p>By default, this feature is turned off in the settings, so if you turn it on, a YouTube option will be added to the menu for adding videos and music.</p></details>
@@ -21747,6 +21908,22 @@
                 todoTodayOverdue: '期限切れ {n}件を見る',
                 todoClearDone: '完了したものを片づける',
                 todoClearDoneConfirm: '完了した{n}件を削除しますか?(繰り返しのToDoは残ります)',
+                undoButton: '元に戻す',
+                undoListTitle: '元に戻せる操作(5分以内)',
+                undoDone: '元に戻しました',
+                undoFailed: '元に戻せませんでした',
+                undoLeft: 'あと{n}分',
+                undoImport: 'データをインポートしました',
+                undoDelHistory: '記録を{n}件削除しました',
+                undoClearHistory: 'すべての記録を削除しました',
+                undoDelGroup: 'グループを{n}件削除しました',
+                undoDelTodo: 'ToDoを削除しました',
+                undoClearTodos: '完了したToDoを{n}件削除しました',
+                undoDelMusic: '{n}曲を削除しました',
+                undoDelPlaylist: 'プレイリスト「{name}」を削除しました',
+                undoDelDeck: 'デッキ「{name}」を削除しました',
+                undoDelCard: 'カードを削除しました',
+                undoDelBook: '「{name}」を削除しました',
                 todoPeekOpen: 'ToDoを開く',
                 todoTimerLineSetting: 'タイマーの下に今日の残りのタスクを表示',
 
@@ -21817,6 +21994,22 @@
                 todoTodayOverdue: 'See {n} overdue',
                 todoClearDone: 'Clear completed',
                 todoClearDoneConfirm: 'Delete {n} completed tasks? (Repeating tasks are kept.)',
+                undoButton: 'Undo',
+                undoListTitle: 'Can be undone (within 5 minutes)',
+                undoDone: 'Undone',
+                undoFailed: 'Could not undo',
+                undoLeft: '{n} min left',
+                undoImport: 'Data imported',
+                undoDelHistory: '{n} records deleted',
+                undoClearHistory: 'All records deleted',
+                undoDelGroup: '{n} groups deleted',
+                undoDelTodo: 'Task deleted',
+                undoClearTodos: '{n} completed tasks deleted',
+                undoDelMusic: '{n} tracks deleted',
+                undoDelPlaylist: 'Playlist "{name}" deleted',
+                undoDelDeck: 'Deck "{name}" deleted',
+                undoDelCard: 'Card deleted',
+                undoDelBook: '"{name}" deleted',
                 todoPeekOpen: 'Open To-do',
                 todoTimerLineSetting: "Show today's remaining tasks under the timer",
 
@@ -26091,7 +26284,7 @@
                 ${isMusicClassic() ? '' : buildPlaylistLeadHtml(item, index === currentMusicIndex)}
                 <div class="playlist-item-info" style="flex:1; min-width:0;">
                     <div class="playlist-item-title">
-                        <span class="title-text">${escapeHtml(item.title)}</span>${item.youtubeId ? '<svg class="yt-svg-badge" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" viewBox="0 0 256 180" width="20" height="14" aria-label="YouTube"><path class="yt-path" d="M250.346 28.075A32.18 32.18 0 0 0 227.69 5.418C207.824 0 127.87 0 127.87 0S47.912.164 28.046 5.582A32.18 32.18 0 0 0 5.39 28.24c-6.009 35.298-8.34 89.084.165 122.97a32.18 32.18 0 0 0 22.656 22.657c19.866 5.418 99.822 5.418 99.822 5.418s79.955 0 99.82-5.418a32.18 32.18 0 0 0 22.657-22.657c6.338-35.348 8.291-89.1-.164-123.134Z"/><path class="yt-tri" d="m102.421 128.06 66.328-38.418-66.328-38.418z"/></svg>' : ''}${item.spotifyUri ? '<span class="sp-badge">Spotify</span>' : ''}${item.isVideo ? '<svg class="video-svg-badge" xmlns="http://www.w3.org/2000/svg" width="19" height="14" viewBox="0 0 26 19" aria-label="Video"><rect x="1" y="3" width="16" height="13" rx="4" fill="currentColor" fill-opacity="0.55"/><path d="M18.5 7.9 L22.9 5.2 Q24.5 4.3 24.5 5.9 V13.1 Q24.5 14.7 22.9 13.8 L18.5 11.1 Z" fill="currentColor" fill-opacity="0.55"/></svg>' : ''}
+                        <span class="title-text">${escapeHtml(item.title)}</span>${item.youtubeId ? '<svg class="yt-svg-badge" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" viewBox="0 0 256 180" width="20" height="14" aria-label="YouTube"><path class="yt-path" d="M250.346 28.075A32.18 32.18 0 0 0 227.69 5.418C207.824 0 127.87 0 127.87 0S47.912.164 28.046 5.582A32.18 32.18 0 0 0 5.39 28.24c-6.009 35.298-8.34 89.084.165 122.97a32.18 32.18 0 0 0 22.656 22.657c19.866 5.418 99.822 5.418 99.822 5.418s79.955 0 99.82-5.418a32.18 32.18 0 0 0 22.657-22.657c6.338-35.348 8.291-89.1-.164-123.134Z"/><path class="yt-tri" d="m102.421 128.06 66.328-38.418-66.328-38.418z"/></svg>' : ''}${item.spotifyUri ? '<span class="sp-badge">Spotify</span>' : ''}${item.isVideo && isMusicClassic() ? '<svg class="video-svg-badge" xmlns="http://www.w3.org/2000/svg" width="19" height="14" viewBox="0 0 26 19" aria-label="Video"><rect x="1" y="3" width="16" height="13" rx="4" fill="currentColor" fill-opacity="0.55"/><path d="M18.5 7.9 L22.9 5.2 Q24.5 4.3 24.5 5.9 V13.1 Q24.5 14.7 22.9 13.8 L18.5 11.1 Z" fill="currentColor" fill-opacity="0.55"/></svg>' : ''}
                     </div>
                 </div>
             </div>
@@ -26106,17 +26299,20 @@
                 updateDragHandleIcons();
             }
 
-            // 行の先頭の丸: YouTube は動画の絵、ファイルは音符。いま選んでいる曲は、動く3本の棒を重ねる
+            // 行の先頭の丸: YouTube は動画の絵、動画ファイルはビデオカメラ、音声ファイルは音符。いま選んでいる曲は、動く3本の棒を重ねる
             const PL_NOTE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V6l10-2v12" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="16.5" cy="16" r="2.5" /></svg>';
+            const PL_VIDEO_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="13" height="11" rx="3" /><path d="M15.5 10.4 20.4 7.6a.7.7 0 0 1 1.1.6v7.6a.7.7 0 0 1-1.1.6l-4.9-2.8" /></svg>';
 
             function buildPlaylistLeadHtml(item, isCurrent) {
                 const spThumb = item.spotifyUri && /^https:\/\/[\w.-]+\.(scdn\.co|spotifycdn\.com)\//.test(item.thumb || '') ? item.thumb : '';
                 const hasThumb = !!spThumb || (item.youtubeId && /^[\w-]{11}$/.test(item.youtubeId));
                 const thumb = hasThumb
-                    ? `<img class="pl-thumb" src="${spThumb ? escapeHtml(spThumb) : `https://i.ytimg.com/vi/${item.youtubeId}/default.jpg`}" loading="lazy" decoding="async" alt="" draggable="false" onerror="this.remove()">`
+                    // YouTube は 16:9 そのままの mqdefault を使う(default.jpg は 4:3 で上下に黒い帯が入っている)
+                    ? `<img class="pl-thumb" src="${spThumb ? escapeHtml(spThumb) : `https://i.ytimg.com/vi/${item.youtubeId}/mqdefault.jpg`}" loading="lazy" decoding="async" alt="" draggable="false" onerror="this.remove()">`
                     : '';
                 const eq = isCurrent ? '<span class="pl-eq"><i></i><i></i><i></i></span>' : '';
-                return `<span class="pl-lead${isCurrent ? ' is-current' : ''}${hasThumb ? ' has-thumb' : ''}" aria-hidden="true">${thumb}${!hasThumb && !isCurrent ? PL_NOTE_SVG : ''}${eq}</span>`;
+                const icon = !hasThumb && !isCurrent ? (item.isVideo ? PL_VIDEO_SVG : PL_NOTE_SVG) : '';
+                return `<span class="pl-lead${isCurrent ? ' is-current' : ''}${hasThumb ? ' has-thumb' : ''}" aria-hidden="true">${thumb}${icon}${eq}</span>`;
             }
 
             // エスケープ用(簡易)
@@ -26489,6 +26685,8 @@
                     'delete.webp'
                 );
                 if (!confirmed) return;
+                const undoBefore = undoCapture();
+                const undoBlobIds = [];
                 const sorted = Array.from(selectedMusicItems).sort((a, b) => b - a);
                 for (const idx of sorted) {
                     if (idx < 0 || idx >= musicFiles.length) continue;
@@ -26508,9 +26706,8 @@
                     } else if (currentMusicIndex > idx) {
                         currentMusicIndex -= 1;
                     }
-                    if (removed && removed.id != null) {
-                        deleteFileBlobFromDB(removed.id).catch(() => { });
-                    }
+                    // ファイルの本体は、5分たって戻せなくなってから消す
+                    if (removed && removed.id != null && !removed.youtubeId && !removed.spotifyUri) undoBlobIds.push(removed.id);
                     musicFiles.splice(idx, 1);
                 }
                 selectedMusicItems.clear();
@@ -26520,6 +26717,7 @@
                 updateMusicPlayerModeUI();
                 syncMiniPlayerUI();
                 updateMiniPlayerVisibility();
+                undoRecord(undoBefore, { label: 'undoDelMusic', n: sorted.length, blobIds: undoBlobIds });
             }
 
             function renderPlaylistManager() {
@@ -26717,6 +26915,11 @@
 
                 const idx = musicPlaylists.findIndex(p => p.id === playlistId);
                 if (idx < 0) return;
+                const undoBefore = undoCapture();
+                syncActivePlaylistTracksFromRuntime();
+                // 中の曲のファイル本体は、5分たって戻せなくなってから消す(ほかのプレイリストで使っていれば残る)
+                const undoBlobIds = (Array.isArray(musicPlaylists[idx].tracks) ? musicPlaylists[idx].tracks : [])
+                    .filter(t => t && t.id != null && !t.youtubeId && !t.spotifyUri).map(t => t.id);
                 musicPlaylists.splice(idx, 1);
 
                 if (currentPlaylistId === playlistId) {
@@ -26734,6 +26937,7 @@
                 loadPlaylist();
                 updateMusicTitleDisplay();
                 if (reopen) openPlaylistManager();
+                undoRecord(undoBefore, { label: 'undoDelPlaylist', name: target.name || getText('playlist'), blobIds: undoBlobIds });
             }
 
             async function restorePlaylistsFromStorage() {
@@ -27259,6 +27463,7 @@
             async function deleteMusic(index) {
                 const confirmed = await customConfirm(getText('deleteMusicConfirm'), getText('deleteConfirmTitle'), 'delete.webp');
                 if (confirmed) {
+                    const undoBefore = undoCapture();
                     const removed = musicFiles[index];
                     if (currentMusicIndex === index) {
                         const audio = document.getElementById('audioPlayer');
@@ -27275,17 +27480,15 @@
                     } else if (currentMusicIndex > index) {
                         currentMusicIndex--;
                     }
-                    try {
-                        if (removed && removed.id != null) await deleteFileBlobFromDB(removed.id);
-                    } catch (e) {
-                        console.warn('Failed to delete blob from DB', e);
-                    }
+                    // ファイルの本体は、5分たって戻せなくなってから消す
+                    const undoBlobIds = (removed && removed.id != null && !removed.youtubeId && !removed.spotifyUri) ? [removed.id] : [];
                     musicFiles.splice(index, 1);
                     savePlaylist();
                     loadPlaylist();
                     updateMusicPlayerModeUI();
                     syncMiniPlayerUI();
                     updateMiniPlayerVisibility();
+                    undoRecord(undoBefore, { label: 'undoDelMusic', n: 1, blobIds: undoBlobIds });
                 }
             }
 
@@ -28670,10 +28873,12 @@
                 if (!targets.size) return;
                 const confirmed = await customConfirm(getText('todoClearDoneConfirm').replace('{n}', targets.size), getText('deleteConfirmTitle'), 'delete.webp');
                 if (!confirmed) return;
+                const undoBefore = undoCapture();
                 const todos = readTodos().filter(todo => !targets.has(String(todo.id)));
                 saveData('todos', JSON.stringify(todos));
                 loadTodos();
                 if (typeof renderCalendar === 'function' && currentTodoView === 'calendar') renderCalendar(calendarYear, calendarMonth);
+                undoRecord(undoBefore, { label: 'undoClearTodos', n: targets.size });
             }
 
             let _todoDragList = null; // 並べ替え中の区分け { body, items }
@@ -28927,12 +29132,14 @@
             async function deleteTodo(index) {
                 const confirmed = await customConfirm(getText('deleteTaskConfirm'), getText('deleteConfirmTitle'), 'delete.webp');
                 if (confirmed) {
+                    const undoBefore = undoCapture();
                     let todos = getData('todos');
                     todos = todos ? JSON.parse(todos) : [];
                     if (!todos[index]) return;
                     todos.splice(index, 1);
                     saveData('todos', JSON.stringify(todos));
                     loadTodos();
+                    undoRecord(undoBefore, { label: 'undoDelTodo' });
                 }
             }
 
@@ -29750,6 +29957,7 @@
             async function deleteTodoFromCalendar(index) {
                 const confirmed = await customConfirm(getText('deleteTaskConfirm'), getText('confirmDelete'), 'delete.webp');
                 if (confirmed) {
+                    const undoBefore = undoCapture();
                     let todos = getData('todos');
                     todos = todos ? JSON.parse(todos) : [];
                     todos.splice(index, 1);
@@ -29757,6 +29965,7 @@
                     renderCalendarDayTodos(currentCalendarDate);
                     renderCalendar(calendarYear, calendarMonth);
                     loadTodos();
+                    undoRecord(undoBefore, { label: 'undoDelTodo' });
                 }
             }
 
@@ -31116,6 +31325,7 @@
                 if (targets.length === 0) return;
                 const confirmed = await customConfirm(getText('deleteSelectedConfirm').replace('{n}', targets.length), getText('deleteConfirmTitle'), 'delete.webp');
                 if (confirmed) {
+                    const undoBefore = undoCapture();
                     let history = getData('studyHistory');
                     history = history ? JSON.parse(history) : [];
                     const indicesToDelete = targets.sort((a, b) => b - a);
@@ -31124,6 +31334,7 @@
                     selectedItems.clear();
                     updateGroupFilter();
                     loadHistory();
+                    undoRecord(undoBefore, { label: 'undoDelHistory', n: targets.length });
                 }
             }
 
@@ -31952,6 +32163,7 @@
             }
 
             function deleteGroupsByName(names) {
+                const undoBefore = undoCapture();
                 let history = getData('studyHistory');
                 history = history ? JSON.parse(history) : [];
                 history.forEach(item => {
@@ -31965,6 +32177,7 @@
                 [selectedTimerGroups, selectedMoveGroups].forEach(set => { if (set) names.forEach(g => set.delete(g)); });
                 names.forEach(g => selectedManagedGroups.delete(g));
                 refreshAfterGroupChange(names, '');
+                undoRecord(undoBefore, { label: 'undoDelGroup', n: names.length });
             }
 
             function refreshAfterGroupChange(oldNames, newName) {
@@ -32211,11 +32424,391 @@
                 if (confirmed) {
                     const confirmed2 = await customConfirm(getText('clearHistoryConfirm2'), getText('clearAllConfirmTitle'), 'warning.webp');
                     if (confirmed2) {
+                        const undoBefore = undoCapture();
                         saveData('studyHistory', JSON.stringify([]));
                         selectedItems.clear();
                         updateGroupFilter();
                         loadHistory();
+                        undoRecord(undoBefore, { label: 'undoClearHistory' });
                     }
+                }
+            }
+
+            // ══ 元に戻す(削除やインポートから5分以内) ══
+            // 操作の直前と直後の localStorage を比べて、変わったキーだけ「前」と「後」を残す。
+            // 戻すときは、そのあとに増えた記録などを消さないように、前・後・今の3つを突き合わせる。
+            // 読み直しても戻せるように IndexedDB にも置く(インポートは読み直すため)。
+            const UNDO_TTL_MS = 5 * 60 * 1000;
+            const UNDO_MAX_ENTRIES = 10;
+            const UNDO_DB_NAME = 'tsumiki_undo_db';
+            // 動いている間に勝手に変わるもの(再生位置・タイマー)と、背景の画像は比べない
+            const UNDO_SKIP_KEYS = new Set([
+                'music_resume_pending', 'music_resume_index', 'music_resume_time', 'music_resume_saved_at', 'music_resume_is_yt',
+                'studyStartTime', 'studyPaused', 'studyPausedAccum', 'studyPauseHistory', 'studyPauseStart', 'studyRunningAnchor',
+                'todo_notified', 'settings_tab', 'qr_transfer_pending',
+                'bg_has_image', 'bg_thumb', 'bg_colors', 'bg_theme_color', 'bg_pos_x', 'bg_pos_y'
+            ]);
+            let undoEntries = [];
+            let undoTickTimer = null;
+            let undoBarTimer = null;
+            let undoBarEntryId = null;
+
+            function undoDbRun(mode, fn) {
+                return new Promise((resolve, reject) => {
+                    let req;
+                    try { req = indexedDB.open(UNDO_DB_NAME, 1); } catch (e) { reject(e); return; }
+                    req.onupgradeneeded = () => {
+                        const db = req.result;
+                        if (!db.objectStoreNames.contains('entries')) db.createObjectStore('entries', { keyPath: 'id' });
+                    };
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => {
+                        const db = req.result;
+                        try {
+                            const tx = db.transaction('entries', mode);
+                            const r = fn(tx.objectStore('entries'));
+                            tx.oncomplete = () => { db.close(); resolve(r ? r.result : undefined); };
+                            tx.onerror = tx.onabort = () => { db.close(); reject(tx.error); };
+                        } catch (e) { db.close(); reject(e); }
+                    };
+                });
+            }
+
+            function undoCapture() {
+                const map = {};
+                try {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (k && !UNDO_SKIP_KEYS.has(k)) map[k] = localStorage.getItem(k);
+                    }
+                } catch (e) { }
+                return map;
+            }
+
+            // opts: { label, n, name, reload, announce, blobIds }
+            async function undoRecord(before, opts = {}) {
+                if (!before) return null;
+                const after = undoCapture();
+                const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])]
+                    .filter(k => (before[k] ?? null) !== (after[k] ?? null));
+                const blobIds = Array.isArray(opts.blobIds) ? opts.blobIds.slice() : [];
+                if (keys.length === 0 && blobIds.length === 0) return null;
+                const entry = {
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                    at: Date.now(),
+                    label: opts.label || '',
+                    n: opts.n ?? null,
+                    name: opts.name ?? null,
+                    reload: !!opts.reload,
+                    announce: !!opts.announce,
+                    blobIds,
+                    keys,
+                    before: Object.fromEntries(keys.map(k => [k, before[k] ?? null])),
+                    after: Object.fromEntries(keys.map(k => [k, after[k] ?? null]))
+                };
+                undoEntries.push(entry);
+                // 古いものからあふれた分は、もう戻せないので片づける
+                while (undoEntries.length > UNDO_MAX_ENTRIES) undoFinalize(undoEntries.shift());
+                try { await undoDbRun('readwrite', st => st.put(entry)); } catch (e) { }
+                if (!entry.reload) showUndoBar(entry);
+                undoScheduleTick();
+                renderUndoList();
+                return entry;
+            }
+
+            function undoEntryText(e) {
+                return getText(e.label).replace('{n}', e.n ?? '').replace('{name}', e.name ?? '');
+            }
+
+            function undoAlive(e) {
+                return e && Date.now() - e.at < UNDO_TTL_MS;
+            }
+
+            // もう戻せなくなった操作の片づけ(消した曲のファイル本体は、ここで初めて消す)
+            function undoFinalize(e) {
+                if (!e) return;
+                undoDbRun('readwrite', st => st.delete(e.id)).catch(() => { });
+                if (e.blobIds && e.blobIds.length) {
+                    const used = undoReferencedTrackIds();
+                    e.blobIds.forEach(id => { if (!used.has(String(id))) deleteFileBlobFromDB(id).catch(() => { }); });
+                }
+            }
+
+            function undoReferencedTrackIds() {
+                const used = new Set();
+                const raw = safeJsonParse(getData('music_playlists_v2') || 'null', null);
+                if (raw && Array.isArray(raw.playlists)) {
+                    raw.playlists.forEach(p => (p && Array.isArray(p.tracks) ? p.tracks : []).forEach(t => { if (t && t.id != null) used.add(String(t.id)); }));
+                }
+                // 戻せる操作がまだ残っていて、その中で使われている曲も消さない
+                undoEntries.forEach(e => {
+                    Object.values(e.before || {}).forEach(v => {
+                        if (typeof v !== 'string' || v.indexOf('"playlists"') < 0) return;
+                        const m = safeJsonParse(v, null);
+                        if (m && Array.isArray(m.playlists)) m.playlists.forEach(p => (p && Array.isArray(p.tracks) ? p.tracks : []).forEach(t => { if (t && t.id != null) used.add(String(t.id)); }));
+                    });
+                });
+                return used;
+            }
+
+            function undoPurgeExpired() {
+                const dead = undoEntries.filter(e => !undoAlive(e));
+                if (!dead.length) return false;
+                undoEntries = undoEntries.filter(undoAlive);
+                dead.forEach(undoFinalize);
+                if (undoBarEntryId && !undoEntries.some(e => e.id === undoBarEntryId)) hideUndoBar();
+                return true;
+            }
+
+            function undoScheduleTick() {
+                if (undoTickTimer) return;
+                undoTickTimer = setInterval(() => {
+                    undoPurgeExpired();
+                    renderUndoList();
+                    if (undoEntries.length === 0) { clearInterval(undoTickTimer); undoTickTimer = null; }
+                }, 15000);
+            }
+
+            // ── 前・後・今の突き合わせ ──
+            function undoSame(x, y) {
+                return JSON.stringify(x) === JSON.stringify(y);
+            }
+
+            function undoIsObj(v) {
+                return v !== null && typeof v === 'object' && !Array.isArray(v);
+            }
+
+            // 配列の中身を見分ける目じるし: id があれば id、記録なら始まりの時刻、それ以外は中身そのもの
+            function undoItemKey(x) {
+                if (undoIsObj(x)) {
+                    if (x.id != null) return 'i' + JSON.stringify(x.id);
+                    if (typeof x.start === 'string') return 's' + x.start;
+                }
+                return 'j' + JSON.stringify(x);
+            }
+
+            function undoIndex(arr) {
+                const map = new Map(), keys = [], seen = {};
+                arr.forEach(x => {
+                    const k0 = undoItemKey(x);
+                    seen[k0] = (seen[k0] || 0) + 1;
+                    const k = k0 + '#' + seen[k0];
+                    map.set(k, x);
+                    keys.push(k);
+                });
+                return { map, keys };
+            }
+
+            function undoMergeArrays(b, a, c) {
+                const B = undoIndex(b), A = undoIndex(a), C = undoIndex(c);
+                const out = [], outKeys = [];
+                B.keys.forEach(k => {
+                    if (A.map.has(k)) {
+                        if (!C.map.has(k)) return; // そのあとで消したもの
+                        out.push(undoMerge(B.map.get(k), A.map.get(k), C.map.get(k)));
+                    } else {
+                        out.push(B.map.get(k)); // この操作で消えた(変わった)もの → 戻す
+                    }
+                    outKeys.push(k);
+                });
+                // そのあとで増えたものは、今の並びで前にあるものの後ろに入れる
+                C.keys.forEach((k, i) => {
+                    if (A.map.has(k) || outKeys.includes(k)) return;
+                    let pos = 0;
+                    for (let j = i - 1; j >= 0; j--) {
+                        const p = outKeys.indexOf(C.keys[j]);
+                        if (p >= 0) { pos = p + 1; break; }
+                    }
+                    out.splice(pos, 0, C.map.get(k));
+                    outKeys.splice(pos, 0, k);
+                });
+                return out;
+            }
+
+            function undoMerge(b, a, c) {
+                if (undoSame(a, c)) return b;   // そのあと変わっていない → そのまま戻す
+                if (undoSame(b, a)) return c;   // この操作では変わっていない → 今のまま
+                if (Array.isArray(b) && Array.isArray(a) && Array.isArray(c)) return undoMergeArrays(b, a, c);
+                if (undoIsObj(b) && undoIsObj(a) && undoIsObj(c)) {
+                    const out = {};
+                    [...new Set([...Object.keys(c), ...Object.keys(b)])].forEach(k => {
+                        const v = undoMerge(b[k], a[k], c[k]);
+                        if (v !== undefined) out[k] = v;
+                    });
+                    return out;
+                }
+                return c; // どちらも変わった細かい値は、あとの変更を残す
+            }
+
+            function undoParse(s) {
+                if (s === null) return { ok: true, v: null };
+                try { return { ok: true, v: JSON.parse(s) }; } catch (e) { return { ok: false }; }
+            }
+
+            async function applyUndo(id) {
+                undoPurgeExpired();
+                const e = undoEntries.find(x => x.id === id);
+                if (!e) {
+                    renderUndoList();
+                    showUndoMessage(getText('undoFailed'));
+                    return;
+                }
+                for (const k of e.keys) {
+                    const b = e.before[k], a = e.after[k];
+                    let c = null;
+                    try { c = localStorage.getItem(k); } catch (err) { }
+                    let v;
+                    if (c === a) {
+                        v = b;
+                    } else {
+                        const pb = undoParse(b), pa = undoParse(a), pc = undoParse(c);
+                        if (pb.ok && pa.ok && pc.ok) {
+                            let m = undoMerge(pb.v, pa.v, pc.v);
+                            if (k === 'studyHistory' && Array.isArray(m)) {
+                                // 記録は新しい順(先頭が前回の学習)にそろえる
+                                m = m.map((it, i) => [it, i]).sort((x, y) => {
+                                    const tx = new Date(x[0] && x[0].start).getTime() || 0, ty = new Date(y[0] && y[0].start).getTime() || 0;
+                                    return ty - tx || x[1] - y[1];
+                                }).map(p => p[0]);
+                            }
+                            v = (m === null || m === undefined) ? null : JSON.stringify(m);
+                        } else {
+                            v = c;
+                        }
+                    }
+                    if (v === null) { try { localStorage.removeItem(k); } catch (err) { } }
+                    else saveData(k, v);
+                }
+                undoEntries = undoEntries.filter(x => x.id !== id);
+                undoDbRun('readwrite', st => st.delete(id)).catch(() => { });
+                if (e.reload) {
+                    location.reload();
+                    return;
+                }
+                await refreshAfterUndo(e.keys);
+                renderUndoList();
+                showUndoMessage(getText('undoDone'));
+            }
+
+            async function refreshAfterUndo(keys) {
+                const has = (...ks) => ks.some(k => keys.includes(k));
+                const safe = (fn) => { try { fn(); } catch (err) { console.warn('[undo] refresh failed', err); } };
+                if (has('studyHistory', 'custom_groups', 'group_colors')) {
+                    safe(() => {
+                        selectedItems.clear();
+                        updateGroupFilter();
+                        if (typeof updateTimerGroupSelectUI === 'function') updateTimerGroupSelectUI();
+                        loadHistory();
+                        loadStats();
+                        renderGroupManagement();
+                    });
+                }
+                if (has('todos')) {
+                    safe(() => {
+                        loadTodos();
+                        if (currentTodoView === 'calendar') {
+                            renderCalendar(calendarYear, calendarMonth);
+                            if (currentCalendarDate) renderCalendarDayTodos(currentCalendarDate);
+                        }
+                    });
+                }
+                if (has('flashcards')) {
+                    safe(() => {
+                        loadFlashcardData();
+                        if (fcView === 'deck' && fcFindGroup(fcCurrentGroupId)) fcRenderDeck();
+                        else fcGoHome();
+                    });
+                }
+                if (has('books')) safe(() => renderBooksPage());
+                if (has('music_playlists_v2')) {
+                    try {
+                        const playingId = musicFiles[currentMusicIndex] ? musicFiles[currentMusicIndex].id : null;
+                        await restorePlaylistsFromStorage();
+                        currentMusicIndex = playingId != null ? musicFiles.findIndex(m => String(m.id) === String(playingId)) : -1;
+                        loadPlaylist();
+                        renderPlaylistManager();
+                        updateMusicPlayerModeUI();
+                        syncMiniPlayerUI();
+                        updateMiniPlayerVisibility();
+                    } catch (err) { console.warn('[undo] music refresh failed', err); }
+                }
+            }
+
+            // ── 下に出るバー ──
+            function showUndoBar(entry) {
+                const bar = document.getElementById('undoBar');
+                if (!bar) return;
+                undoBarEntryId = entry.id;
+                document.getElementById('undoBarText').textContent = undoEntryText(entry);
+                const btn = document.getElementById('undoBarBtn');
+                btn.textContent = getText('undoButton');
+                btn.hidden = false;
+                bar.classList.add('show');
+                if (undoBarTimer) clearTimeout(undoBarTimer);
+                undoBarTimer = setTimeout(hideUndoBar, 8000);
+            }
+
+            function showUndoMessage(text) {
+                const bar = document.getElementById('undoBar');
+                if (!bar) return;
+                undoBarEntryId = null;
+                document.getElementById('undoBarText').textContent = text;
+                document.getElementById('undoBarBtn').hidden = true;
+                bar.classList.add('show');
+                if (undoBarTimer) clearTimeout(undoBarTimer);
+                undoBarTimer = setTimeout(hideUndoBar, 3000);
+            }
+
+            function hideUndoBar() {
+                const bar = document.getElementById('undoBar');
+                if (bar) bar.classList.remove('show');
+                if (undoBarTimer) clearTimeout(undoBarTimer);
+                undoBarTimer = null;
+                undoBarEntryId = null;
+            }
+
+            document.getElementById('undoBarBtn')?.addEventListener('click', () => {
+                const id = undoBarEntryId;
+                hideUndoBar();
+                if (id) applyUndo(id);
+            });
+            document.getElementById('undoBarClose')?.addEventListener('click', hideUndoBar);
+
+            // ── 設定(データ管理)の一覧 ──
+            function renderUndoList() {
+                const wrap = document.getElementById('undoListWrap');
+                const list = document.getElementById('undoList');
+                if (!wrap || !list) return;
+                const alive = undoEntries.filter(undoAlive).slice().reverse();
+                wrap.hidden = alive.length === 0;
+                list.innerHTML = alive.map(e => {
+                    const left = Math.max(1, Math.ceil((UNDO_TTL_MS - (Date.now() - e.at)) / 60000));
+                    return `<div class="undo-row"><span class="undo-row-text"><span class="undo-row-label">${escapeHtml(undoEntryText(e))}</span>`
+                        + `<span class="undo-row-time">${escapeHtml(getText('undoLeft').replace('{n}', left))}</span></span>`
+                        + `<button type="button" class="storage-persist-btn" data-undo-id="${escapeHtml(e.id)}">${escapeHtml(getText('undoButton'))}</button></div>`;
+                }).join('');
+            }
+
+            document.getElementById('undoList')?.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('button[data-undo-id]');
+                if (btn) applyUndo(btn.getAttribute('data-undo-id'));
+            });
+
+            // 起動したとき: 期限の切れたものを片づけ、インポートの直後ならバーを出す
+            async function initUndo() {
+                let stored = [];
+                try { stored = await undoDbRun('readonly', st => st.getAll()) || []; } catch (e) { stored = []; }
+                const known = new Set(undoEntries.map(e => e.id));
+                stored.forEach(e => { if (e && e.id && !known.has(e.id)) undoEntries.push(e); });
+                undoEntries.sort((x, y) => x.at - y.at);
+                undoPurgeExpired();
+                renderUndoList();
+                if (undoEntries.length) undoScheduleTick();
+                const announce = undoEntries.filter(e => e.announce && undoAlive(e)).pop();
+                if (announce) {
+                    announce.announce = false;
+                    undoDbRun('readwrite', st => st.put(announce)).catch(() => { });
+                    showUndoBar(announce);
                 }
             }
 
@@ -32589,7 +33182,9 @@
                     list.innerHTML = items.map(it => `
                             <label class="data-select-row">
                                 <input type="checkbox" value="${it.key}" checked>
-                                <span>${escapeHtml(getText(it.labelKey))}${typeof it.count === 'number' ? ` (${it.count})` : ''}</span>
+                                <span>${escapeHtml(getText(it.labelKey))}${typeof it.current === 'number' && typeof it.count === 'number'
+                            ? ` (${escapeHtml(getText('importCountChange').replace('{c}', it.current).replace('{n}', it.count))})`
+                            : typeof it.count === 'number' ? ` (${it.count})` : ''}</span>
                             </label>`).join('');
                     overlay.classList.add('show');
                 });
@@ -32753,10 +33348,12 @@
                 const { studyHistory, todos, settings, legacy, music } = normalized;
 
                 // データに含まれる項目だけを選択肢として表示
+                // 履歴とToDoは「今いくつ → 取り込むといくつ」を見せる(置きかわることが分かるように)
+                const countNow = (key) => { const v = safeJsonParse(getData(key) || '[]', []); return Array.isArray(v) ? v.length : 0; };
                 const items = [];
                 if (normalized.hasSettings) items.push({ key: 'settings', labelKey: 'dataCatSettings' });
-                if (normalized.hasHistory) items.push({ key: 'history', labelKey: 'dataCatHistory', count: studyHistory.length });
-                if (normalized.hasTodos) items.push({ key: 'todos', labelKey: 'dataCatTodos', count: todos.length });
+                if (normalized.hasHistory) items.push({ key: 'history', labelKey: 'dataCatHistory', count: studyHistory.length, current: countNow('studyHistory') });
+                if (normalized.hasTodos) items.push({ key: 'todos', labelKey: 'dataCatTodos', count: todos.length, current: countNow('todos') });
                 if (music.length > 0) items.push({ key: 'music', labelKey: 'dataCatMusic', count: music.reduce((n, p) => n + p.tracks.length, 0) });
                 if (items.length === 0) throw new Error(getText('invalidFileFormat'));
 
@@ -32767,10 +33364,13 @@
                 });
                 if (!selected || selected.size === 0) return;
 
+                const undoBefore = undoCapture();
                 if (selected.has('history')) saveData('studyHistory', JSON.stringify(studyHistory));
                 if (selected.has('todos')) saveData('todos', JSON.stringify(todos));
                 if (selected.has('settings')) applyImportedSettings(settings, legacy);
                 if (selected.has('music')) mergeImportedMusic(music);
+                // 読み直したあとも5分間は「インポート前に戻す」ができるように、保存を待ってから読み直す
+                await undoRecord(undoBefore, { label: 'undoImport', reload: true, announce: true });
 
                 // 設定UIと実際の状態のズレ/言語混在を防ぐため、リロードで全体を再初期化する
                 await customConfirm(getText('importDoneReload'), getText('importDataTitle'), 'import.webp');
@@ -34757,6 +35357,7 @@
                 initCustomBg();
                 renderThemeCustomUI();
                 setTimeout(qrxHandleArrival, 400);
+                setTimeout(initUndo, 450);
                 // ダーク/ライト切り替えボタンの常時表示(デフォルトON)
                 syncThemeToggleBtnSetting();
                 applyThemeToggleBtnVisibility();
@@ -37568,9 +38169,11 @@
                 if (!book) { closeBookEdit(); return; }
                 const confirmed = await customConfirm(getText('bookDeleteConfirm').replace('{name}', book.name), getText('deleteConfirmTitle'), 'delete.webp');
                 if (!confirmed) return;
+                const undoBefore = undoCapture();
                 saveBooks(loadBooks().filter(b => b.id !== st.id));
                 closeBookEdit();
                 renderBooksPage();
+                undoRecord(undoBefore, { label: 'undoDelBook', name: book.name });
             }
 
             (function () {
@@ -37715,8 +38318,10 @@
                     getText('fcDeleteDeckConfirm').replace('{name}', group.name).replace('{n}', String(group.cards.length)),
                     getText('confirmDelete'), 'delete.webp');
                 if (!ok) return;
+                var undoBefore = undoCapture();
                 fcData.groups = fcData.groups.filter(function (g) { return g.id !== groupId; });
                 saveFlashcardData();
+                undoRecord(undoBefore, { label: 'undoDelDeck', name: group.name });
                 if (fcView === 'deck') fcGoHome();
                 else renderFlashcardGroupList();
             }
@@ -38316,9 +38921,11 @@
                 if (!ok) return;
                 var group = fcFindGroup(groupId);
                 if (!group) return;
+                var undoBefore = undoCapture();
                 group.cards = group.cards.filter(function (c) { return c.id !== cardId; });
                 if (fcEditingCardId === cardId) { fcFormOpen = false; fcEditingCardId = null; }
                 saveFlashcardData();
+                undoRecord(undoBefore, { label: 'undoDelCard' });
                 fcRenderDeck();
             }
 
