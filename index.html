@@ -9544,6 +9544,137 @@
         .tsumiki-footer {
             margin-top: 10px;
             padding-bottom: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tsumiki-footer button[hidden] {
+            display: none;
+        }
+
+        /* 積み木の共有(確認ダイアログと同じ部品で作る) */
+        #tsumikiShareOverlay {
+            z-index: 10020;
+        }
+
+        .tsumiki-share-dialog {
+            padding: 22px 24px 24px;
+            max-height: calc(100dvh - 32px);
+            overflow-y: auto;
+        }
+
+        .tsumiki-share-dialog .tsumiki-header {
+            margin-bottom: 14px;
+            min-height: 42px;
+        }
+
+        .tsumiki-share-preview {
+            display: flex;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 32px;
+        }
+
+        .light .tsumiki-share-preview {
+            background-color: var(--panel-light);
+        }
+
+        .dark .tsumiki-share-preview {
+            background-color: var(--panel-dark-2);
+        }
+
+        .tsumiki-share-preview img {
+            display: block;
+            max-width: 100%;
+            max-height: min(40vh, 420px);
+            border-radius: 24px;
+        }
+
+        .tsumiki-share-tag {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0;
+            font-size: 0.85rem;
+        }
+
+        .tsumiki-share-tag > span {
+            opacity: 0.65;
+        }
+
+        .tsumiki-share-chip {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 999px;
+            font: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s;
+        }
+
+        .light .tsumiki-share-chip {
+            background-color: var(--panel-light);
+            color: var(--primary-color);
+        }
+
+        .dark .tsumiki-share-chip {
+            background-color: var(--panel-dark-2);
+            color: var(--primary-color-dark);
+        }
+
+        .light .tsumiki-share-chip:hover {
+            background-color: var(--panel-light-hover);
+        }
+
+        /* 保存を1段目いっぱいに、X・Misskey・その他を2段目に並べる(スマホでも縦積みにしない) */
+        .custom-confirm-buttons.tsumiki-share-actions {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tsumiki-share-actions button {
+            flex: 1 1 0;
+            min-width: 0;
+            width: auto;
+            padding: 12px 8px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tsumiki-share-actions .tsumiki-share-save {
+            flex-basis: 100%;
+        }
+
+        /* X・Misskey・その他は2番手のボタン(パネルの色) */
+        .light .tsumiki-share-actions .custom-confirm-cancel {
+            background-color: var(--panel-light);
+        }
+
+        .dark .tsumiki-share-actions .custom-confirm-cancel {
+            background-color: var(--panel-dark-2);
+        }
+
+        .light .tsumiki-share-actions .custom-confirm-cancel:hover {
+            background-color: var(--panel-light-hover);
+        }
+
+        .tsumiki-share-actions button[hidden] {
+            display: none;
+        }
+
+        .tsumiki-share-note {
+            margin-top: 14px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            text-align: center;
+            opacity: 0.65;
         }
 
         .tsumiki-footer button {
@@ -20665,6 +20796,17 @@
                     tsumikiToday: '今日',
                     tsumikiLast7: '7日間',
                     tsumikiAdded: '+{n}個',
+                    tsumikiShare: '共有',
+                    tsumikiSaveImage: '画像を保存',
+                    tsumikiShareX: 'Xに投稿',
+                    tsumikiShareMore: 'その他',
+                    tsumikiShareHashtag: 'ハッシュタグ',
+                    tsumikiShareCopied: 'コピーしました',
+                    tsumikiShareNote: '画像を保存して、投稿に添えてください。ハッシュタグはタップでコピーできます。',
+                    tsumikiSharePostText: '今日は{t}勉強しました',
+                    tsumikiShareToday: '今日の勉強時間',
+                    tsumikiShareTotal: 'ぜんぶで{t}',
+                    tsumikiShareOneBlock: '1個',
                     historySelectedCount: '{n}件を選択中',
                     fcCreate: '作成',
                     fcView: '閲覧',
@@ -21628,6 +21770,17 @@
                     tsumikiToday: 'Today',
                     tsumikiLast7: 'Last 7 days',
                     tsumikiAdded: '+{n}',
+                    tsumikiShare: 'Share',
+                    tsumikiSaveImage: 'Save image',
+                    tsumikiShareX: 'Post on X',
+                    tsumikiShareMore: 'More',
+                    tsumikiShareHashtag: 'Hashtag',
+                    tsumikiShareCopied: 'Copied',
+                    tsumikiShareNote: 'Save the image and add it to your post. Tap the hashtag to copy it.',
+                    tsumikiSharePostText: 'Studied {t} today',
+                    tsumikiShareToday: 'Studied today',
+                    tsumikiShareTotal: '{t} in total',
+                    tsumikiShareOneBlock: '1 block',
                     historySelectedCount: '{n} selected',
                     fcCreate: 'Create',
                     fcView: 'View',
@@ -37298,6 +37451,7 @@
 
             function closeTsumikiPage() {
                 document.getElementById('tsumikiOverlay').classList.remove('show');
+                closeTsumikiShare();
                 unlockBodyScroll();
                 stopTsumikiStack(document.getElementById('tsumikiCanvas'));
             }
@@ -37689,6 +37843,10 @@
                 const count = Math.floor(totalTime / TSUMIKI_UNIT_MS);
                 const remainMin = Math.max(1, Math.ceil((TSUMIKI_UNIT_MS - totalTime % TSUMIKI_UNIT_MS) / 60000));
 
+                // 共有ボタンは積み木が1個でもあれば出す
+                const shareBtn = document.getElementById('tsumikiShareBtn');
+                if (shareBtn) shareBtn.hidden = count === 0;
+
                 if (count === 0) {
                     info.innerHTML = `<div class="tsumiki-note" style="margin-top:14px;">${getText('tsumikiEmpty')}</div>`;
                 } else {
@@ -37857,8 +38015,233 @@
                 }
             }
 
+            // ── 積み木のシェア画像: 山・今日の勉強時間・日付を1枚の PNG にする ──
+            function canShareImageFile() {
+                try {
+                    return !!(navigator.share && navigator.canShare
+                        && navigator.canShare({ files: [new File([''], 'tsumiki.png', { type: 'image/png' })] }));
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // 同期で描く(共有はタップの直後に呼ばないと、Safari では許可されないため)
+            function buildTsumikiShareCanvas() {
+                let history;
+                try { history = JSON.parse(getData('studyHistory') || '[]'); } catch (e) { history = []; }
+                if (!Array.isArray(history)) history = [];
+                const totalTime = history.reduce((sum, item) => sum + (item.duration || 0), 0);
+                const count = Math.floor(totalTime / TSUMIKI_UNIT_MS);
+                const renderCount = Math.min(count, TSUMIKI_MAX_RENDER);
+                const now = new Date();
+                const todayMs = getStudyMsByDate()[toLocalDateKey(now)] || 0;
+
+                const W = 1080, H = 1350, P = 72;
+                const isDark = document.body.classList.contains('dark');
+                const css = getComputedStyle(document.body);
+                const cssVar = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+                const bg = cssVar(isDark ? '--bg-dark' : '--bg-light', isDark ? '#17181d' : '#f8f9fb');
+                const panel = cssVar(isDark ? '--panel-dark' : '--panel-light', isDark ? '#474654' : '#f0f2f7');
+                const primary = cssVar(isDark ? '--primary-color-dark' : '--primary-color', '#8aa2c8');
+                const textColor = isDark ? '#e8e8e8' : '#323232';
+                const family = css.fontFamily || 'system-ui, sans-serif';
+
+                const canvas = document.createElement('canvas');
+                canvas.width = W;
+                canvas.height = H;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'alphabetic';
+
+                // 長い文字(英語・大きなフォント)は幅に収まるまで小さくする
+                const text = (str, y, size, opts = {}) => {
+                    let px = size;
+                    const maxW = opts.maxW || W - P * 2;
+                    do {
+                        ctx.font = `${opts.weight || 400} ${px}px ${family}`;
+                        if (ctx.measureText(str).width <= maxW) break;
+                        px -= 2;
+                    } while (px > 12);
+                    ctx.globalAlpha = opts.alpha == null ? 1 : opts.alpha;
+                    ctx.fillStyle = opts.color || textColor;
+                    ctx.fillText(str, opts.x == null ? W / 2 : opts.x, y);
+                    ctx.globalAlpha = 1;
+                };
+
+                // 日付と今日の勉強時間
+                const dateStr = now.toLocaleDateString(currentLanguage === 'en' ? 'en-US' : 'ja-JP',
+                    { year: 'numeric', month: currentLanguage === 'en' ? 'short' : 'long', day: 'numeric', weekday: 'short' });
+                text(dateStr, 132, 40, { alpha: 0.65 });
+                text(getText('tsumikiShareToday'), 216, 36, { alpha: 0.8 });
+                text(formatChartHours(todayMs / 3600000), 326, 104, { weight: 500, color: primary });
+
+                // 積み木の山(画面と同じ描き方を、整数倍に拡大して貼る)
+                const stack = document.createElement('canvas');
+                const blockGroups = isGroupColorEnabled() ? computeBlockGroups(history, renderCount) : null;
+                drawTsumikiStack(stack, renderCount, {
+                    animate: false,
+                    colors: blockGroups ? blockColorsFor(blockGroups) : null,
+                    maxW: stack.width,
+                    maxH: stack.height
+                });
+                const areaTop = 380, areaBottom = 1100;
+                const areaW = W - P * 2, areaH = areaBottom - areaTop;
+                const k = Math.max(1, Math.min(16, Math.floor(Math.min(areaW / stack.width, areaH / stack.height))));
+                const sw = stack.width * k, sh = stack.height * k;
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(stack, Math.round((W - sw) / 2), Math.round(areaTop + (areaH - sh) / 2), sw, sh);
+
+                // 下のパネル: 積み木の数とぜんぶの時間
+                const panelY = 1130, panelH = 120, panelR = 60;
+                ctx.fillStyle = panel;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(P, panelY, W - P * 2, panelH, panelR);
+                else ctx.rect(P, panelY, W - P * 2, panelH);
+                ctx.fill();
+                const countStr = count === 1 ? getText('tsumikiShareOneBlock') : `${count}${getText('tsumikiCountSuffix')}`;
+                const totalStr = getText('tsumikiShareTotal').replace('{t}', formatChartHours(totalTime / 3600000));
+                text(`${countStr}  ·  ${totalStr}`, panelY + 74, 40, { weight: 500, maxW: W - P * 2 - 80 });
+
+                text('tsumiki.app', H - 48, 28, { alpha: 0.45 });
+                return canvas;
+            }
+
+            function dataUrlToBlob(dataUrl) {
+                const [head, body] = dataUrl.split(',');
+                const mime = (head.match(/:(.*?);/) || [])[1] || 'image/png';
+                const bin = atob(body);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                return new Blob([bytes], { type: mime });
+            }
+
+            function downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+
+            // 共有ダイアログ: 画像はダイアログを開いたときに1回だけ作り、保存・共有で使い回す
+            const TSUMIKI_SHARE_HASHTAG = '#積む積み木';
+            const TSUMIKI_SHARE_URL = 'https://tsumiki.app/';
+            let tsumikiShare = null; // { blob, filename, previewUrl, todayMs }
+
+            function openTsumikiShare() {
+                closeTsumikiShare();
+                const blob = dataUrlToBlob(buildTsumikiShareCanvas().toDataURL('image/png'));
+                tsumikiShare = {
+                    blob,
+                    filename: `tsumiki_${toLocalDateKey(new Date())}.png`,
+                    previewUrl: URL.createObjectURL(blob),
+                    todayMs: getStudyMsByDate()[toLocalDateKey(new Date())] || 0
+                };
+                const img = document.getElementById('tsumikiSharePreview');
+                img.src = tsumikiShare.previewUrl;
+                img.alt = getText('tsumikiShare');
+                document.getElementById('tsumikiShareTagBtn').textContent = TSUMIKI_SHARE_HASHTAG;
+                // 端末の共有シートが使えるときだけ「その他」を出す
+                document.getElementById('tsumikiShareMoreBtn').hidden = !canShareImageFile();
+                document.getElementById('tsumikiShareOverlay').classList.add('show');
+            }
+
+            function closeTsumikiShare() {
+                const overlay = document.getElementById('tsumikiShareOverlay');
+                if (overlay) overlay.classList.remove('show');
+                if (tsumikiShare) {
+                    URL.revokeObjectURL(tsumikiShare.previewUrl);
+                    tsumikiShare = null;
+                }
+                clearTimeout(copyTsumikiHashtag._timer);
+            }
+
+            // 投稿の文: 「今日は◯時間◯分勉強しました #積む積み木」
+            function tsumikiSharePostText() {
+                const t = formatChartHours((tsumikiShare ? tsumikiShare.todayMs : 0) / 3600000);
+                return `${getText('tsumikiSharePostText').replace('{t}', t)} ${TSUMIKI_SHARE_HASHTAG}`;
+            }
+
+            function saveTsumikiShareImage() {
+                if (tsumikiShare) downloadBlob(tsumikiShare.blob, tsumikiShare.filename);
+            }
+
+            function copyTextToClipboard(str) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    return navigator.clipboard.writeText(str).then(() => true, () => copyTextFallback(str));
+                }
+                return Promise.resolve(copyTextFallback(str));
+            }
+
+            function copyTextFallback(str) {
+                const ta = document.createElement('textarea');
+                ta.value = str;
+                ta.setAttribute('readonly', '');
+                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+                document.body.appendChild(ta);
+                ta.select();
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+                document.body.removeChild(ta);
+                return ok;
+            }
+
+            function copyTsumikiHashtag() {
+                const btn = document.getElementById('tsumikiShareTagBtn');
+                copyTextToClipboard(TSUMIKI_SHARE_HASHTAG).then(ok => {
+                    if (!ok || !btn) return;
+                    btn.textContent = getText('tsumikiShareCopied');
+                    clearTimeout(copyTsumikiHashtag._timer);
+                    copyTsumikiHashtag._timer = setTimeout(() => { btn.textContent = TSUMIKI_SHARE_HASHTAG; }, 1500);
+                });
+            }
+
+            // X: 文とハッシュタグとURLを入れた投稿画面を開く(画像は保存したものを添える)
+            function shareTsumikiToX() {
+                const url = 'https://x.com/intent/post?text=' + encodeURIComponent(tsumikiSharePostText())
+                    + '&url=' + encodeURIComponent(TSUMIKI_SHARE_URL);
+                window.open(url, '_blank', 'noopener');
+            }
+
+            // Misskey: Misskey Hub の共有ページで、自分のサーバーを選んでノートする(画像は保存したものを添える)
+            function shareTsumikiToMisskey() {
+                const text = `${tsumikiSharePostText()} ${TSUMIKI_SHARE_URL}`;
+                window.open('https://misskey-hub.net/share/?text=' + encodeURIComponent(text) + '&visibility=public&localOnly=0',
+                    '_blank', 'noopener');
+            }
+
+            // その他: 端末の共有シート(画像と文をいっしょに渡す)。うまくいかなければ画像を保存する
+            async function shareTsumikiNative() {
+                const ok = await shareTsumikiFile(true);
+                if (ok === null) saveTsumikiShareImage();
+            }
+
+            // true=共有した / false=閉じただけ / null=共有できなかった
+            async function shareTsumikiFile(withText) {
+                if (!tsumikiShare || !canShareImageFile()) return null;
+                const file = new File([tsumikiShare.blob], tsumikiShare.filename, { type: 'image/png' });
+                const data = { files: [file] };
+                if (withText) data.text = `${tsumikiSharePostText()} ${TSUMIKI_SHARE_URL}`;
+                try {
+                    await navigator.share(data);
+                    return true;
+                } catch (e) {
+                    return e && e.name === 'AbortError' ? false : null;
+                }
+            }
+
+
+
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
+                    // 共有ダイアログが開いていれば、それだけ閉じる
+                    const shareOverlay = document.getElementById('tsumikiShareOverlay');
+                    if (shareOverlay && shareOverlay.classList.contains('show')) { closeTsumikiShare(); return; }
                     const overlay = document.getElementById('tsumikiOverlay');
                     if (overlay && overlay.classList.contains('show')) closeTsumikiPage();
                     closeWeekPage();
@@ -41363,6 +41746,43 @@
             <div class="tsumiki-footer">
                 <button type="button" class="secondary" onclick="renderTsumikiPage(true)"
                     data-i18n="tsumikiRebuild">もういちど積む</button>
+                <button type="button" class="secondary" id="tsumikiShareBtn" onclick="openTsumikiShare()"
+                    data-i18n="tsumikiShare" hidden>共有</button>
+            </div>
+        </div>
+
+        <!-- 積み木の共有: 画像のプレビューと、保存・X・Misskey・その他 -->
+        <div id="tsumikiShareOverlay" class="custom-confirm-overlay" role="dialog" aria-modal="true"
+            onclick="if (event.target === this) closeTsumikiShare()"
+            aria-labelledby="tsumikiShareTitle">
+            <div class="custom-confirm-dialog tsumiki-share-dialog">
+                <div class="tsumiki-header">
+                    <h2 id="tsumikiShareTitle" data-i18n="tsumikiShare">共有</h2>
+                    <button type="button" class="tsumiki-close" onclick="closeTsumikiShare()" aria-label="閉じる"
+                        data-i18n-aria="closeButton">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="tsumiki-share-preview"><img id="tsumikiSharePreview" alt=""></div>
+                <div class="tsumiki-share-tag">
+                    <span data-i18n="tsumikiShareHashtag">ハッシュタグ</span>
+                    <button type="button" id="tsumikiShareTagBtn" class="tsumiki-share-chip"
+                        onclick="copyTsumikiHashtag()"></button>
+                </div>
+                <div class="custom-confirm-buttons tsumiki-share-actions">
+                    <button type="button" class="custom-confirm-ok tsumiki-share-save" onclick="saveTsumikiShareImage()"
+                        data-i18n="tsumikiSaveImage">画像を保存</button>
+                    <button type="button" class="custom-confirm-cancel" onclick="shareTsumikiToX()"
+                        data-i18n="tsumikiShareX">Xに投稿</button>
+                    <button type="button" class="custom-confirm-cancel" onclick="shareTsumikiToMisskey()">Misskey</button>
+                    <button type="button" class="custom-confirm-cancel" id="tsumikiShareMoreBtn"
+                        onclick="shareTsumikiNative()" data-i18n="tsumikiShareMore" hidden>その他</button>
+                </div>
+                <div class="tsumiki-share-note" data-i18n="tsumikiShareNote">画像を保存して、投稿に添えてください。ハッシュタグはタップでコピーできます。</div>
             </div>
         </div>
 
