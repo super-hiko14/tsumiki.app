@@ -4718,50 +4718,6 @@
             margin-top: 12px;
         }
 
-        /* 期間限定フィードバック: テーマ色の控えめなピル */
-        .feedback-wrap {
-            text-align: center;
-            margin-top: 28px;
-        }
-
-        .feedback-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 12px 7px 8px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            color: inherit;
-            text-decoration: none;
-            background: color-mix(in srgb, var(--primary-color) 16%, transparent);
-            border: 1px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
-            transition: background-color 160ms ease, transform 120ms ease;
-        }
-
-        .feedback-link:hover,
-        .feedback-link:focus-visible {
-            background: color-mix(in srgb, var(--primary-color) 26%, transparent);
-            transform: translateY(-1px);
-        }
-
-        .feedback-link svg {
-            opacity: 0.6;
-        }
-
-        .feedback-badge {
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #fff;
-            background: var(--primary-color-dark);
-        }
-
-        .dark .feedback-badge {
-            background: var(--primary-color);
-            color: #1f2329;
-        }
-
         .about-button {
             display: inline-flex;
             gap: 8px;
@@ -6289,10 +6245,14 @@
         /* グラフは枠の幅に収める(横スクロールしない)。値の吹き出しを上に重ねる */
         .chart-scroll-wrap {
             position: relative;
+            min-width: 0;
+            overflow: hidden;
         }
 
+        /* 前に広い画面で描いた大きさが残っていても、枠より広げない */
         .chart-scroll-wrap canvas {
             display: block;
+            max-width: 100%;
             touch-action: pan-y;
         }
 
@@ -9451,6 +9411,26 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             max-width: 100%;
+            /* 横にずらすと山が回る。縦はページのスクロール */
+            touch-action: pan-y;
+            cursor: grab;
+            border-radius: 24px;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #tsumikiCanvas.is-turning {
+            cursor: grabbing;
+        }
+
+        .light #tsumikiCanvas:focus-visible {
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .dark #tsumikiCanvas:focus-visible {
+            box-shadow: 0 0 0 2px var(--primary-color-dark);
         }
 
         .tsumiki-details {
@@ -15244,6 +15224,121 @@
             background: color-mix(in srgb, var(--primary-color-dark) 24%, transparent);
         }
 
+        /* 一時停止: 「10:20 – 10:35 ×」のピルを並べ、押したものを下で直す */
+        .manual-pause-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .manual-pause-chip {
+            display: inline-flex;
+            align-items: center;
+            height: 36px;
+            border: 2px solid transparent;
+            border-radius: 999px;
+            background: var(--panel-light);
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .dark .manual-pause-chip {
+            background: var(--panel-dark-2);
+        }
+
+        .manual-pause-chip[aria-current="true"] {
+            border-color: var(--primary-color);
+            background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+        }
+
+        .dark .manual-pause-chip[aria-current="true"] {
+            border-color: var(--primary-color-dark);
+            background: color-mix(in srgb, var(--primary-color-dark) 24%, transparent);
+        }
+
+        .manual-pause-pick,
+        .manual-pause-del {
+            height: 100%;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .manual-pause-pick {
+            padding: 0 4px 0 14px;
+        }
+
+        .manual-pause-del {
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            opacity: 0.55;
+            transition: opacity 0.15s ease;
+        }
+
+        .manual-pause-del:hover {
+            opacity: 1;
+        }
+
+        .manual-pause-del svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .manual-pause-add {
+            height: 36px;
+            padding: 0 14px;
+            border: none;
+            border-radius: 999px;
+            background: var(--panel-light);
+            color: var(--primary-color);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.15s ease;
+        }
+
+        .dark .manual-pause-add {
+            background: var(--panel-dark-2);
+            color: var(--primary-color-dark);
+        }
+
+        .light .manual-pause-add:hover {
+            background: var(--panel-light-hover);
+        }
+
+        /* 選んだピルと同じ色味でくくって、どの一時停止を直しているかわかるように */
+        .manual-pause-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 24px;
+            background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        }
+
+        .dark .manual-pause-editor {
+            background: color-mix(in srgb, var(--primary-color-dark) 14%, transparent);
+        }
+
+        .manual-pause-editor .manual-record-label {
+            min-width: calc(6.4em - 12px);
+        }
+
+        .manual-pause-editor[hidden] {
+            display: none;
+        }
+
         .manual-record-preview {
             min-height: 2.9em;
             margin-bottom: 18px;
@@ -17836,6 +17931,29 @@
                     </div>
                 </div>
                 <div class="manual-record-row top">
+                    <span class="manual-record-label" data-i18n="manualPauses">一時停止</span>
+                    <div class="manual-record-field">
+                        <div class="manual-pause-list" id="manualRecordPauses"></div>
+                    </div>
+                </div>
+                <!-- 選んだ一時停止だけ、時刻と長さをここで直す -->
+                <div class="manual-pause-editor" id="manualPauseEditor" hidden>
+                    <div class="manual-record-row">
+                        <span class="manual-record-label" data-i18n="manualPauseStart">止めた時刻</span>
+                        <div class="manual-record-field">
+                            <div class="time-drum" id="manualPauseStart" data-mode="time" aria-label="止めた時刻"
+                                data-i18n-aria="manualPauseStart"></div>
+                        </div>
+                    </div>
+                    <div class="manual-record-row">
+                        <span class="manual-record-label" data-i18n="manualPauseLength">止めた長さ</span>
+                        <div class="manual-record-field">
+                            <div class="time-drum" id="manualPauseLength" data-mode="duration" aria-label="止めた長さ"
+                                data-i18n-aria="manualPauseLength"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="manual-record-row top">
                     <span class="manual-record-label" data-i18n="group">グループ</span>
                     <div class="manual-record-field">
                         <div class="manual-record-groups" id="manualRecordGroups"></div>
@@ -19726,14 +19844,6 @@
             </div>
             </div>
 
-            <div class="feedback-wrap">
-                <a class="feedback-link" href="https://docs.google.com/forms/d/e/1FAIpQLScCtOOw15b1JMKg1y6kRyYKBTwQ8ghwygmvtBiUlQAqCgOlJw/viewform?usp=header" target="_blank" rel="noopener">
-                    <span class="feedback-badge" data-i18n="feedbackBadge">期間限定</span>
-                    <span data-i18n="feedbackLink">フィードバックを募集中</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-                </a>
-            </div>
-
             <div class="footerrr">
 
                 <div class="copyright" data-i18n="copyright">© ツミキapp / Super Hiko14 / 高級ジェネ™ All rights reserved.</div>
@@ -19909,8 +20019,6 @@
                     fontMisaki: '美咲ゴシック',
                     fontKodenmachou: '小伝馬町',
                     licenseButton: 'ライセンス',
-                    feedbackBadge: '期間限定',
-                    feedbackLink: 'フィードバックを募集中',
                     licenseTitle: 'ライセンス',
 
                     // 追加: 削除確認メッセージ等
@@ -20333,7 +20441,15 @@
                     manualErrTime: '始めた時刻を入れてください',
                     manualErrZero: '勉強した時間を1分以上にしてください',
                     manualErrFuture: '終わりがいまより先になっています',
-                    manualPausesDrop: '時間を変えると、この記録の一時停止の記録はなくなります',
+                    manualPauses: '一時停止',
+                    manualPauseAdd: '一時停止を追加',
+                    manualPauseStart: '止めた時刻',
+                    manualPauseLength: '止めた長さ',
+                    manualPauseDelete: 'この一時停止を消す',
+                    manualPreviewPause: '一時停止 {t}',
+                    manualErrPauseZero: '一時停止の長さを1分以上にしてください',
+                    manualErrPauseRange: '一時停止が記録の時間の外にあります',
+                    manualErrPauseOverlap: '一時停止どうしが重なっています',
                     musicClassicSetting: '音楽ページを前の表示にする',
                     musicClassicNote: '追加ボタンをいちばん上に置き、曲を1つずつ枠で囲む、前の並べ方に戻します。',
                     playlistAddShort: '追加',
@@ -20797,6 +20913,8 @@
                     tsumikiLast7: '7日間',
                     tsumikiAdded: '+{n}個',
                     tsumikiShare: '共有',
+                    tsumikiRotateHint: '左右にずらすと回せます',
+                    tsumikiRotateAria: '積み木の山。左右にずらすか、← → キーで回せます',
                     tsumikiSaveImage: '画像を保存',
                     tsumikiShareX: 'Xに投稿',
                     tsumikiShareMore: 'その他',
@@ -20968,8 +21086,6 @@
                     fontMisaki: 'Misaki Gothic',
                     fontKodenmachou: 'Kodenmachou',
                     licenseButton: 'License',
-                    feedbackBadge: 'Limited',
-                    feedbackLink: 'Share your feedback',
                     licenseTitle: 'Font Licenses',
 
                     // Meta
@@ -21354,7 +21470,15 @@
                     manualErrTime: 'Enter the time you started',
                     manualErrZero: 'Time studied must be at least 1 minute',
                     manualErrFuture: 'The end time is in the future',
-                    manualPausesDrop: 'Changing the time removes the pause log of this record',
+                    manualPauses: 'Pauses',
+                    manualPauseAdd: 'Add pause',
+                    manualPauseStart: 'Paused at',
+                    manualPauseLength: 'Pause length',
+                    manualPauseDelete: 'Remove this pause',
+                    manualPreviewPause: 'Paused {t}',
+                    manualErrPauseZero: 'A pause must be at least 1 minute',
+                    manualErrPauseRange: 'A pause is outside the record',
+                    manualErrPauseOverlap: 'Pauses overlap',
                     musicClassicSetting: 'Use the previous music page layout',
                     musicClassicNote: 'Puts the add button back at the top and shows each track in its own box, as before.',
                     playlistAddShort: 'Add',
@@ -21771,6 +21895,8 @@
                     tsumikiLast7: 'Last 7 days',
                     tsumikiAdded: '+{n}',
                     tsumikiShare: 'Share',
+                    tsumikiRotateHint: 'Drag sideways to turn it',
+                    tsumikiRotateAria: 'Block stack. Drag sideways or use the arrow keys to turn it',
                     tsumikiSaveImage: 'Save image',
                     tsumikiShareX: 'Post on X',
                     tsumikiShareMore: 'More',
@@ -31124,13 +31250,31 @@
                     durationMs = 3600000;
                     groups = [];
                 }
-                manualRecordState = { index: editing ? index : -1, orig, date: toLocalDateKey(start), groups: new Set(groups) };
+                // 一時停止は「始めた分(秒は切り捨て)から何ms後に、何ms止めたか」で持つ
+                // (始めた時刻を動かすと、分ちょうどの幅でいっしょに動く)
+                let pauses = [], slack = 0;
+                if (orig) {
+                    const origEnd = new Date(orig.end);
+                    if (!isNaN(origEnd.getTime()) && origEnd > start) {
+                        const base = start.getTime() - start.getTime() % 60000;
+                        pauses = normalizeHistoryPauseRanges(orig, start, origEnd)
+                            .map(r => ({ off: r.start - base, len: r.end - r.start }));
+                        // フォーカスモードの休憩など、一時停止の記録にない止まっていた時間
+                        const sum = pauses.reduce((t, p) => t + p.len, 0);
+                        slack = Math.max(0, origEnd - start - durationMs - sum);
+                    }
+                }
+                manualRecordState = {
+                    index: editing ? index : -1, orig, date: toLocalDateKey(start), groups: new Set(groups),
+                    pauses, slack, pauseSel: -1, pausesTouched: false
+                };
                 const totalMin = Math.floor(durationMs / 60000);
                 document.getElementById('manualRecordTitle').textContent = getText(editing ? 'manualEditTitle' : 'manualAddTitle');
                 setTimeDrum('manualRecordStart', `${start.getHours()}:${start.getMinutes()}`);
                 setTimeDrum('manualRecordDuration', `${Math.min(23, Math.floor(totalMin / 60))}:${totalMin % 60}`);
                 document.getElementById('manualRecordNewGroup').value = '';
                 renderManualRecordGroups();
+                renderManualPauses();
                 updateManualRecordPreview();
                 document.getElementById('manualRecordOverlay').classList.add('show');
             }
@@ -31170,34 +31314,43 @@
                 });
             }
 
+            // 入力欄の「始めた時刻」。触っていなければ秒まで元のまま(分単位に丸めて、開いて保存しただけで数字が変わるのを防ぐ)
+            function manualRecordStartDate() {
+                const st = manualRecordState;
+                const day = st ? parseLocalDate(st.date) : null;
+                const tm = /^(\d{1,2}):(\d{2})/.exec(getTimeDrum('manualRecordStart'));
+                if (!day || !tm) return null;
+                const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), parseInt(tm[1], 10), parseInt(tm[2], 10), 0, 0);
+                const origStart = st.orig ? new Date(st.orig.start) : null;
+                if (origStart && toLocalDateKey(origStart) === st.date
+                    && origStart.getHours() === start.getHours() && origStart.getMinutes() === start.getMinutes()) {
+                    return origStart;
+                }
+                return start;
+            }
+
             // 入力欄から「保存する記録」を組み立てる。だめなときは { error } を返す
             function readManualRecord() {
                 const st = manualRecordState;
                 if (!st) return { error: '' };
-                const day = parseLocalDate(st.date);
-                const tm = /^(\d{1,2}):(\d{2})/.exec(getTimeDrum('manualRecordStart'));
-                if (!day || !tm) return { error: getText('manualErrTime') };
+                const start = manualRecordStartDate();
+                if (!start) return { error: getText('manualErrTime') };
                 const durationMin = parseTimeDrumValue(getTimeDrum('manualRecordDuration'));
-                const h = Math.floor(durationMin / 60);
-                const m = durationMin % 60;
                 const orig = st.orig;
                 const origStart = orig ? new Date(orig.start) : null;
                 const origEnd = orig ? new Date(orig.end) : null;
                 const origDuration = orig ? Math.max(0, Number(orig.duration) || 0) : 0;
 
-                // 触っていない項目は秒まで元のまま残す(分単位に丸めて、開いて保存しただけで数字が変わるのを防ぐ)
-                let start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), parseInt(tm[1], 10), parseInt(tm[2], 10), 0, 0);
-                if (origStart && toLocalDateKey(origStart) === st.date
-                    && origStart.getHours() === start.getHours() && origStart.getMinutes() === start.getMinutes()) {
-                    start = origStart;
-                }
-                const durationSame = !!orig && Math.floor(origDuration / 60000) === h * 60 + m;
-                const duration = durationSame ? origDuration : (h * 60 + m) * 60000;
+                const durationSame = !!orig && Math.floor(origDuration / 60000) === durationMin;
+                // 変えたときも、元の記録の秒の端数は残す(一時停止を足して勉強した時間が減っても、終わりの時刻がずれないように)
+                const duration = durationSame ? origDuration : durationMin * 60000 + (orig ? origDuration % 60000 : 0);
                 if (duration < 60000 && !durationSame) return { error: getText('manualErrZero') };
 
-                let end, pauses, pausesDropped = false;
-                if (durationSame && origEnd && !isNaN(origEnd.getTime())) {
-                    // 時間はそのまま: 終わりと一時停止を、始まりと同じだけずらす
+                let end, pauses;
+                const sorted = st.pauses.slice().sort((a, b) => a.off - b.off);
+                const pauseMs = sorted.reduce((t, p) => t + p.len, 0);
+                if (durationSame && !st.pausesTouched && origEnd && !isNaN(origEnd.getTime())) {
+                    // 時間も一時停止もそのまま: 終わりと一時停止を、始まりと同じだけずらす
                     const delta = start.getTime() - origStart.getTime();
                     end = new Date(origEnd.getTime() + delta);
                     if (Array.isArray(orig.pauses)) {
@@ -31208,9 +31361,23 @@
                         });
                     }
                 } else {
-                    end = new Date(start.getTime() + duration);
-                    pauses = [];
-                    pausesDropped = !!orig && Array.isArray(orig.pauses) && orig.pauses.length > 0;
+                    // 終わり = 始まり + 勉強した時間 + 一時停止(勉強した時間は一時停止を除いた時間)
+                    const total = duration + pauseMs + (durationSame ? st.slack : 0);
+                    end = new Date(start.getTime() + total);
+                    const base = start.getTime() - start.getTime() % 60000;
+                    const sec = start.getTime() - base;
+                    let prevEnd = 0;
+                    for (const p of sorted) {
+                        const rel = p.off - sec; // 始まりからの差
+                        if (p.len < 60000 && p.edited) return { error: getText('manualErrPauseZero'), start, end };
+                        if (rel < 0 || (p.edited && rel <= 0) || rel + p.len > total) return { error: getText('manualErrPauseRange'), start, end };
+                        if (rel < prevEnd) return { error: getText('manualErrPauseOverlap'), start, end };
+                        prevEnd = rel + p.len;
+                    }
+                    pauses = sorted.map(p => ({
+                        start: new Date(base + p.off).toISOString(),
+                        end: new Date(base + p.off + p.len).toISOString()
+                    }));
                 }
                 if (end.getTime() > Date.now() + 60000) return { error: getText('manualErrFuture'), start, end };
 
@@ -31219,7 +31386,103 @@
                 if (extra) groups.add(extra);
                 const record = { start: start.toISOString(), end: end.toISOString(), duration, group: [...groups].join(', ') };
                 if (pauses) record.pauses = pauses;
-                return { record, start, end, pausesDropped, newGroup: extra };
+                return { record, start, end, pauseMs, newGroup: extra };
+            }
+
+            // ── 一時停止の一覧と、選んだ一時停止の時刻･長さ ──
+            function manualClock(ms) {
+                const d = new Date(ms);
+                return `${d.getHours()}:${manualPad(d.getMinutes())}`;
+            }
+
+            function renderManualPauses() {
+                const st = manualRecordState;
+                const box = document.getElementById('manualRecordPauses');
+                const editor = document.getElementById('manualPauseEditor');
+                if (!st || !box || !editor) return;
+                const start = manualRecordStartDate();
+                const base = start ? start.getTime() - start.getTime() % 60000 : 0;
+                const order = st.pauses.map((p, i) => i).sort((a, b) => st.pauses[a].off - st.pauses[b].off);
+                const delIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+                box.innerHTML = order.map(i => {
+                    const p = st.pauses[i];
+                    const range = `${manualClock(base + p.off)} – ${manualClock(base + p.off + p.len)}`;
+                    return `<span class="manual-pause-chip" aria-current="${i === st.pauseSel}">`
+                        + `<button type="button" class="manual-pause-pick" data-i="${i}" aria-expanded="${i === st.pauseSel}">${range}</button>`
+                        + `<button type="button" class="manual-pause-del" data-i="${i}" aria-label="${escapeHtml(getText('manualPauseDelete'))}">${delIcon}</button></span>`;
+                }).join('') + `<button type="button" class="manual-pause-add">${escapeHtml(getText('manualPauseAdd'))}</button>`;
+
+                box.querySelectorAll('.manual-pause-pick').forEach(btn => btn.addEventListener('click', () => {
+                    const i = parseInt(btn.dataset.i, 10);
+                    st.pauseSel = st.pauseSel === i ? -1 : i;
+                    renderManualPauses();
+                }));
+                box.querySelectorAll('.manual-pause-del').forEach(btn => btn.addEventListener('click', () => {
+                    const i = parseInt(btn.dataset.i, 10);
+                    adjustManualDuration(-st.pauses[i].len);
+                    st.pauses.splice(i, 1);
+                    st.pausesTouched = true;
+                    st.pauseSel = st.pauseSel === i ? -1 : st.pauseSel > i ? st.pauseSel - 1 : st.pauseSel;
+                    renderManualPauses();
+                    updateManualRecordPreview();
+                }));
+                box.querySelector('.manual-pause-add').addEventListener('click', addManualPause);
+
+                const sel = st.pauses[st.pauseSel];
+                editor.hidden = !sel;
+                if (sel) {
+                    setTimeDrum('manualPauseStart', manualClock(base + sel.off));
+                    const lenMin = Math.min(TIME_DRUM_MAX - 1, Math.floor(sel.len / 60000));
+                    setTimeDrum('manualPauseLength', `${Math.floor(lenMin / 60)}:${lenMin % 60}`);
+                }
+            }
+
+            // 一時停止が増えた(減った)ぶん、勉強した時間を減らす(増やす)。終わりの時刻は動かさない
+            // (「10時から12時まで、途中で15分休んだ」と直すことが多いため)。1分を切るときはそのまま
+            function adjustManualDuration(pauseDeltaMs) {
+                const cur = parseTimeDrumValue(getTimeDrum('manualRecordDuration'));
+                const next = Math.min(TIME_DRUM_MAX - 1, cur - Math.round(pauseDeltaMs / 60000));
+                if (next < 1 || next === cur) return;
+                setTimeDrum('manualRecordDuration', formatTimeDrumValue(next));
+            }
+
+            // 最後の一時停止(なければ始まり)から少し勉強したところに、10分の一時停止を足す
+            function addManualPause() {
+                const st = manualRecordState;
+                if (!st) return;
+                const durationMs = parseTimeDrumValue(getTimeDrum('manualRecordDuration')) * 60000;
+                const lastEnd = st.pauses.reduce((t, p) => Math.max(t, p.off + p.len), 0);
+                const studiedBefore = lastEnd - st.pauses.reduce((t, p) => t + p.len, 0);
+                const gap = Math.max(60000, Math.min(30 * 60000, Math.floor((durationMs - studiedBefore) / 2)));
+                // 時刻が分ちょうどになるようにそろえる
+                const off = Math.ceil((lastEnd + gap) / 60000) * 60000;
+                st.pauses.push({ off, len: 10 * 60000, edited: true });
+                adjustManualDuration(10 * 60000);
+                st.pausesTouched = true;
+                st.pauseSel = st.pauses.length - 1;
+                renderManualPauses();
+                updateManualRecordPreview();
+            }
+
+            // 選んだ一時停止のドラムを動かしたとき
+            function onManualPauseDrum(target) {
+                const st = manualRecordState;
+                const p = st && st.pauses[st.pauseSel];
+                const start = manualRecordStartDate();
+                if (!p || !start) return;
+                if (target.id === 'manualPauseStart') {
+                    // 始めた時刻からの差(日付をまたいでもよい)
+                    const startMin = start.getHours() * 60 + start.getMinutes();
+                    const diffMin = (((parseTimeDrumValue(getTimeDrum('manualPauseStart')) - startMin) % TIME_DRUM_MAX) + TIME_DRUM_MAX) % TIME_DRUM_MAX;
+                    p.off = diffMin * 60000;
+                } else {
+                    const next = parseTimeDrumValue(getTimeDrum('manualPauseLength')) * 60000;
+                    adjustManualDuration(next - p.len);
+                    p.len = next;
+                }
+                p.edited = true;
+                st.pausesTouched = true;
+                renderManualPauses();
             }
 
             function updateManualRecordPreview() {
@@ -31237,7 +31500,8 @@
                 const line = getText('manualPreview')
                     .replace('{s}', formatDateTime(res.start))
                     .replace('{e}', sameDay ? formatDateTime(res.end) : formatDateTimeLong(res.end));
-                preview.innerHTML = escapeHtml(line) + (res.pausesDropped ? `<br>${escapeHtml(getText('manualPausesDrop'))}` : '');
+                preview.innerHTML = escapeHtml(line)
+                    + (res.pauseMs > 0 ? `<br>${escapeHtml(getText('manualPreviewPause').replace('{t}', formatChartHours(res.pauseMs / 3600000)))}` : '');
             }
 
             function saveManualRecord() {
@@ -31276,7 +31540,13 @@
             (function () {
                 const overlay = document.getElementById('manualRecordOverlay');
                 if (!overlay) return;
-                overlay.addEventListener('timedrumchange', updateManualRecordPreview);
+                overlay.addEventListener('timedrumchange', function (e) {
+                    const id = e.target && e.target.id;
+                    if (id === 'manualPauseStart' || id === 'manualPauseLength') onManualPauseDrum(e.target);
+                    // 始めた時刻が動くと、一時停止の時刻もいっしょに動く
+                    else if (id === 'manualRecordStart') renderManualPauses();
+                    updateManualRecordPreview();
+                });
                 overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) closeManualRecord(); });
                 overlay.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape') closeManualRecord();
@@ -36951,8 +37221,6 @@
                     muted: isDark ? 'rgba(232,232,232,0.55)' : 'rgba(50,50,50,0.55)',
                     grid: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
                     base: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.14)',
-                    track: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.055)',
-                    trackFuture: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.025)',
                     primary,
                     surface
                 };
@@ -36986,20 +37254,6 @@
                 ctx.lineTo(x + w - r, y);
                 ctx.arcTo(x + w, y, x + w, y + r, r);
                 ctx.lineTo(x + w, y + h);
-                ctx.closePath();
-            }
-
-            // 上も下も丸い、細長い丸(棒の受け皿)
-            function chartPillPath(ctx, x, y, w, h) {
-                const r = Math.min(w / 2, h / 2);
-                ctx.beginPath();
-                ctx.moveTo(x + r, y);
-                ctx.arcTo(x + w, y, x + w, y + r, r);
-                ctx.lineTo(x + w, y + h - r);
-                ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-                ctx.arcTo(x, y + h, x, y + h - r, r);
-                ctx.lineTo(x, y + r);
-                ctx.arcTo(x, y, x + r, y, r);
                 ctx.closePath();
             }
 
@@ -37114,7 +37368,13 @@
                 if (!canvas || !canvas.isConnected) return;
                 const outerHolder = ensureChartScrollWrap(canvas);
                 const wrap = canvas.parentElement;
-                const cssW = Math.max(200, Math.floor(wrap.clientWidth || 400));
+                // 隠れている間は幅が測れない。決め打ちの幅で描くと、開いた瞬間に枠からはみ出して
+                // スマホでページが横に広がるので、描かずに待つ(ページを開いたときに描き直される)
+                if (!wrap.clientWidth) {
+                    canvas.style.width = '0px';
+                    return;
+                }
+                const cssW = Math.max(200, Math.floor(wrap.clientWidth));
                 const cssH = cssW < 480 ? 210 : 250;
                 const ctx = canvas.getContext('2d');
                 const col = chartColors(outerHolder);
@@ -37186,13 +37446,11 @@
                 ctx.textBaseline = 'middle';
                 for (const t of ticks) {
                     const y = Math.round(yFor(t)) + 0.5;
-                    if (state.type !== 'bar') {
-                        ctx.strokeStyle = t === 0 ? col.base : col.grid;
-                        ctx.beginPath();
-                        ctx.moveTo(plotX, y);
-                        ctx.lineTo(plotX + plotW, y);
-                        ctx.stroke();
-                    }
+                    ctx.strokeStyle = t === 0 ? col.base : col.grid;
+                    ctx.beginPath();
+                    ctx.moveTo(plotX, y);
+                    ctx.lineTo(plotX + plotW, y);
+                    ctx.stroke();
                     ctx.fillStyle = col.muted;
                     ctx.fillText(formatChartAxis(t), plotX - 8, y);
                 }
@@ -37223,23 +37481,19 @@
                 const hasHover = hv >= 0 && hv < n;
 
                 if (state.type === 'bar') {
-                    // 列ごとに細長い丸の受け皿を置き、その中に下から色をためる(まだ来ていない日は受け皿だけ、さらに薄く)
-                    const bw = Math.max(3, Math.min(30, cell * 0.6));
+                    // ふつうの棒。下は0の線にぴったり付け、上の角だけ少し丸める。
+                    // 勉強しなかった日は描かない(0の線だけ)。まだ来ていない日も何も置かない
+                    const bw = Math.max(2, Math.min(24, cell * 0.62));
+                    const r = Math.min(3, bw / 2);
+                    const yBase = Math.round(yFor(0));
                     for (let i = 0; i < n; i++) {
-                        const x = xFor(i) - bw / 2;
-                        chartPillPath(ctx, x, plotY, bw, plotH);
-                        ctx.fillStyle = values[i] == null ? col.trackFuture : col.track;
-                        ctx.fill();
                         if (!(values[i] > 0)) continue;
-                        const hgt = Math.max(3, plotY + plotH - yFor(values[i] * animT));
-                        ctx.save();
-                        chartPillPath(ctx, x, plotY, bw, plotH);
-                        ctx.clip();
-                        chartRoundRectPath(ctx, x, plotY + plotH - hgt, bw, hgt, bw / 2);
+                        const x = xFor(i) - bw / 2;
+                        const hgt = Math.max(1.5, yBase - yFor(values[i] * animT));
+                        chartRoundRectPath(ctx, x, yBase - hgt, bw, hgt, r);
                         // 指している棒以外は少し薄くして、どれを見ているか分かるように
                         ctx.fillStyle = (hasHover && i !== hv) ? hexToRgba(col.primary, 0.4) : col.primary;
                         ctx.fill();
-                        ctx.restore();
                     }
                 } else {
                     // 線は今日(最後に値がある列)まで
@@ -37873,7 +38127,7 @@
                         + `<div class="tsumiki-progress-head"><span>${getText('tsumikiNextLabel')}</span><span>${getText('tsumikiRemain').replace('{n}', remainMin)}</span></div>`
                         + `<div class="tsumiki-progress-track"><span style="width:${progress}%"></span></div></div>`
                         + `<div class="tsumiki-stats">${stat(getText('tsumikiToday'), gained(todayMs))}${stat(getText('tsumikiLast7'), gained(weekMs))}</div>`
-                        + (count > 0 ? `<div class="tsumiki-note">${getText('tsumikiUnitNote')}</div>` : '');
+                        + (count > 0 ? `<div class="tsumiki-note">${getText('tsumikiUnitNote')}<br>${getText('tsumikiRotateHint')}</div>` : '');
                 }
 
                 // 今日増えた分だけを落とす(昨日までの山はもう積まれている)
@@ -37885,13 +38139,114 @@
                 // 狭い画面でも山が小さくなりすぎないよう、余白を詰めて使える幅を広げる
                 const blockGroups = isGroupColorEnabled() ? computeBlockGroups(history, renderCount) : null;
                 if (details && blockGroups) details.insertAdjacentHTML('beforeend', blockLegendHtml(blockGroups));
+                bindTsumikiRotate(canvas);
+                canvas._tsumikiResetShown();
                 drawTsumikiStack(canvas, renderCount, {
+                    angle: tsumikiAngle,
                     animate,
                     colors: blockGroups ? blockColorsFor(blockGroups) : null,
                     settledCount: renderCount - todayGained,
                     maxW: Math.min(window.innerWidth - 32, 560),
                     maxH: Math.max(200, window.innerHeight - 400)
                 });
+            }
+
+            // ── 積み木の山を回す: 左右にずらすと360°回り、離すと近い90°の向き(いつものドット絵)にもどる ──
+            let tsumikiAngle = 0; // 止まっている向き(0, 90°, 180°, 270°)。画面を開いているあいだ覚えておく
+
+            function bindTsumikiRotate(canvas) {
+                if (!canvas || canvas._rotateBound) return;
+                canvas._rotateBound = true;
+                const QUARTER = Math.PI / 2;
+                let drag = null;
+                let snapRaf = null;
+                let shown = tsumikiAngle; // いま見えている向き
+
+                const redraw = (angle) => {
+                    shown = angle;
+                    if (canvas._tsumikiRedraw) canvas._tsumikiRedraw(angle);
+                };
+                const stopSnap = () => {
+                    if (snapRaf) cancelAnimationFrame(snapRaf);
+                    snapRaf = null;
+                };
+                // 山の幅ぶんずらすと半回転
+                const perPx = () => Math.PI / Math.max(160, canvas.getBoundingClientRect().width);
+
+                function snapTo(from, to) {
+                    stopSnap();
+                    if (!canvas._tsumikiRedraw) return;
+                    const finish = () => {
+                        const q = ((Math.round(to / QUARTER) % 4) + 4) % 4;
+                        tsumikiAngle = q * QUARTER;
+                        redraw(tsumikiAngle);
+                    };
+                    if (prefersReducedMotion() || Math.abs(to - from) < 1e-4) { finish(); return; }
+                    const dur = Math.min(300, 140 + Math.abs(to - from) / QUARTER * 80);
+                    const t0 = performance.now();
+                    const step = (now) => {
+                        const p = Math.min(1, (now - t0) / dur);
+                        if (p >= 1) { snapRaf = null; finish(); return; }
+                        const e = 1 - Math.pow(1 - p, 3); // 速く動き出して、やさしく止まる
+                        redraw(from + (to - from) * e);
+                        snapRaf = requestAnimationFrame(step);
+                    };
+                    snapRaf = requestAnimationFrame(step);
+                }
+
+                canvas.addEventListener('pointerdown', (e) => {
+                    if (!canvas._tsumikiRedraw || e.button > 0) return;
+                    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, start: shown, moving: false, samples: [] };
+                });
+                canvas.addEventListener('pointermove', (e) => {
+                    if (!drag || e.pointerId !== drag.id) return;
+                    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+                    if (!drag.moving) {
+                        // 縦に動かしたときはページのスクロールにまかせる
+                        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+                        if (Math.abs(dx) < 6) return;
+                        drag.moving = true;
+                        drag.x = e.clientX;
+                        stopSnap();
+                        drag.start = shown;
+                        try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 取れなくても回せる */ }
+                        canvas.classList.add('is-turning');
+                    }
+                    e.preventDefault();
+                    // 右にずらすと、手前が右へ流れる向きに回る
+                    const angle = drag.start - (e.clientX - drag.x) * perPx();
+                    redraw(angle);
+                    const now = performance.now();
+                    drag.samples.push({ t: now, a: angle });
+                    while (drag.samples.length > 2 && now - drag.samples[0].t > 100) drag.samples.shift();
+                });
+                const end = (e) => {
+                    if (!drag || e.pointerId !== drag.id) return;
+                    const d = drag;
+                    drag = null;
+                    if (!d.moving) return;
+                    canvas.classList.remove('is-turning');
+                    // はらった勢いの向きへ、近い90°の向きにおさめる
+                    const first = d.samples[0], last = d.samples[d.samples.length - 1];
+                    const vel = first && last && last.t > first.t ? (last.a - first.a) / (last.t - first.t) : 0;
+                    const target = Math.round((shown + vel * 160) / QUARTER) * QUARTER;
+                    snapTo(shown, target);
+                };
+                canvas.addEventListener('pointerup', end);
+                canvas.addEventListener('pointercancel', end);
+
+                // キーボード: ← → で90°ずつ
+                canvas.addEventListener('keydown', (e) => {
+                    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                    if (!canvas._tsumikiRedraw) return;
+                    e.preventDefault();
+                    const from = shown;
+                    const baseQ = Math.round(from / QUARTER) * QUARTER;
+                    snapTo(from, baseQ + (e.key === 'ArrowRight' ? -QUARTER : QUARTER));
+                });
+
+                // 描き直されたとき(もういちど積む・テーマの切りかえ)は、止まっている向きにそろえる
+                canvas._tsumikiResetShown = () => { stopSnap(); shown = tsumikiAngle; };
             }
 
             function stopTsumikiStack(canvas) {
@@ -37903,6 +38258,8 @@
 
             // 積み木の山を描く(積み木ページと週のまとめで共通)。
             // onProgress(着地した個数) を渡すと、落ちるのに合わせて数字を進められる
+            // angle(ラジアン)で山の向きを変えられる。90°ごとの向きは、整数の座標でこれまでと同じドット絵になる
+            // 描き終えたあと canvas._tsumikiRedraw(angle) で、積み終えた山を好きな角度で描き直せる(回すとき用)
             function drawTsumikiStack(canvas, renderCount, opts = {}) {
                 stopTsumikiStack(canvas);
                 const animate = !!opts.animate;
@@ -37926,49 +38283,124 @@
                 const base = tsumikiThemeHsl();
                 const ox = Math.round(iw / 2);
                 const oy = pad + maxH * h + u / 2;
-                const cellX = (x, z) => ox + (x - z) * u;
-                const cellY = (x, z, y) => oy + (x + z) * (u / 2) - y * h;
+                const c0 = (W - 1) / 2; // 回す中心(マスの番号)
+                const QUARTER = Math.PI / 2;
 
-                function drawGround() {
-                    ctx.clearRect(0, 0, iw, ih);
-                    const gl = document.body.classList.contains('dark') ? base.l * 0.45 : Math.min(94, base.l + 26);
-                    ctx.fillStyle = `hsla(${base.h}, ${base.s * 0.5}%, ${gl}%, 0.35)`;
+                // 向きを「90°の何回ぶんか」と、そこからのずれに分ける
+                function orient(angle) {
+                    const q = Math.round(angle / QUARTER);
+                    const exact = Math.abs(angle - q * QUARTER) < 1e-6;
+                    return { exact, q: ((q % 4) + 4) % 4, cs: Math.cos(angle), sn: Math.sin(angle) };
+                }
+
+                // マス(x, z)の段 y の上面の真ん中と、奥行き(小さいほど奥)
+                function project(b, o) {
+                    let X, Z;
+                    if (o.exact) {
+                        // 90°ごと: マスを入れかえるだけ(座標は整数のまま)
+                        X = b.x; Z = b.z;
+                        for (let i = 0; i < o.q; i++) { const t = X; X = W - 1 - Z; Z = t; }
+                        X -= c0; Z -= c0;
+                    } else {
+                        const dx = b.x - c0, dz = b.z - c0;
+                        X = o.cs * dx - o.sn * dz;
+                        Z = o.sn * dx + o.cs * dz;
+                    }
+                    return {
+                        sx: ox + (X - Z) * u,
+                        sy: oy + (X + Z + 2 * c0) * (u / 2) - b.y * h,
+                        depth: X + Z
+                    };
+                }
+
+                // 奥→手前、下→上の順に描くと正しく重なる
+                function ordered(o) {
+                    return blocks
+                        .map(b => ({ b, p: project(b, o) }))
+                        .sort((a, c) => a.p.depth - c.p.depth || a.b.y - c.b.y);
+                }
+
+                function fillPoly(pts) {
                     ctx.beginPath();
-                    // グリッド全体を覆う土台のひし形
-                    ctx.moveTo(cellX(0, 0), cellY(0, 0, 0) - u / 2);
-                    ctx.lineTo(cellX(W - 1, 0) + u, cellY(W - 1, 0, 0));
-                    ctx.lineTo(cellX(W - 1, W - 1), cellY(W - 1, W - 1, 0) + u / 2);
-                    ctx.lineTo(cellX(0, W - 1) - u, cellY(0, W - 1, 0));
+                    ctx.moveTo(pts[0][0], pts[0][1]);
+                    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
                     ctx.closePath();
                     ctx.fill();
                 }
 
-                function drawCube(cx, cy, tint, color) {
+                function drawGround(o) {
+                    ctx.clearRect(0, 0, iw, ih);
+                    const gl = document.body.classList.contains('dark') ? base.l * 0.45 : Math.min(94, base.l + 26);
+                    ctx.fillStyle = `hsla(${base.h}, ${base.s * 0.5}%, ${gl}%, 0.35)`;
+                    // グリッド全体を覆う土台(上から見ると正方形。90°ごとはこれまでと同じひし形)
+                    const half = W / 2;
+                    const corner = (dx, dz) => {
+                        const X = o.exact ? dx : o.cs * dx - o.sn * dz;
+                        const Z = o.exact ? dz : o.sn * dx + o.cs * dz;
+                        return [ox + (X - Z) * u, oy + (X + Z + 2 * c0) * (u / 2)];
+                    };
+                    fillPoly([corner(-half, -half), corner(half, -half), corner(half, half), corner(-half, half)]);
+                }
+
+                // 上面(明)/左を向いた面(中)/右を向いた面(暗)の明るさで2.5Dに見せる
+                function drawCube(cx, cy, tint, color, o) {
                     const c = color || base;
                     const hue = c.h + (tint - 0.5) * (color ? 8 : 16);
                     const sat = Math.min(85, Math.max(color ? 10 : 20, c.s * 0.9 + (tint - 0.5) * 8));
                     const lig = Math.min(78, Math.max(26, c.l + (tint - 0.5) * 10));
-                    // 上面(明)/左面(中)/右面(暗)の3面で2.5Dに見せる
                     ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.min(92, lig + 13)}%)`;
-                    ctx.beginPath();
-                    ctx.moveTo(cx, cy - u / 2); ctx.lineTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx - u, cy);
-                    ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lig}%)`;
-                    ctx.beginPath();
-                    ctx.moveTo(cx - u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx - u, cy + h);
-                    ctx.closePath(); ctx.fill();
-                    ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.max(14, lig - 15)}%)`;
-                    ctx.beginPath();
-                    ctx.moveTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx + u, cy + h);
-                    ctx.closePath(); ctx.fill();
+                    if (o.exact) {
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - u / 2); ctx.lineTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx - u, cy);
+                        ctx.closePath(); ctx.fill();
+                        ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lig}%)`;
+                        ctx.beginPath();
+                        ctx.moveTo(cx - u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx - u, cy + h);
+                        ctx.closePath(); ctx.fill();
+                        ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.max(14, lig - 15)}%)`;
+                        ctx.beginPath();
+                        ctx.moveTo(cx + u, cy); ctx.lineTo(cx, cy + u / 2); ctx.lineTo(cx, cy + u / 2 + h); ctx.lineTo(cx + u, cy + h);
+                        ctx.closePath(); ctx.fill();
+                    } else {
+                        // 回している途中: 上面の4つの角を回し、こちらを向いている側面だけを描く
+                        const corner = (dx, dz) => {
+                            const X = o.cs * dx - o.sn * dz, Z = o.sn * dx + o.cs * dz;
+                            return [cx + (X - Z) * u, cy + (X + Z) * (u / 2)];
+                        };
+                        const top = [corner(-0.5, -0.5), corner(0.5, -0.5), corner(0.5, 0.5), corner(-0.5, 0.5)];
+                        fillPoly(top);
+                        // 辺 i → i+1 の外向きの向き(回す前)
+                        const normals = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+                        for (let i = 0; i < 4; i++) {
+                            const nx = o.cs * normals[i][0] - o.sn * normals[i][1];
+                            const nz = o.sn * normals[i][0] + o.cs * normals[i][1];
+                            if (nx + nz <= 1e-6) continue; // 向こうを向いている面
+                            // 画面の左を向くほど明るく、右を向くほど暗く(真正面の左右の面がこれまでの2色になる)
+                            const t = Math.min(1, Math.max(0, ((nx - nz) + 1) / 2));
+                            ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.max(14, lig - 15 * t)}%)`;
+                            const a = top[i], b = top[(i + 1) % 4];
+                            fillPoly([a, b, [b[0], b[1] + h], [a[0], a[1] + h]]);
+                        }
+                    }
                     // 上面のドットハイライト
                     ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.min(96, lig + 24)}%)`;
-                    ctx.fillRect(cx - 2, cy - 1, 2, 1);
+                    ctx.fillRect(Math.round(cx) - 2, Math.round(cy) - 1, 2, 1);
                 }
+
+                const rest = orient(opts.angle || 0);
+
+                // 積み終えた山を、好きな角度で描く(回すとき用)
+                canvas._tsumikiRedraw = function (angle) {
+                    stopTsumikiStack(canvas);
+                    const o = orient(angle);
+                    drawGround(o);
+                    if (renderCount === 0) return;
+                    for (const { b, p } of ordered(o)) drawCube(p.sx, p.sy, b.tint, colors ? colors[b.order] : null, o);
+                };
 
                 // groundOnly: 落とす前に、最後と同じ大きさの土台だけ描いておく
                 if (renderCount === 0 || opts.groundOnly) {
-                    drawGround();
+                    drawGround(rest);
                     if (onProgress) onProgress(0);
                     return;
                 }
@@ -37987,13 +38419,14 @@
                     return (b.order / renderCount) * (totalDur - dropDur);
                 };
                 const dropHeight = (freshOnly ? 10 : 4) * h;
+                const restOrder = ordered(rest);
 
                 function frame(now) {
                     const elapsed = now - start;
-                    drawGround();
+                    drawGround(rest);
                     let pending = false;
                     let landed = 0;
-                    for (const b of blocks) {
+                    for (const { b, p: pos } of restOrder) {
                         const appearAt = appearTime(b);
                         const p = totalDur === 0 || appearAt === -Infinity ? 1 : Math.min(1, Math.max(0, (elapsed - appearAt) / dropDur));
                         if (p <= 0) { pending = true; continue; }
@@ -38002,7 +38435,7 @@
                         // 今日の分は本当に落ちるように加速させる
                         const ease = freshOnly ? p * p : 1 - (1 - p) * (1 - p);
                         const dropOffset = Math.round((1 - ease) * dropHeight);
-                        drawCube(cellX(b.x, b.z), cellY(b.x, b.z, b.y) - dropOffset, b.tint, colors ? colors[b.order] : null);
+                        drawCube(pos.sx, pos.sy - dropOffset, b.tint, colors ? colors[b.order] : null, rest);
                     }
                     if (onProgress) onProgress(landed);
                     canvas._tsumikiRaf = pending ? requestAnimationFrame(frame) : null;
@@ -38081,6 +38514,7 @@
                 const stack = document.createElement('canvas');
                 const blockGroups = isGroupColorEnabled() ? computeBlockGroups(history, renderCount) : null;
                 drawTsumikiStack(stack, renderCount, {
+                    angle: tsumikiAngle, // 画面で回した向きのまま
                     animate: false,
                     colors: blockGroups ? blockColorsFor(blockGroups) : null,
                     maxW: stack.width,
@@ -41740,7 +42174,8 @@
             </div>
             <div id="tsumikiInfo"></div>
             <div class="tsumiki-stage">
-                <canvas id="tsumikiCanvas" width="10" height="10"></canvas>
+                <canvas id="tsumikiCanvas" width="10" height="10" tabindex="0" role="img"
+                    aria-label="積み木の山。左右にずらすと回せます" data-i18n-aria="tsumikiRotateAria"></canvas>
             </div>
             <div id="tsumikiDetails" class="tsumiki-details"></div>
             <div class="tsumiki-footer">
