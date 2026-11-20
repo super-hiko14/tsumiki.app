@@ -294,7 +294,7 @@
 
         .top-buttons {
             position: fixed;
-            top: 20px;
+            top: var(--topbar-y);
             right: 20px;
             display: flex;
             gap: 10px;
@@ -302,15 +302,26 @@
         }
 
         /* 現在時刻の時計(左上のピル) */
+        /* 上の段(左の時計･右のボタン･上に固定したメニュー)は、同じ高さ･同じ中心線にそろえる */
+        :root {
+            --topbar-y: 20px;
+            --topbar-h: 50px;
+        }
+
         .current-clock {
             position: fixed;
-            top: 20px;
+            top: var(--topbar-y);
             left: 20px;
             z-index: 1000;
             display: flex;
+            /* 高さを右のボタンにそろえ、時･分と秒は字の下の線でそろえたまま、縦のまん中に置く */
+            flex-wrap: wrap;
             align-items: baseline;
+            align-content: center;
             gap: 3px;
-            padding: 10px 18px;
+            height: var(--topbar-h);
+            box-sizing: border-box;
+            padding: 0 18px;
             border-radius: 999px;
             font-variant-numeric: tabular-nums;
             font-size: 0.95rem;
@@ -4009,7 +4020,8 @@
             animation: fadeIn 0.2s ease-out;
         }
 
-        .custom-confirm-overlay.show {
+        .custom-confirm-overlay.show,
+        .custom-confirm-overlay.is-closing {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -4327,22 +4339,25 @@
                 margin: 30px 0;
             }
 
+            :root {
+                --topbar-y: 15px;
+                --topbar-h: 45px;
+            }
+
             .top-buttons {
-                top: 15px;
                 right: 15px;
             }
 
             .current-clock {
-                top: 15px;
                 left: 15px;
-                padding: 8px 14px;
+                padding: 0 14px;
                 font-size: 0.85rem;
             }
 
             .theme-toggle,
             .settings-btn {
-                width: 45px;
-                height: 45px;
+                width: var(--topbar-h);
+                height: var(--topbar-h);
             }
 
             .menu button {
@@ -4620,7 +4635,8 @@
             padding: 20px;
         }
 
-        .about-overlay.show {
+        .about-overlay.show,
+        .about-overlay.is-closing {
             display: flex;
         }
 
@@ -4780,12 +4796,14 @@
             flex-wrap: wrap;
         }
 
+        /* 文字が2行に割れるくらいなら、ボタンごと次の行へ送る(せまい画面では縦に2つ並ぶ) */
         .data-management button {
-            flex: 1;
-            min-width: 160px;
+            flex: 1 1 auto;
+            min-width: 0;
             padding: 12px 20px;
             font-size: 0.9rem;
             border-radius: 24px;
+            white-space: nowrap;
         }
 
         .group-management-controls {
@@ -5665,7 +5683,8 @@
             touch-action: none;
         }
 
-        .priority-color-overlay.show {
+        .priority-color-overlay.show,
+        .priority-color-overlay.is-closing {
             display: flex;
         }
 
@@ -7672,6 +7691,29 @@
             }
         }
 
+        /* 閉じるときに薄くしていく中身の写し(写しの中では、開くときの動きをくり返さない) */
+        .height-ghost *,
+        .height-ghost {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        /* ポップアップを閉じるとき: すぐ消さずに、ふわっと薄くしてから消す(.is-closing は JS が付け外しする) */
+        .custom-confirm-overlay.is-closing,
+        .about-overlay.is-closing,
+        .tsumiki-overlay.is-closing,
+        .calendar-day-dialog-overlay.is-closing,
+        .priority-color-overlay.is-closing,
+        .date-picker-overlay.is-closing {
+            pointer-events: none;
+            animation: overlayFadeOut 0.18s ease-in forwards;
+        }
+
+        @keyframes overlayFadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
         .todo-chip-panel {
             margin-top: 10px;
             padding: 16px 18px;
@@ -7752,6 +7794,11 @@
             justify-content: center;
             gap: 6px;
             cursor: pointer;
+        }
+
+        /* ダークで下地の色が決まっていない所でも、ライトの色のまま白く光らないように */
+        .dark .todo-seg-btn {
+            background: var(--ctl-bg, var(--panel-dark));
         }
 
         .light .todo-seg-btn.active {
@@ -7944,7 +7991,8 @@
             display: block;
         }
 
-        .date-picker-overlay.show {
+        .date-picker-overlay.show,
+        .date-picker-overlay.is-closing {
             display: block;
         }
 
@@ -8076,7 +8124,8 @@
             animation: fadeIn 0.2s ease-out;
         }
 
-        .calendar-day-dialog-overlay.show {
+        .calendar-day-dialog-overlay.show,
+        .calendar-day-dialog-overlay.is-closing {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -9295,7 +9344,8 @@
             overflow-x: hidden;
         }
 
-        .tsumiki-overlay.show {
+        .tsumiki-overlay.show,
+        .tsumiki-overlay.is-closing {
             display: flex;
         }
 
@@ -12953,6 +13003,7 @@
             }
         }
 
+
         /* ボトムメニュー */
         body.menu-mode-bottom .menu {
             position: fixed;
@@ -13110,11 +13161,102 @@
             white-space: nowrap;
         }
 
+        /* 改行の印は1行ぶんを取るので、上下に行のすきまが2回入ってしまう。
+           印があるときは行のすきまを0にして、印の高さをすきまの代わりにする */
         .menu-break-marker {
             flex-basis: 100%;
-            height: 0;
+            height: 10px;
             margin: 0;
             padding: 0;
+        }
+
+        .menu:has(.menu-break-marker) {
+            row-gap: 0;
+        }
+
+        body.menu-mode-bottom .menu-break-marker {
+            height: 8px;
+        }
+
+        body.menu-mode-bottom .menu:has(.menu-break-marker) {
+            row-gap: 0;
+        }
+
+        /* 下に固定 + 「1段に詰める」: 折り返さず、ボタンを同じ幅で1段に並べる(縮めて1段に収める)。
+           自分で改行を入れたときだけ、そこで折り返す。下のロゴはタブの下の段に入る。
+           広い画面では、syncBottomMenuPadding が中身と同じ幅･位置に置く */
+        body.menu-mode-bottom.menu-bottom-fit .menu-auto-break {
+            display: none;
+        }
+
+        body.menu-mode-bottom.menu-bottom-fit .menu button {
+            flex: 1 1 0;
+            min-width: 0;
+            padding-left: 8px;
+            padding-right: 8px;
+            white-space: nowrap;
+        }
+
+        body.menu-mode-bottom.menu-bottom-fit .menu button .menu-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* アイコンと文字: アイコンの下に小さく名前(よくあるタブの形) */
+        body.menu-mode-bottom.menu-bottom-fit.menu-display-icon_text .menu button {
+            flex-direction: column;
+            gap: 2px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        @media (min-width: 601px) {
+            body.menu-mode-bottom.menu-bottom-fit .menu {
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body.menu-mode-bottom.menu-bottom-fit .menu {
+                column-gap: 6px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            body.menu-mode-bottom.menu-bottom-fit .menu button {
+                padding: 9px 4px;
+                font-size: 0.85rem;
+            }
+
+            body.menu-mode-bottom.menu-bottom-fit.menu-display-icon_text .menu button {
+                padding: 6px 4px;
+                font-size: 0.72rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            body.menu-mode-bottom.menu-bottom-fit .menu button {
+                padding-left: 2px;
+                padding-right: 2px;
+                font-size: 0.74rem;
+            }
+
+            body.menu-mode-bottom.menu-bottom-fit.menu-display-icon_text .menu button {
+                font-size: 0.68rem;
+            }
+        }
+
+        /* スマホ: メニューの下を詰める。ロゴは左上の時計･右上のボタンと重ならない高さに置く */
+        @media (max-width: 480px) {
+            .menu {
+                margin-bottom: 26px;
+            }
+
+            body:not(.menu-mode-bottom) .container {
+                padding-top: 66px;
+            }
         }
 
         /* ── 1日の目標: タイマーの下の小さな1行 ── */
@@ -13152,6 +13294,56 @@
             border-radius: 999px;
             background: currentColor;
             transition: width 0.4s ease;
+        }
+
+        /* 目標の進み具合: タイマーの台のふちを、上のまん中から時計回りに満たしていく */
+        .goal-ring {
+            display: none;
+        }
+
+        body:not(.timer-classic) .goal-ring {
+            display: block;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            pointer-events: none;
+        }
+
+        .goal-ring path {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .goal-ring-track {
+            stroke: rgba(128, 128, 128, 0.14);
+        }
+
+        .goal-ring-fill {
+            stroke: var(--primary-color);
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
+        }
+
+        .dark .goal-ring-fill {
+            stroke: var(--primary-color-dark);
+        }
+
+        /* ホワイトのテーマカラーはライトの背景に溶けるので、グラフと同じ灰色にする */
+        body.light[data-theme="white"] .goal-ring-fill {
+            stroke: #a9a9a9;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .goal-ring-fill {
+                transition: none;
+            }
+        }
+
+        /* ふちで見せるので、今の表示では文字の横の小さな線は出さない */
+        body:not(.timer-classic) .goal-line-bar {
+            display: none;
         }
 
 
@@ -14802,6 +14994,15 @@
             background: transparent;
         }
 
+        /* 予約中は、ほかの場所と同じくテーマカラーで塗る(透明のままだと白い文字が読めない) */
+        body.light:not(.music-classic) #musicPage .player-sub-controls .auto-stop-pill.armed {
+            background: var(--primary-color);
+        }
+
+        body.dark:not(.music-classic) #musicPage .player-sub-controls .auto-stop-pill.armed {
+            background: var(--primary-color-dark);
+        }
+
         body:not(.music-classic) #musicPage .player-sub-controls .auto-stop-panel-wrap {
             flex: 0 0 100%;
             margin-top: 6px;
@@ -15436,8 +15637,11 @@
             display: block;
         }
 
-        body.bg-on {
+        body {
             --cbg-gutter: clamp(16px, 4vw, 96px);
+        }
+
+        body.bg-on {
             --cbg-veil-base: var(--cbg-veil, 0.6);
             --cbg-veil-eff: var(--cbg-veil-base);
             --cbg-blur-eff: var(--cbg-blur, 0px);
@@ -15555,21 +15759,25 @@
 
         /* 中身を左右に寄せる/画像を左右に飾る(広い画面だけ) */
         @media (min-width: 1000px) {
+            body:not(.bg-on).bg-content-left,
             body.bg-on.bg-layout-full.bg-content-left,
             body.bg-on.bg-layout-frame-right {
                 justify-content: flex-start;
             }
 
+            body:not(.bg-on).bg-content-right,
             body.bg-on.bg-layout-full.bg-content-right,
             body.bg-on.bg-layout-frame-left {
                 justify-content: flex-end;
             }
 
+            body:not(.bg-on).bg-content-left .container,
             body.bg-on.bg-layout-full.bg-content-left .container,
             body.bg-on.bg-layout-frame-right .container {
                 margin-left: var(--cbg-gutter);
             }
 
+            body:not(.bg-on).bg-content-right .container,
             body.bg-on.bg-layout-full.bg-content-right .container,
             body.bg-on.bg-layout-frame-left .container {
                 margin-right: var(--cbg-gutter);
@@ -17116,6 +17324,32 @@
             to { opacity: 1; }
         }
 
+        /* スワイプで移ったページは、指を動かした向きからすべって入ってくる */
+        .page.active.page-swipe-next {
+            animation: pageSlideFromRight 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .page.active.page-swipe-prev {
+            animation: pageSlideFromLeft 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes pageSlideFromRight {
+            from { opacity: 0; transform: translateX(36px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        @keyframes pageSlideFromLeft {
+            from { opacity: 0; transform: translateX(-36px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .page.active.page-swipe-next,
+            .page.active.page-swipe-prev {
+                animation: none;
+            }
+        }
+
         /* 使うページの一覧: スイッチで消したページは、色をゆっくりうすくする */
         .menu-order-item .mo-label,
         .menu-order-item .menu-icon {
@@ -17134,14 +17368,12 @@
             flex-wrap: wrap;
         }
 
-        /* せまい画面では「記録を追加」を次の行へ送り、絞り込みの文字が「す…」と切れないようにする */
         #listPage .list-toolbar-row:not(.selection-row):not(.move-row) .list-filter-selects {
             flex: 1 1 250px;
         }
 
-        /* グループ･並び順･記録を追加 を、同じ高さ･同じ字の大きさ･同じ面にそろえる */
-        #listPage .list-filter-selects .custom-select select,
-        #listPage #manualAddBtn {
+        /* グループ･並び順 を、同じ高さ･同じ字の大きさ･同じ面にそろえる */
+        #listPage .list-filter-selects .custom-select select {
             height: 44px;
             padding-top: 0;
             padding-bottom: 0;
@@ -17152,28 +17384,61 @@
             line-height: 1;
         }
 
+        /* 検索欄と「記録を追加」を1行に。追加は検索欄と同じ高さの丸いボタン */
+        .list-search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .list-search-row .list-search-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
         #listPage #manualAddBtn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             flex: 0 0 auto;
-            padding: 0 16px 0 12px;
-            border: 2px solid transparent;
+            height: var(--field-h);
+            padding: 0 18px 0 14px;
+            border: none;
+            border-radius: 999px;
             box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 400;
+            line-height: 1;
+            white-space: nowrap;
         }
 
         #listPage #manualAddBtn[hidden] {
             display: none;
         }
 
-        #listPage #manualAddBtn::before {
-            content: '';
-            width: 14px;
-            height: 14px;
-            background: currentColor;
-            -webkit-mask: linear-gradient(#000, #000) center / 100% 2px no-repeat, linear-gradient(#000, #000) center / 2px 100% no-repeat;
-            mask: linear-gradient(#000, #000) center / 100% 2px no-repeat, linear-gradient(#000, #000) center / 2px 100% no-repeat;
-            opacity: 0.7;
+        #listPage #manualAddBtn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* スマホでは＋だけの丸(名前は読み上げとツールチップに残す) */
+        @media (max-width: 560px) {
+            #listPage #manualAddBtn {
+                width: var(--field-h);
+                padding: 0;
+            }
+
+            #listPage #manualAddBtn .list-add-label {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+            }
         }
 
         @media (hover: hover) {
@@ -17785,6 +18050,9 @@
                     keep.push('bg-on', 'bg-layout-' + s.layout, 'bg-content-' + s.content,
                         'bg-surface-' + s.surface, 'bg-study-' + s.study);
                     if (s.reveal) keep.push('bg-reveal');
+                } else {
+                    // 中身の位置は、背景の画像がなくても効かせる
+                    keep.push('bg-content-' + s.content);
                 }
                 body.className = keep.join(' ');
 
@@ -18584,6 +18852,7 @@
         <div id="listPage" class="page">
             <div class="list-toolbar">
                 <!-- 検索はいつも出しておく(ボタンで開く2段構えをやめる)。入力前は使える書き方の候補を出す -->
+                <div class="list-search-row">
                 <div class="list-search-box" id="listSearchBox">
                     <svg class="list-search-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -18602,6 +18871,15 @@
                         </svg>
                     </button>
                     <div class="list-search-hints" id="listSearchHints" onmousedown="event.preventDefault()"></div>
+                </div>
+                <!-- 設定で「記録の手動入力と編集」をオンにしたときだけ出る -->
+                <button type="button" class="secondary list-action-btn" id="manualAddBtn" hidden
+                    onclick="openManualRecord()" aria-label="記録を追加" data-i18n-aria="manualAddButton"
+                    title="記録を追加" data-i18n-title="manualAddButton"><svg viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg><span class="list-add-label" data-i18n="manualAddButton">記録を追加</span></button>
                 </div>
 
                 <div class="list-toolbar-row">
@@ -18623,9 +18901,6 @@
                             <div class="select-arrow">▾</div>
                         </div>
                     </div>
-                    <!-- 設定で「記録の手動入力と編集」をオンにしたときだけ出る -->
-                    <button type="button" class="secondary list-action-btn" id="manualAddBtn" hidden
-                        onclick="openManualRecord()" data-i18n="manualAddButton">記録を追加</button>
                 </div>
 
                 <!-- 絞り込み中だけ: 件数と合計時間 -->
@@ -18896,14 +19171,31 @@
 
             <div class="settings-panel" data-settings-tab="general">
                 <div class="settings-panel-title" data-i18n="settingsTabGeneral">基本</div>
-            <!-- メニュー: 「使う機能」(音楽･ToDo のオン/オフ)と「メニューカスタマイズ」を1か所にまとめた。
-                 使うページを選ぶのも、並び順も、見た目も、ここだけで決める -->
+            <!-- メニュー: 使う機能(音楽･ToDo)、メニューに出すページと並び順、見た目をここで決める -->
             <div class="settings-section" id="menuCustomizeSection">
                 <h2 data-i18n="menuCustomizeTitle">メニュー</h2>
 
+                <!-- 使う機能: 音楽とToDoを使うかどうか。オフにするとメニューにも出ず、関係する設定もしまう -->
                 <div class="menu-setting-card">
-                    <div class="menu-setting-label" data-i18n="menuOrderLabel">使うページと並び順</div>
-                    <div class="menu-setting-note" data-i18n="menuOrderNote">スイッチで使うページを選び、左のつまみを動かして並べ替えます。</div>
+                    <div class="menu-setting-label" data-i18n="featureUseLabel">使う機能</div>
+                    <div class="toggle-item">
+                        <span data-i18n="musicUseSetting">音楽プレイヤー</span>
+                        <div class="toggle-switch" id="toggleMusic" onclick="togglePageFeature('music')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="toggle-item">
+                        <span data-i18n="todoUseSetting">ToDo</span>
+                        <div class="toggle-switch" id="toggleTodo" onclick="togglePageFeature('todo')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="menu-setting-note" data-i18n="featureUseNote">オフにすると、メニューにも出さず、その設定もしまっておきます。</div>
+                </div>
+
+                <div class="menu-setting-card">
+                    <div class="menu-setting-label" data-i18n="menuOrderLabel">メニューに出すページと並び順</div>
+                    <div class="menu-setting-note" data-i18n="menuOrderNote">スイッチでメニューに出すページを選び、左のつまみを動かして並べ替えます。</div>
                     <div class="menu-order-list" id="menuOrderList"></div>
                     <div class="menu-setting-note menu-order-warning" id="menuOrderWarning"></div>
                 </div>
@@ -18914,6 +19206,20 @@
                     <div class="menu-setting-label menu-setting-label-next" data-i18n="menuPositionLabel">位置</div>
                     <div class="todo-seg" id="menuPositionSeg" role="radiogroup"></div>
                     <div class="menu-setting-note" id="menuPositionNote"></div>
+                    <div class="toggle-item" id="menuBottomFitItem">
+                        <span data-i18n="menuBottomFitSetting">下のメニューを1段に詰める</span>
+                        <div class="toggle-switch" id="toggleMenuBottomFit" onclick="toggleMenuBottomFit()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="menu-setting-note" id="menuBottomFitNote" data-i18n="menuBottomFitNote">ボタンを同じ幅で1段に並べ、中身と同じ幅にそろえます。</div>
+                    <div class="toggle-item">
+                        <span data-i18n="menuSwipeSetting">左右にスワイプしてページを切り替える</span>
+                        <div class="toggle-switch" id="toggleMenuSwipe" onclick="toggleMenuSwipeSetting()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="menu-setting-note" data-i18n="menuSwipeNote">スマホやタブレットで、メニューの並び順に次・前のページへ移ります。</div>
                 </div>
 
                 <details class="menu-setting-card menu-setting-more" id="menuWrapDetails">
@@ -19051,6 +19357,14 @@
                     <div class="setting-note" style="margin: 8px 0 0;" data-i18n="themeFromImageNote">画像は色を調べるだけで、保存しません。</div>
                 </div>
             </div>
+            <!-- 中身の位置(広い画面だけ)。背景の画像を使っていなくても選べる -->
+            <div class="settings-section" id="bgContentCard">
+                <h2 data-i18n="bgContentLabel">中身の位置</h2>
+                <div class="menu-setting-card">
+                    <div class="todo-seg" id="bgContentSeg" role="radiogroup"></div>
+                    <div class="menu-setting-note" id="bgContentNote"></div>
+                </div>
+            </div>
             <div class="settings-section" id="bgSettingsSection">
                 <h2 data-i18n="bgSettingTitle">背景</h2>
                 <div class="toggle-item">
@@ -19084,11 +19398,6 @@
                             <div class="menu-setting-label" data-i18n="bgLayoutLabel">画像の置き方</div>
                             <div class="todo-seg" id="bgLayoutSeg" role="radiogroup"></div>
                             <div class="menu-setting-note" id="bgLayoutNote"></div>
-                        </div>
-
-                        <div class="menu-setting-card" id="bgContentCard">
-                            <div class="menu-setting-label" data-i18n="bgContentLabel">中身の位置</div>
-                            <div class="todo-seg" id="bgContentSeg" role="radiogroup"></div>
                         </div>
 
                         <div class="menu-setting-card" id="bgSurfaceCard">
@@ -19517,6 +19826,9 @@
                 <div class="settings-panel-title" data-i18n="settingsTabTodo">ToDo</div>
             <div class="settings-section">
                 <h2 data-i18n="settingsTodo">ToDo</h2>
+                <div class="setting-note" id="todoDisabledNote" data-i18n="todoDisabledNote" hidden>
+                    ToDoは「基本」の「使う機能」でオンにできます。</div>
+                <div id="todoRelatedSettings">
                 <div class="toggle-item">
                     <span data-i18n="todoRepeatCalendarSetting">繰り返しToDoをカレンダーに表示</span>
                     <div class="toggle-switch" id="toggleTodoRepeatCalendar" onclick="toggleTodoRepeatCalendar()">
@@ -19535,6 +19847,7 @@
                         ToDo優先度カラーを設定
                     </button>
                 </div>
+                </div>
             </div>
 
             </div>
@@ -19542,7 +19855,7 @@
             <div class="settings-panel" data-settings-tab="music">
                 <div class="settings-panel-title" data-i18n="settingsTabMusic">音楽</div>
             <div class="setting-note" id="musicDisabledNote" data-i18n="musicDisabledNote" style="display: none;">
-                音楽プレイヤーは「基本」の「メニュー」でオンにできます。</div>
+                音楽プレイヤーは「基本」の「使う機能」でオンにできます。</div>
 
             <div class="settings-section" id="musicSettingsSection">
                 <h2 data-i18n="musicSettingsTitle">音楽プレイヤー</h2>
@@ -20050,8 +20363,8 @@
                     menuWideOverflowNote: '画面が広いとき、メニューを折り返さずに1行で表示します',
                     menuBreakLineLabel: '改行',
                     menuBreakLineNote: 'ONにすると、メニュー項目/順序の中に改行線を置いて折り返し位置を調整できます',
-                    menuOrderLabel: '使うページと並び順',
-                    menuOrderNote: 'スイッチで使うページを選び、左のつまみを動かして並べ替えます。',
+                    menuOrderLabel: 'メニューに出すページと並び順',
+                    menuOrderNote: 'スイッチでメニューに出すページを選び、左のつまみを動かして並べ替えます。',
                     clearSearch: '検索をクリア',
                     clearInput: '入力を消去',
 
@@ -20562,6 +20875,10 @@
                     menuPositionNoteNormal: 'ページと一緒にスクロールします',
                     menuPositionNoteFixed: 'スクロールしても画面の上に残ります',
                     menuPositionNoteBottom: '画面の下にいつも表示します(スマホで片手操作しやすい配置)',
+                    menuBottomFitSetting: '下のメニューを1段に詰める',
+                    menuBottomFitNote: 'ボタンを同じ幅で1段に並べ、中身と同じ幅にそろえます。',
+                    menuSwipeSetting: '左右にスワイプしてページを切り替える',
+                    menuSwipeNote: 'スマホやタブレットで、メニューの並び順に次・前のページへ移ります。',
                     menuAddBreak: '＋ 改行を入れる',
                     menuBreakRemove: '改行を削除',
                     menuLastVisibleHint: 'メニューには少なくとも1つの項目が必要です',
@@ -20803,7 +21120,12 @@
                     settingsHistory: '履歴',
                     settingsTodo: 'ToDo',
                     settingsSafety: '安心して使うために',
-                    musicDisabledNote: '音楽プレイヤーは「基本」の「メニュー」でオンにできます。',
+                    musicDisabledNote: '音楽プレイヤーは「基本」の「使う機能」でオンにできます。',
+                    featureUseLabel: '使う機能',
+                    featureUseNote: 'オフにすると、メニューにも出さず、その設定もしまっておきます。',
+                    musicUseSetting: '音楽プレイヤー',
+                    todoUseSetting: 'ToDo',
+                    todoDisabledNote: 'ToDoは「基本」の「使う機能」でオンにできます。',
                     notifyMaster: '通知を有効にする',
                     notifyEvent: '通知するタイミング',
                     notifyChannelBrowser: 'ブラウザ通知',
@@ -20871,8 +21193,10 @@
                     bgLayoutFrameLeft: '左に飾る',
                     bgLayoutFrameRight: '右に飾る',
                     bgLayoutNoteFrame: '画像を1枚の絵として横に置きます。文字と重なりません。',
-                    bgLayoutNoteNarrow: '画面が広いとき(PCなど)は、画像を横に飾ったり、中身を左右に寄せたりできます。',
+                    bgLayoutNoteNarrow: '画面が広いとき(PCなど)は、画像を中身の横に飾れます。',
                     bgContentLabel: '中身の位置',
+                    bgContentNoteNarrow: '画面が広いとき(PCなど)に、中身を左右に寄せられます。',
+                    bgContentNoteFrame: '背景の画像を横に飾っているあいだは、画像の反対側に寄ります。',
                     bgContentLeft: '左',
                     bgContentCenter: '中央',
                     bgContentRight: '右',
@@ -21131,8 +21455,8 @@
                     menuWideOverflowNote: 'On wide screens, the menu stays on one line instead of wrapping',
                     menuBreakLineLabel: 'Line break',
                     menuBreakLineNote: 'When ON, you can place break lines in Menu Items & Order to control wrapping points',
-                    menuOrderLabel: 'Pages and order',
-                    menuOrderNote: 'Use the switches to choose the pages you use, and drag the handle to reorder.',
+                    menuOrderLabel: 'Pages in the menu and order',
+                    menuOrderNote: 'Use the switches to choose which pages appear in the menu, and drag the handle to reorder.',
                     clearSearch: 'Clear search',
                     clearInput: 'Clear input',
 
@@ -21591,6 +21915,10 @@
                     menuPositionNoteNormal: 'Scrolls with the page',
                     menuPositionNoteFixed: 'Stays at the top while you scroll',
                     menuPositionNoteBottom: 'Always shown at the bottom (easy one-handed use on phones)',
+                    menuBottomFitSetting: 'Fit the bottom menu on one row',
+                    menuBottomFitNote: 'Lines the buttons up in one row at equal widths, matching the width of the content.',
+                    menuSwipeSetting: 'Swipe left or right to switch pages',
+                    menuSwipeNote: 'On phones and tablets, moves to the next or previous page in menu order.',
                     menuAddBreak: '+ Add line break',
                     menuBreakRemove: 'Remove line break',
                     menuLastVisibleHint: 'At least one menu item must stay visible',
@@ -21780,7 +22108,12 @@
                     settingsHistory: 'History',
                     settingsTodo: 'ToDo',
                     settingsSafety: 'Wellbeing',
-                    musicDisabledNote: 'Turn on the music player in General → Menu.',
+                    musicDisabledNote: 'Turn on the music player in General → Features.',
+                    featureUseLabel: 'Features',
+                    featureUseNote: 'When off, it is hidden from the menu and its settings are tucked away.',
+                    musicUseSetting: 'Music player',
+                    todoUseSetting: 'ToDo',
+                    todoDisabledNote: 'Turn on ToDo in General → Features.',
                     notifyMaster: 'Enable notifications',
                     notifyEvent: 'When',
                     notifyChannelBrowser: 'Browser',
@@ -21853,8 +22186,10 @@
                     bgLayoutFrameLeft: 'On the left',
                     bgLayoutFrameRight: 'On the right',
                     bgLayoutNoteFrame: 'The image sits beside the content as one picture, so it never overlaps the text.',
-                    bgLayoutNoteNarrow: 'On a wide screen, you can also place the image beside the content or move the content to one side.',
+                    bgLayoutNoteNarrow: 'On a wide screen, you can also place the image beside the content.',
                     bgContentLabel: 'Content position',
+                    bgContentNoteNarrow: 'On a wide screen (such as a PC), you can move the content to one side.',
+                    bgContentNoteFrame: 'While the background image sits beside the content, the content stays on the other side.',
                     bgContentLeft: 'Left',
                     bgContentCenter: 'Center',
                     bgContentRight: 'Right',
@@ -23037,6 +23372,8 @@
                 bgLastThemeHex = hex;
                 updateBgStudyState();
                 updateBgReveal(true);
+                // 中身の位置が変わると、1段に詰めた下のメニューも動かす
+                if (typeof syncBottomMenuPadding === 'function') requestAnimationFrame(syncBottomMenuPadding);
                 return state;
             }
 
@@ -23324,7 +23661,14 @@
                             { value: 'right', labelKey: 'bgContentRight' }
                         ], s.content, 'setBgContent');
                     }
-                    show('bgContentCard', wide && !frame);
+                    // 画像を横に飾っているときは、画像の反対側に寄るので選べない
+                    const frameOn = window.tsumikiBg.on && frame;
+                    show('bgContentSeg', wide && !frameOn);
+                    const contentNote = document.getElementById('bgContentNote');
+                    if (contentNote) {
+                        contentNote.textContent = !wide ? getText('bgContentNoteNarrow') : (frameOn ? getText('bgContentNoteFrame') : '');
+                        contentNote.hidden = !contentNote.textContent;
+                    }
 
                     const surfaceSeg = document.getElementById('bgSurfaceSeg');
                     if (surfaceSeg) {
@@ -23767,10 +24111,10 @@
                 // 音楽プレイヤーが無効のときはセクションごと隠す
                 const el = document.getElementById('musicSettingsSection') || document.getElementById('musicRelatedSettings');
                 if (!el) return;
-                const vis = getMenuVisibility();
-                el.style.display = vis.music ? '' : 'none';
+                const on = isPageFeatureOn('music');
+                el.style.display = on ? '' : 'none';
                 const note = document.getElementById('musicDisabledNote');
-                if (note) note.style.display = vis.music ? 'none' : '';
+                if (note) note.style.display = on ? 'none' : '';
             }
 
             // ── 検索ヒットのハイライト(設定検索/リスト検索で共用) ──
@@ -23841,16 +24185,48 @@
                 // アニメーション途中でも「今見えている高さ」から続ける
                 const from = el.getBoundingClientRect().height;
                 if (el._heightAnim) el._heightAnim.cancel();
+                if (el._heightGhost) { el._heightGhost.remove(); el._heightGhost = null; }
+                // 閉じるとき用に、いまの中身の写しを取っておく(id は消して、同じ id が2つにならないように)
+                let ghost = null;
+                if (from > 4 && el.firstElementChild) {
+                    ghost = document.createElement('div');
+                    ghost.className = 'height-ghost';
+                    const cs = getComputedStyle(el);
+                    ghost.style.padding = cs.padding;
+                    ghost.style.boxSizing = 'border-box';
+                    Array.from(el.childNodes).forEach(n => ghost.appendChild(n.cloneNode(true)));
+                }
                 mutate();
                 const to = el.getBoundingClientRect().height;
                 if (Math.abs(from - to) < 1) return;
                 el.style.overflow = 'hidden';
+                // 中身が消えて閉じるときは、写しを上に重ねて薄くしながら縮める(ぱっと消えないように)
+                if (ghost && to < 4 && !el.firstElementChild) {
+                    ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+                    ghost.setAttribute('aria-hidden', 'true');
+                    ghost.inert = true;
+                    Object.assign(ghost.style, {
+                        position: 'absolute', left: '0', top: '0', width: el.clientWidth + 'px', height: from + 'px',
+                        margin: '0', pointerEvents: 'none', overflow: 'hidden'
+                    });
+                    if (getComputedStyle(el).position === 'static') {
+                        el.style.position = 'relative';
+                        el._heightGhostPos = true;
+                    }
+                    el.appendChild(ghost);
+                    el._heightGhost = ghost;
+                    ghost.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-6px)' }], {
+                        duration: 180, easing: 'ease-in', fill: 'forwards'
+                    });
+                }
                 const anim = el.animate([{ height: `${from}px` }, { height: `${to}px` }], {
                     duration: 240,
                     easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)'
                 });
                 el._heightAnim = anim;
                 const done = () => {
+                    if (el._heightGhost) { el._heightGhost.remove(); el._heightGhost = null; }
+                    if (el._heightGhostPos) { el.style.position = ''; el._heightGhostPos = false; }
                     if (el._heightAnim !== anim) return;
                     el._heightAnim = null;
                     el.style.overflow = '';
@@ -23858,6 +24234,40 @@
                 anim.onfinish = done;
                 anim.oncancel = done;
             }
+
+            // ── ポップアップを閉じるときの動き ──
+            // どのポップアップも .show を外すと消える作りなので、外れた瞬間(描く前)に .is-closing を付けて
+            // 0.18秒だけ残し、薄くしてから消す。閉じている途中でまた開いたら、すぐやめる
+            (function initOverlayCloseFade() {
+                if (!('MutationObserver' in window)) return;
+                const SEL = '.custom-confirm-overlay, .about-overlay, .tsumiki-overlay, .calendar-day-dialog-overlay, .priority-color-overlay, .date-picker-overlay';
+                const timers = new WeakMap();
+                const finish = (el) => {
+                    clearTimeout(timers.get(el));
+                    timers.delete(el);
+                    el.classList.remove('is-closing');
+                };
+                const mo = new MutationObserver(records => {
+                    records.forEach(r => {
+                        const el = r.target;
+                        if (!el.matches || !el.matches(SEL)) return;
+                        const wasOpen = (r.oldValue || '').split(/\s+/).includes('show');
+                        const isOpen = el.classList.contains('show');
+                        if (isOpen) { if (el.classList.contains('is-closing')) finish(el); return; }
+                        if (!wasOpen || el.classList.contains('is-closing') || prefersReducedMotion()) return;
+                        el.classList.add('is-closing');
+                        timers.set(el, setTimeout(() => finish(el), 190));
+                    });
+                });
+                const watch = () => document.querySelectorAll(SEL).forEach(el => {
+                    if (el._closeFadeWatched) return;
+                    el._closeFadeWatched = true;
+                    mo.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+                });
+                watch();
+                // あとから作られるポップアップもあるので、ときどき見直す(軽い)
+                document.addEventListener('click', () => setTimeout(watch, 0), true);
+            })();
 
             // ── 自動の伸び縮み ──
             // 設定の中の項目が出たり消えたりして枠の高さが変わったとき、ぱっと切り替えずに伸び縮みさせる。
@@ -24228,7 +24638,7 @@
                 const text = document.getElementById('timerTodoText');
                 if (!line || !text) return;
                 let show = false;
-                if (isTodoTimerLineEnabled() && getMenuVisibility().todo) {
+                if (isTodoTimerLineEnabled() && isPageFeatureOn('todo')) {
                     try {
                         const today = (buckets || getTodoBuckets(readTodos())).today;
                         const open = today.filter(it => !it.done).length;
@@ -24383,6 +24793,7 @@
                 const done = getTodayRecordedMs() + goalLiveMs;
                 const text = document.getElementById('timerGoalText');
                 if (!goalOn) {
+                    updateGoalRing(null);
                     // 前の表示では目標がなければ何も出さない。今の表示では「今日 ◯分」だけ出す
                     const line = !classic && done >= 60000 ? getText('todayLine').replace('{t}', formatChartHours(done / 3600000)) : '';
                     el.hidden = !line;
@@ -24396,6 +24807,7 @@
                 el.classList.remove('no-goal');
                 el.classList.toggle('reached', reached);
                 el.style.setProperty('--goal', (Math.min(1, done / goalMs) * 100).toFixed(1) + '%');
+                updateGoalRing(Math.min(1, done / goalMs), reached);
                 if (text) {
                     text.textContent = getText(reached ? 'goalReached' : 'goalProgress')
                         .replace('{t}', formatChartHours(done / 3600000))
@@ -24403,6 +24815,54 @@
                 }
             }
             setInterval(() => updateGoalLine(), 30000); // 日付が変わったときなど
+
+            // ── 1日の目標の進み具合を、タイマーの台のふちに描く(上のまん中から時計回り) ──
+            // ratio が null のときは消す。前の表示(timer-classic)では、これまでどおり小さな線だけ
+            let goalRingRatio = null;
+            function updateGoalRing(ratio, reached) {
+                const stage = document.getElementById('timerStage');
+                if (!stage) return;
+                let svg = stage.querySelector('.goal-ring');
+                if (ratio == null) {
+                    goalRingRatio = null;
+                    if (svg) svg.remove();
+                    return;
+                }
+                if (!svg) {
+                    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('class', 'goal-ring');
+                    svg.setAttribute('aria-hidden', 'true');
+                    svg.innerHTML = '<path class="goal-ring-track" /><path class="goal-ring-fill" pathLength="1000" />';
+                    stage.appendChild(svg);
+                    if (window.ResizeObserver && !stage._goalRingRO) {
+                        stage._goalRingRO = new ResizeObserver(() => { if (goalRingRatio != null) layoutGoalRing(); });
+                        stage._goalRingRO.observe(stage);
+                    }
+                }
+                goalRingRatio = ratio;
+                svg.classList.toggle('reached', !!reached);
+                layoutGoalRing();
+            }
+
+            function layoutGoalRing() {
+                const stage = document.getElementById('timerStage');
+                const svg = stage && stage.querySelector('.goal-ring');
+                if (!svg) return;
+                const w = stage.clientWidth, h = stage.clientHeight;
+                if (!w || !h) return;
+                const inset = 1.5; // 線の太さの半分だけ内側に(台のふちにぴったり重なる)
+                const r0 = parseFloat(getComputedStyle(stage).borderTopLeftRadius) || 28;
+                const r = Math.max(0, Math.min(r0, w / 2, h / 2) - inset);
+                const L = inset, T = inset, R = w - inset, B = h - inset;
+                const d = `M ${w / 2} ${T} H ${R - r} A ${r} ${r} 0 0 1 ${R} ${T + r} V ${B - r} A ${r} ${r} 0 0 1 ${R - r} ${B} `
+                    + `H ${L + r} A ${r} ${r} 0 0 1 ${L} ${B - r} V ${T + r} A ${r} ${r} 0 0 1 ${L + r} ${T} Z`;
+                svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                svg.querySelectorAll('path').forEach(p => p.setAttribute('d', d));
+                const fill = svg.querySelector('.goal-ring-fill');
+                const len = Math.round((goalRingRatio || 0) * 1000);
+                fill.style.strokeDasharray = `${len} 1000`;
+                fill.style.opacity = len > 0 ? '' : '0';
+            }
 
             // ── 受験カウントダウン(デフォルトOFF。ONにすると日付を聞く) ──
             function isExamEnabled() {
@@ -24536,7 +24996,7 @@
                     });
                 }
 
-                if (vis.todo) {
+                if (isPageFeatureOn('todo')) {
                     const t = countTodayTodos();
                     if (t) {
                         const value = !t.total ? getText('burstTodoNone')
@@ -34951,11 +35411,15 @@
                     showMenuOrderWarning(getText('menuLastVisibleHint'));
                     return false;
                 }
+                // 使っていない音楽･ToDoをメニューに出すときは、使う状態にもする
+                if (visible && (key === 'music' || key === 'todo') && !isPageFeatureOn(key)) {
+                    saveData('feature_' + key, 'true');
+                    syncPageFeatureToggles();
+                    if (key === 'music') updateMusicRelatedSettingsVisibility();
+                    if (key === 'todo') updateTodoLine();
+                }
                 vis[key] = visible;
                 saveMenuVisibility(vis);
-                const featureToggle = document.getElementById(key === 'music' ? 'toggleMusic' : key === 'todo' ? 'toggleTodo' : '');
-                if (featureToggle) featureToggle.classList.toggle('active', visible);
-                if (key === 'music') updateMusicRelatedSettingsVisibility();
                 buildMenuOrderList();
                 rebuildMenu();
                 return true;
@@ -35005,27 +35469,72 @@
                     try {
                         const o = JSON.parse(saved);
                         if (o && typeof o === 'object') {
+                            // 音楽とToDoは「使う」がオンのときだけメニューに出せる
                             return {
                                 timer: o.timer !== false,
                                 stats: o.stats !== false,
                                 list: o.list !== false,
-                                music: !!o.music,
-                                todo: !!o.todo
+                                music: isPageFeatureOn('music') && !!o.music,
+                                todo: isPageFeatureOn('todo') && !!o.todo
                             };
                         }
                     } catch (e) { }
                 }
                 return {
                     timer: true, stats: true, list: true,
-                    music: getData('feature_music') === 'true',
-                    todo: getData('feature_todo') === 'true'
+                    music: isPageFeatureOn('music'),
+                    todo: isPageFeatureOn('todo')
                 };
             }
 
+            // メニューに出すかどうかだけを保存する(音楽とToDoを使うかどうかは feature_music / feature_todo に別に持つ)
             function saveMenuVisibility(vis) {
                 saveData('menu_visibility', JSON.stringify(vis));
-                saveData('feature_music', vis.music ? 'true' : 'false');
-                saveData('feature_todo', vis.todo ? 'true' : 'false');
+            }
+
+            // ── 音楽とToDoを「使う」かどうか(メニューに出すかどうかとは別) ──
+            // オフ: メニューにも出さず、タイマーの下のToDoや音楽の設定もしまう。
+            // オン: 使える状態。メニューに出すかどうかは「基本 → メニュー」で別に決める
+            function isPageFeatureOn(key) {
+                return getData('feature_' + key) === 'true';
+            }
+
+            function syncPageFeatureToggles() {
+                const m = document.getElementById('toggleMusic');
+                if (m) m.classList.toggle('active', isPageFeatureOn('music'));
+                const t = document.getElementById('toggleTodo');
+                if (t) t.classList.toggle('active', isPageFeatureOn('todo'));
+                const todoRelated = document.getElementById('todoRelatedSettings');
+                if (todoRelated) todoRelated.hidden = !isPageFeatureOn('todo');
+                const todoNote = document.getElementById('todoDisabledNote');
+                if (todoNote) todoNote.hidden = isPageFeatureOn('todo');
+            }
+
+            function setPageFeatureEnabled(key, on) {
+                if (key !== 'music' && key !== 'todo') return;
+                if (isPageFeatureOn(key) !== on) {
+                    saveData('feature_' + key, on ? 'true' : 'false');
+                    // 使い始めたときは、メニューにも出す(あとで「基本 → メニュー」で隠せる)
+                    if (on) {
+                        const vis = getMenuVisibility();
+                        vis[key] = true;
+                        saveMenuVisibility(vis);
+                    }
+                }
+                applyPageFeatureState(key);
+            }
+
+            function togglePageFeature(key) {
+                setPageFeatureEnabled(key, !isPageFeatureOn(key));
+            }
+
+            function applyPageFeatureState(key) {
+                syncPageFeatureToggles();
+                if (key === 'music') updateMusicRelatedSettingsVisibility();
+                if (key === 'todo') updateTodoLine();
+                // いま開いているページを使わなくしたときは、rebuildMenu がメニューの先頭のページへ移す
+                buildMenuOrderList();
+                rebuildMenu();
             }
 
             function saveMenuOrder(order) {
@@ -35054,7 +35563,8 @@
 
                 // 現在アクティブなページキーを取得
                 const activePageEl = document.querySelector('.page.active');
-                let currentKey = 'timer';
+                // 設定を開いている間は、どのボタンも選ばれていない形のままにする
+                let currentKey = activePageEl && activePageEl.id === 'settingsPage' ? null : 'timer';
                 if (activePageEl) {
                     const found = Object.entries(MENU_PAGE_IDS).find(([k, v]) => v === activePageEl.id);
                     if (found) currentKey = found[0];
@@ -35170,13 +35680,29 @@
                 } else {
                     document.body.classList.toggle('menu-fixed-on', getData('menu_fixed') === 'true');
                     document.body.style.paddingBottom = '';
+                    // 下のメニュー用に付けた位置と幅を外す
+                    const menu = document.querySelector('.menu');
+                    if (menu) menu.style.left = menu.style.right = menu.style.width = '';
                 }
             }
 
             function syncBottomMenuPadding() {
-                if (!document.body.classList.contains('menu-mode-bottom')) return;
                 const menu = document.querySelector('.menu');
                 if (!menu) return;
+                // 1段に詰めるときは、広い画面でも中身(.container の内側)と同じ幅･位置に置く
+                const fitWide = document.body.classList.contains('menu-mode-bottom') && isMenuBottomFit() && window.innerWidth > 600;
+                if (fitWide) {
+                    const c = document.querySelector('.container');
+                    const r = c.getBoundingClientRect();
+                    const cs = getComputedStyle(c);
+                    const pl = parseFloat(cs.paddingLeft) || 0, pr = parseFloat(cs.paddingRight) || 0;
+                    menu.style.left = Math.round(r.left + pl) + 'px';
+                    menu.style.right = 'auto';
+                    menu.style.width = Math.round(r.width - pl - pr) + 'px';
+                } else {
+                    menu.style.left = menu.style.right = menu.style.width = '';
+                }
+                if (!document.body.classList.contains('menu-mode-bottom')) return;
                 const menuH = menu.offsetHeight;
                 // エディターモードの終了バッジ(右下の小さなピル)をボトムメニューの上に浮かせるための高さ
                 document.documentElement.style.setProperty('--bottom-menu-h', menuH + 'px');
@@ -35239,6 +35765,30 @@
                     const el = document.getElementById(id);
                     if (el) el.style.display = pos === 'bottom' ? 'none' : '';
                 });
+                // 「1段に詰める」は下に固定のときだけ
+                ['menuBottomFitItem', 'menuBottomFitNote'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = pos === 'bottom' ? '' : 'none';
+                });
+                const fitToggle = document.getElementById('toggleMenuBottomFit');
+                if (fitToggle) fitToggle.classList.toggle('active', isMenuBottomFit());
+            }
+
+            // ── 下のメニューを1段に詰める(標準はオン) ──
+            function isMenuBottomFit() {
+                return getData('menu_bottom_fit') !== 'false';
+            }
+
+            function applyMenuBottomFit() {
+                document.body.classList.toggle('menu-bottom-fit', isMenuBottomFit());
+            }
+
+            function toggleMenuBottomFit() {
+                saveData('menu_bottom_fit', isMenuBottomFit() ? 'false' : 'true');
+                applyMenuBottomFit();
+                updateMenuModeSettingsUI();
+                balanceMenuWrap();
+                syncBottomMenuPadding();
             }
 
             function onMenuFixedToggle() {
@@ -35272,8 +35822,107 @@
                     if (r.width < 2 || r.height < 2) return;
                     if (menuRect.left - gap < r.right && menuRect.right + gap > r.left) overlaps = true;
                 });
-                menu.style.top = overlaps ? '' : '20px';
+                if (overlaps) {
+                    menu.style.top = '';
+                    return;
+                }
+                // 時計･右上のボタンと同じ段に置くときは、ボタンの縦のまん中をそろえる
+                const ref = document.querySelector('.top-buttons .settings-btn') || document.querySelector('.top-buttons');
+                const btn = menu.querySelector('button');
+                if (!ref || !btn) { menu.style.top = '20px'; return; }
+                const rs = getComputedStyle(document.documentElement);
+                const barY = parseFloat(rs.getPropertyValue('--topbar-y')) || 20;
+                const barH = parseFloat(rs.getPropertyValue('--topbar-h')) || ref.offsetHeight;
+                const padTop = parseFloat(getComputedStyle(menu).paddingTop) || 0;
+                menu.style.top = Math.round(barY + barH / 2 - padTop - btn.offsetHeight / 2) + 'px';
             }
+
+            // ===== 左右にスワイプしてページを切り替える(指だけ。マウスでは動かない) =====
+            function isMenuSwipeEnabled() {
+                return getData('menu_swipe') !== 'false'; // 標準はオン
+            }
+
+            function syncMenuSwipeToggle() {
+                const t = document.getElementById('toggleMenuSwipe');
+                if (t) t.classList.toggle('active', isMenuSwipeEnabled());
+            }
+
+            function toggleMenuSwipeSetting() {
+                saveData('menu_swipe', isMenuSwipeEnabled() ? 'false' : 'true');
+                syncMenuSwipeToggle();
+            }
+
+            (function initPageSwipe() {
+                // 横に動かす操作がもともとある所では始めない(時刻のドラム、再生位置、積み木の山、並べ替えのつまみ など)
+                const SKIP = 'input, textarea, select, [contenteditable="true"], .time-drum, .progress-container, '
+                    + '.volume-control, #tsumikiCanvas, .mo-drag-handle, .plm-handle, .drag-handle, [draggable="true"], '
+                    + '.todo-picker-board, .todo-picker-hue';
+                const EDGE = 24; // 画面の端は、ブラウザの「戻る」に使われるのでさける
+                let start = null;
+
+                function scrollsSideways(el, page) {
+                    for (let n = el; n && n !== page; n = n.parentElement) {
+                        if (n.scrollWidth > n.clientWidth + 2) {
+                            const ox = getComputedStyle(n).overflowX;
+                            if (ox === 'auto' || ox === 'scroll') return true;
+                        }
+                    }
+                    return false;
+                }
+
+                function swipeOrder() {
+                    const vis = getMenuVisibility();
+                    return getMenuOrder().filter(k => k !== MENU_BREAK_KEY && vis[k] && MENU_PAGE_IDS[k]);
+                }
+
+                document.addEventListener('touchstart', (e) => {
+                    start = null;
+                    if (!isMenuSwipeEnabled() || e.touches.length !== 1 || editorModeActive) return;
+                    const t = e.touches[0];
+                    if (t.clientX < EDGE || t.clientX > window.innerWidth - EDGE) return;
+                    const page = e.target.closest && e.target.closest('.container .page.active');
+                    if (!page || page.id === 'settingsPage') return;
+                    if (e.target.closest(SKIP) || scrollsSideways(e.target, page)) return;
+                    start = { x: t.clientX, y: t.clientY, at: performance.now(), page };
+                }, { passive: true });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (!start) return;
+                    const t = e.touches[0];
+                    // はっきり縦に動いたら、ふつうのスクロールとして扱う
+                    if (Math.abs(t.clientY - start.y) > 30 && Math.abs(t.clientY - start.y) > Math.abs(t.clientX - start.x)) start = null;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    if (!start) return;
+                    const s = start;
+                    start = null;
+                    const t = e.changedTouches[0];
+                    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+                    const dt = performance.now() - s.at;
+                    // 横にしっかり動かしたときだけ(ゆっくりなら長めに)
+                    if (Math.abs(dx) < (dt < 400 ? 60 : 110) || Math.abs(dx) < Math.abs(dy) * 2 || dt > 900) return;
+                    const sel = window.getSelection && window.getSelection();
+                    if (sel && !sel.isCollapsed) return;
+                    const order = swipeOrder();
+                    const cur = Object.keys(MENU_PAGE_IDS).find(k => MENU_PAGE_IDS[k] === s.page.id);
+                    const i = order.indexOf(cur);
+                    if (i < 0) return;
+                    const forward = dx < 0; // 左へ払うと次のページ
+                    const next = order[i + (forward ? 1 : -1)];
+                    if (!next) return;
+                    showPage(next);
+                    const el = document.getElementById(MENU_PAGE_IDS[next]);
+                    if (el) {
+                        el.classList.remove('page-swipe-next', 'page-swipe-prev');
+                        void el.offsetWidth;
+                        el.classList.add(forward ? 'page-swipe-next' : 'page-swipe-prev');
+                        setTimeout(() => el.classList.remove('page-swipe-next', 'page-swipe-prev'), 300);
+                    }
+                }, { passive: true });
+
+                document.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+            })();
 
             // ===== メニュー順序UI =====
 
@@ -35445,6 +36094,8 @@
             // ===== 初期化 =====
 
             function initMenuCustomization() {
+                syncMenuSwipeToggle();
+                applyMenuBottomFit();
                 const mode = getData('menu_mode') || 'normal';
                 const display = getData('menu_display') || 'text';
                 const fixed = getData('menu_fixed') === 'true';
@@ -35584,9 +36235,6 @@
                     saveData('theme', currentTheme);
                 }
                 updateTsumikiLogoSources();
-                const vis = getMenuVisibility();
-                const musicEnabled = vis.music;
-                const todoEnabled = vis.todo;
 
                 // フォーカスモード設定を初期化
                 const focusInfoEnabled = getData('feature_focus_mode_display') !== 'false'; // デフォルトはtrue
@@ -35634,8 +36282,7 @@
                     });
                 });
 
-                if (musicEnabled) document.getElementById('toggleMusic')?.classList.add('active');
-                if (todoEnabled) document.getElementById('toggleTodo')?.classList.add('active');
+                syncPageFeatureToggles();
                 updateMusicRelatedSettingsVisibility();
                 initMenuCustomization();
 
@@ -36830,8 +37477,9 @@
                 if (key === 'menu_list_visible') return getMenuVisibility().list;
                 if (key === 'menu_timer_visible') return getMenuVisibility().timer;
                 if (key === 'menu_stats_visible') return getMenuVisibility().stats;
-                if (key === 'menu_music_visible' || key === 'feature_music') return getMenuVisibility().music;
-                if (key === 'menu_todo_visible' || key === 'feature_todo') return getMenuVisibility().todo;
+                if (key === 'menu_music_visible') return getMenuVisibility().music;
+                if (key === 'menu_todo_visible') return getMenuVisibility().todo;
+                if (key === 'feature_music' || key === 'feature_todo') return isPageFeatureOn(key.slice(8));
                 if (key === 'feature_todo_timer_line') return isTodoTimerLineEnabled();
                 if (key === 'manual_record_enabled') return isManualRecordEnabled();
                 var val = getData(key);
