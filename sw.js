@@ -77,7 +77,7 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
-        const keep = [CACHE, FONT_CACHE];
+        const keep = [CACHE, FONT_CACHE, 'tsumiki-push-log'];
         const keys = await caches.keys();
         await Promise.all(keys.filter(k => !keep.includes(k)).map(k => caches.delete(k)));
         await self.clients.claim();
@@ -140,6 +140,53 @@ function withTimeout(promise, ms) {
         promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
     });
 }
+
+// 通知サーバー(tsumiki-push)からの通知。中身は { k: 'todo', l: 'ja'|'en', m: 何分前, h: '7:30', n: 件数 } だけ
+// (ToDo の文字は預けていないので、時刻だけの文にする)。届いたら必ず通知を出す決まり
+// 受け取った記録(いつ届いたか･表示できたか)を残す。アプリの「テスト通知を送る」で、届いたかどうかを確かめるのに使う
+const PUSH_LOG_CACHE = 'tsumiki-push-log';
+async function writePushLog(entry) {
+    try {
+        const cache = await caches.open(PUSH_LOG_CACHE);
+        await cache.put('push-log', new Response(JSON.stringify({ ...entry, at: Date.now() })));
+    } catch (e) { }
+}
+
+self.addEventListener('push', (event) => {
+    let d = {};
+    let parseError = '';
+    try { d = event.data ? event.data.json() : {}; } catch (e) { d = {}; parseError = String(e); }
+    const en = d.l === 'en';
+    const h = typeof d.h === 'string' ? d.h : '';
+    const m = Number(d.m) || 0;
+    const n = Number(d.n) || 1;
+    let body, tag;
+    if (d.k === 'test') {
+        body = en ? 'Test from the notification server' : '通知サーバーからのテスト通知です';
+        tag = 'tsumiki-test';
+    } else {
+        if (en) {
+            body = m > 0 ? `Your ${h} ToDo starts in ${m} min` : `It's time for your ${h} ToDo`;
+            if (n > 1) body += ` (${n})`;
+        } else {
+            body = m > 0 ? `${h}のToDoまで、あと${m}分です` : `${h}のToDoの時間です`;
+            if (n > 1) body += `(${n}件)`;
+        }
+        tag = 'tsumiki-todo-' + h;
+    }
+    event.waitUntil((async () => {
+        try {
+            await self.registration.showNotification(en ? 'Tsumiki' : 'ツミキapp', {
+                body,
+                icon: 'app-icon-192.png',
+                tag
+            });
+            await writePushLog({ kind: d.k || '', shown: true, hasData: !!event.data, parseError });
+        } catch (e) {
+            await writePushLog({ kind: d.k || '', shown: false, error: String(e), hasData: !!event.data, parseError });
+        }
+    })());
+});
 
 // 通知を押したらアプリを前に出す
 self.addEventListener('notificationclick', (event) => {
