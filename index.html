@@ -16097,31 +16097,53 @@
             }
         }
 
-        /* ── 形「ドット」: 角丸をやめ、押せるもの(ボタン・入力欄・トグル)の角を3段の階段に切る ──
-           箱(カード・パネル)は中のメニューが切れないよう、角を四角にするだけにする */
-        body.shape-dot {
-            --dot: 3px;
-            --dot-corners: polygon(0 calc(var(--dot) * 3), var(--dot) calc(var(--dot) * 3), var(--dot) calc(var(--dot) * 2), calc(var(--dot) * 2) calc(var(--dot) * 2), calc(var(--dot) * 2) var(--dot), calc(var(--dot) * 3) var(--dot), calc(var(--dot) * 3) 0,
-                    calc(100% - var(--dot) * 3) 0, calc(100% - var(--dot) * 3) var(--dot), calc(100% - var(--dot) * 2) var(--dot), calc(100% - var(--dot) * 2) calc(var(--dot) * 2), calc(100% - var(--dot)) calc(var(--dot) * 2), calc(100% - var(--dot)) calc(var(--dot) * 3), 100% calc(var(--dot) * 3),
-                    100% calc(100% - var(--dot) * 3), calc(100% - var(--dot)) calc(100% - var(--dot) * 3), calc(100% - var(--dot)) calc(100% - var(--dot) * 2), calc(100% - var(--dot) * 2) calc(100% - var(--dot) * 2), calc(100% - var(--dot) * 2) calc(100% - var(--dot)), calc(100% - var(--dot) * 3) calc(100% - var(--dot)), calc(100% - var(--dot) * 3) 100%,
-                    calc(var(--dot) * 3) 100%, calc(var(--dot) * 3) calc(100% - var(--dot)), calc(var(--dot) * 2) calc(100% - var(--dot)), calc(var(--dot) * 2) calc(100% - var(--dot) * 2), var(--dot) calc(100% - var(--dot) * 2), var(--dot) calc(100% - var(--dot) * 3), 0 calc(100% - var(--dot) * 3));
+        /* ── 形「ドット」: 角丸を、その丸みの大きさに合わせた「ドットの円」(階段)にする ──
+           角丸は部品ごとにばらばらに決まっているので、JS(DotShape)が要素ごとに元の角丸を読み、
+           その丸の内側にちょうど収まる階段の clip-path(と枠の絵)を作って data-dot などの印をつける。
+           角丸そのものは残す(丸の内側で切るので見えない。状態で角丸が変わっても読み直せる) */
+
+        /* JS では読めない、ブラウザの部品の中(スライダーのつまみ・スクロールバー) */
+        body.shape-dot input[type="range"]::-webkit-slider-thumb {
+            border-radius: 0;
+            clip-path: polygon(0 25%, 12.5% 25%, 12.5% 12.5%, 25% 12.5%, 25% 0, 75% 0, 75% 12.5%, 87.5% 12.5%, 87.5% 25%, 100% 25%,
+                    100% 75%, 87.5% 75%, 87.5% 87.5%, 75% 87.5%, 75% 100%, 25% 100%, 25% 87.5%, 12.5% 87.5%, 12.5% 75%, 0 75%);
         }
 
-        body.shape-dot,
-        body.shape-dot *,
-        body.shape-dot *::before,
-        body.shape-dot *::after {
-            border-radius: 0 !important;
+        body.shape-dot input[type="range"]::-moz-range-thumb {
+            border-radius: 0;
+            clip-path: polygon(0 25%, 12.5% 25%, 12.5% 12.5%, 25% 12.5%, 25% 0, 75% 0, 75% 12.5%, 87.5% 12.5%, 87.5% 25%, 100% 25%,
+                    100% 75%, 87.5% 75%, 87.5% 87.5%, 75% 87.5%, 75% 100%, 25% 100%, 25% 87.5%, 12.5% 87.5%, 12.5% 75%, 0 75%);
         }
 
-        body.shape-dot :is(button, select, textarea, [role="button"], .toggle-switch,
-            input:not([type]), input[type="text"], input[type="number"], input[type="search"], input[type="url"],
-            input[type="time"], input[type="date"], input[type="email"], input[type="password"]) {
-            clip-path: var(--dot-corners);
+        body.shape-dot input[type="range"]::-webkit-slider-runnable-track,
+        body.shape-dot input[type="range"]::-moz-range-track,
+        body.shape-dot input[type="range"]::-moz-range-progress,
+        body.shape-dot ::-webkit-scrollbar-thumb,
+        body.shape-dot ::-webkit-scrollbar-track {
+            border-radius: 0;
+        }
+
+        /* 目標のふちの線: 階段の角で線がとぎれないよう、つなぎ目をとがらせる */
+        body.shape-dot .goal-ring path {
+            stroke-linejoin: miter;
+        }
+
+        body.shape-dot .goal-ring-fill {
+            stroke-linecap: butt;
+        }
+
+        /* ToDo の今日の残りの輪も、ドットのふちにする(なめらかにしない) */
+        body.shape-dot .todo-ring circle {
+            shape-rendering: crispEdges;
+        }
+
+        body.shape-dot .todo-ring-fill {
+            stroke-linecap: butt;
         }
 
         /* 角を切ると外側のフォーカスの輪が見えなくなるので、内側に線を引く */
         body.shape-dot :is(button, select, textarea, [role="button"], input):focus-visible {
+            border-radius: 0 !important;
             outline: 2px solid currentColor;
             outline-offset: -5px;
         }
@@ -17745,7 +17767,7 @@
                     <div class="custom-select" style="width: 100%;">
                         <select id="shapeStyleSelect" onchange="setShapeStyle(this.value)">
                             <option value="round" data-i18n="shapeStyleRound">まるい(これまでどおり)</option>
-                            <option value="dot" data-i18n="shapeStyleDot">ドット(角のない形)</option>
+                            <option value="dot" data-i18n="shapeStyleDot">ドット(角がドットの丸)</option>
                         </select>
                         <div class="select-arrow">▾</div>
                     </div>
@@ -19101,7 +19123,7 @@
                     iconStyleSvg: 'すべて線',
                     shapeStyleSetting: '形',
                     shapeStyleRound: 'まるい(これまでどおり)',
-                    shapeStyleDot: 'ドット(角のない形)',
+                    shapeStyleDot: 'ドット(角がドットの丸)',
                     burstToday: '今日',
                     burstGoal: '目標まで',
                     burstGoalLeft: 'あと{t}',
@@ -20178,7 +20200,7 @@
                     iconStyleSvg: 'All line',
                     shapeStyleSetting: 'Shape',
                     shapeStyleRound: 'Round (default)',
-                    shapeStyleDot: 'Pixel (no rounded corners)',
+                    shapeStyleDot: 'Pixel (pixel-art rounded corners)',
                     burstToday: 'Today',
                     burstGoal: 'Goal',
                     burstGoalLeft: '{t} to go',
@@ -23183,11 +23205,24 @@
                 const w = stage.clientWidth, h = stage.clientHeight;
                 if (!w || !h) return;
                 const inset = 1.5; // 線の太さの半分だけ内側に(台のふちにぴったり重なる)
-                const r0 = parseFloat(getComputedStyle(stage).borderTopLeftRadius) || 28;
-                const r = Math.max(0, Math.min(r0, w / 2, h / 2) - inset);
                 const L = inset, T = inset, R = w - inset, B = h - inset;
-                const d = `M ${w / 2} ${T} H ${R - r} A ${r} ${r} 0 0 1 ${R} ${T + r} V ${B - r} A ${r} ${r} 0 0 1 ${R - r} ${B} `
-                    + `H ${L + r} A ${r} ${r} 0 0 1 ${L} ${B - r} V ${T + r} A ${r} ${r} 0 0 1 ${L + r} ${T} Z`;
+                const dotPs = DotShape.profilesOf(stage);
+                let d;
+                if (dotPs) {
+                    // 形「ドット」: 台の角と同じ階段をたどる(上のまん中から時計回り)
+                    const c = dotPs.map(p => DotShape.cornerPts(p));
+                    const pts = [[w / 2, T]];
+                    c[1].slice().reverse().forEach(([x, y]) => pts.push([w - x - inset, y + inset]));
+                    c[2].forEach(([x, y]) => pts.push([w - x - inset, h - y - inset]));
+                    c[3].slice().reverse().forEach(([x, y]) => pts.push([x + inset, h - y - inset]));
+                    c[0].forEach(([x, y]) => pts.push([x + inset, y + inset]));
+                    d = 'M ' + pts.map(([x, y]) => `${x} ${y}`).join(' L ') + ' Z';
+                } else {
+                    const r0 = parseFloat(getComputedStyle(stage).borderTopLeftRadius);
+                    const r = Math.max(0, Math.min(isNaN(r0) ? 28 : r0, w / 2, h / 2) - inset);
+                    d = `M ${w / 2} ${T} H ${R - r} A ${r} ${r} 0 0 1 ${R} ${T + r} V ${B - r} A ${r} ${r} 0 0 1 ${R - r} ${B} `
+                        + `H ${L + r} A ${r} ${r} 0 0 1 ${L} ${B - r} V ${T + r} A ${r} ${r} 0 0 1 ${L + r} ${T} Z`;
+                }
                 svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
                 svg.querySelectorAll('path').forEach(p => p.setAttribute('d', d));
                 const fill = svg.querySelector('.goal-ring-fill');
@@ -30870,9 +30905,406 @@
             function applyShapeStyle() {
                 const style = getShapeStyle();
                 document.body.classList.toggle('shape-dot', style === 'dot');
+                DotShape.setOn(style === 'dot');
                 const select = document.getElementById('shapeStyleSelect');
                 if (select) select.value = style;
+                if (typeof layoutGoalRing === 'function') layoutGoalRing();
             }
+
+            // ── 形「ドット」のしくみ ──
+            // 角丸は部品ごとに CSS でばらばらに決まっているので、要素ごとに元の角丸(4つの角)を読み、
+            // その大きさに合わせた「ドットの円の4分の1」で角を切る。同じ形は1つの CSS ルールを使い回す。
+            // ・clip-path は箱の外側を大きく残す(はみ出すメニューや印を切らない)。切るのは角の外側だけ
+            // ・枠線がある要素は、階段の斜めの所で線がとぎれるので、同じ色の「階段の枠」を border-image で描き直す
+            // ・あとから出てくる要素・大きさが変わる要素・状態で枠の色が変わる要素も追いかける
+            const DotShape = (() => {
+                const BIG = 4000;
+                let on = false, styleEl = null, mo = null, ro = null, rafId = 0, borderRaf = 0;
+                const made = new Set();
+                const borderEls = new Set();
+                const pendingRoots = new Set();
+                let fullScan = false;
+
+                function sheet() {
+                    if (!styleEl) {
+                        styleEl = document.createElement('style');
+                        styleEl.id = 'dotShapeRules';
+                        document.head.appendChild(styleEl);
+                    }
+                    return styleEl.sheet;
+                }
+
+                // 角1つぶんの階段: 上の行から順に「左から何ドット欠けるか」(ドットの円の4分の1)
+                // 元の丸(半径 r)の内側に、ドットがまるごと収まるように切る(丸のふちが階段の外に出ない)
+                function cornerProfile(r) {
+                    if (!(r >= 3)) return null;
+                    // ドットの大きさ: 大きな丸は大きなドット、小さな丸(トグルのつまみなど)は細かいドット
+                    const d = r >= 20 ? 4 : r >= 13 ? 3 : r >= 5 ? 2 : 1;
+                    const ins = [];
+                    for (let y = 0; y * d < r; y++) {
+                        const dy = r - y * d;
+                        const dx = Math.sqrt(Math.max(0, r * r - dy * dy));
+                        ins.push(Math.max(0, Math.ceil((r - dx) / d - 1e-6)));
+                    }
+                    while (ins.length && ins[ins.length - 1] === 0) ins.pop();
+                    return ins.length ? { d, ins } : null;
+                }
+
+                // 左上の角を、左の辺 (0, n*d) から上の辺 (x0, 0) まで階段でたどる点
+                // まるい部品(高さの半分が丸)では、上の角と下の角の階段がまん中でぴったり会うよう、半分(cap)で止める
+                function cornerPts(p) {
+                    if (!p) return [[0, 0]];
+                    // 半分まで1ドットも残らないときは、半分まで階段をのばす(まん中に1ドットの出っぱりが残らないように)
+                    const lim = v => p.cap ? (v > p.cap - p.d ? p.cap : v) : v;
+                    const pts = [];
+                    let x = 0;
+                    for (let y = p.ins.length - 1; y >= 0; y--) {
+                        const ix = lim(p.ins[y] * p.d);
+                        if (ix !== x) { pts.push([x, lim((y + 1) * p.d)], [ix, lim((y + 1) * p.d)]); x = ix; }
+                    }
+                    pts.push([x, 0]);
+                    return pts;
+                }
+
+                const fx = (v, fromRight) => v === 'H' ? '50%' : fromRight ? (v > 0 ? `calc(100% - ${v}px)` : v < 0 ? `calc(100% + ${-v}px)` : '100%') : (v ? `${v}px` : '0');
+                const pt = (x, rx, y, ry) => `${fx(x, rx)} ${fx(y, ry)}`;
+
+                // 4つの角(左上・右上・右下・左下)の形から clip-path を作る。外側は大きく残し、角の外だけ穴にする
+                function clipFor(profiles) {
+                    // 半分で止めた所は、端数でずれないよう 50% と書く('H')
+                    const [tl, tr, br, bl] = profiles.map(p => cornerPts(p).map(([x, y]) => [p && p.cap && x === p.cap ? 'H' : x, p && p.cap && y === p.cap ? 'H' : y]));
+                    // 穴(角の外)は箱の外へ1pxはみ出させる。箱のふちと切り取りの線が重なると、半端な位置で細い線が残るため
+                    const E = 1;
+                    const hole = (pts, rx, ry) => {
+                        if (pts.length < 2) return [];
+                        const [sx, sy] = pts[0], [ex, ey] = pts[pts.length - 1];
+                        // 角の外の点 (-E,-E) → 上の辺の外 → 階段(上の辺から左の辺へ) → 左の辺の外
+                        return [pt(-E, rx, -E, ry), pt(ex, rx, -E, ry), ...pts.slice().reverse().map(([x, y]) => pt(x, rx, y, ry)), pt(-E, rx, sy, ry), pt(-E, rx, -E, ry)];
+                    };
+                    const out = ['evenodd', `-${BIG}px -${BIG}px`];
+                    out.push(...hole(tl, 0, 0), `-${BIG}px -${BIG}px`);
+                    out.push(`calc(100% + ${BIG}px) -${BIG}px`, ...hole(tr, 1, 0), `calc(100% + ${BIG}px) -${BIG}px`);
+                    out.push(`calc(100% + ${BIG}px) calc(100% + ${BIG}px)`, ...hole(br, 1, 1), `calc(100% + ${BIG}px) calc(100% + ${BIG}px)`);
+                    out.push(`-${BIG}px calc(100% + ${BIG}px)`, ...hole(bl, 0, 1), `-${BIG}px calc(100% + ${BIG}px)`);
+                    return `polygon(${out.join(', ')})`;
+                }
+
+                // 角の外側か(左上の角の座標で考える)
+                function cutAt(p, x, y) {
+                    if (!p) return false;
+                    if (p.cap && (x >= p.cap || y >= p.cap)) return false;
+                    let row = Math.floor(y / p.d);
+                    if (p.cap && row >= p.ins.length && y < p.cap) row = p.ins.length - 1;
+                    if (row >= p.ins.length) return false;
+                    let ix = p.ins[row] * p.d;
+                    if (p.cap && ix > p.cap - p.d) ix = p.cap;
+                    return x < ix;
+                }
+
+                // 階段の枠の絵(SVG)。四隅の C×C を border-image で角に置き、まん中を辺にのばす
+                // 実線はまん中の1pxを引きのばす。点線・破線は、まん中に1周期ぶんの点線を描いてくり返す(角は階段の実線)
+                function borderImageFor(profiles, bw, color, style) {
+                    const C = Math.max(bw + 1, ...profiles.map(p => p ? (p.cap ? Math.floor(p.cap) : Math.max(p.ins.length, p.ins[0]) * p.d) : 0));
+                    const dash = style === 'dashed' ? bw * 3 : style === 'dotted' ? bw : 0;
+                    const M = dash ? dash * 2 : 1;
+                    const S = C * 2 + M;
+                    const inside = (x, y) => {
+                        if (x < 0 || y < 0 || x >= S || y >= S) return false;
+                        const L = x < C, T = y < C, R = x >= C + M, B = y >= C + M;
+                        if (L && T) return !cutAt(profiles[0], x, y);
+                        if (R && T) return !cutAt(profiles[1], S - 1 - x, y);
+                        if (R && B) return !cutAt(profiles[2], S - 1 - x, S - 1 - y);
+                        if (L && B) return !cutAt(profiles[3], x, S - 1 - y);
+                        return true;
+                    };
+                    let rects = '';
+                    for (let y = 0; y < S; y++) {
+                        let run = -1;
+                        for (let x = 0; x <= S; x++) {
+                            let ring = false;
+                            if (x < S && inside(x, y)) {
+                                for (let dy = -bw; dy <= bw && !ring; dy++) for (let dx = -bw; dx <= bw; dx++) if (!inside(x + dx, y + dy)) { ring = true; break; }
+                                // 辺のまん中(くり返す所)は、点線・破線のすき間をあける
+                                if (ring && dash) {
+                                    const midX = x >= C && x < C + M, midY = y >= C && y < C + M;
+                                    if (midX && !midY && (x - C) >= dash) ring = false;
+                                    if (midY && !midX && (y - C) >= dash) ring = false;
+                                }
+                            }
+                            if (ring && run < 0) run = x;
+                            if (!ring && run >= 0) { rects += `<rect x="${run}" y="${y}" width="${x - run}" height="1"/>`; run = -1; }
+                        }
+                    }
+                    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" shape-rendering="crispEdges"><g fill="${color}">${rects}</g></svg>`;
+                    return `url("data:image/svg+xml,${encodeURIComponent(svg)}") ${C} / ${C}px / 0 ${dash ? 'round' : 'stretch'}`;
+                }
+
+                function radiusPx(v, w, h) {
+                    const parts = String(v).trim().split(/\s+/);
+                    const one = (s, size) => s.endsWith('%') ? (size > 0 ? parseFloat(s) / 100 * size : NaN) : parseFloat(s);
+                    const rx = one(parts[0], w), ry = one(parts[1] || parts[0], h);
+                    if (isNaN(rx) || isNaN(ry)) return NaN;
+                    return Math.min(rx, ry);
+                }
+
+                // 元の角丸と大きさから、4つの角の形を決める
+                function profilesFor(radii, w, h) {
+                    const cap = w > 0 && h > 0 ? Math.min(w, h) / 2 : Infinity;
+                    let any = false;
+                    const ps = radii.map(v => {
+                        let r = radiusPx(v, w, h);
+                        if (isNaN(r)) return undefined;
+                        r = Math.min(r, cap);
+                        if (r === Infinity) return undefined;
+                        const p = cornerProfile(r);
+                        if (p) {
+                            // 階段が辺の半分を超えるときは、半分で止める
+                            if (Math.max(p.ins.length, p.ins[0]) * p.d > cap - p.d) p.cap = Math.round(cap * 2) / 2;
+                            any = true;
+                        }
+                        return p;
+                    });
+                    if (ps.includes(undefined)) return undefined;   // まだ大きさがわからない
+                    return any ? ps : null;
+                }
+
+                const keyOf = ps => ps.map(p => p ? p.d + ':' + p.ins.join('.') + (p.cap ? '/' + p.cap : '') : '-').join('|');
+
+                function ensureShapeRule(key, ps, kind) {
+                    const id = kind + key;
+                    if (made.has(id)) return;
+                    made.add(id);
+                    const sel = kind === 'el' ? `body.shape-dot [data-dot="${key}"]`
+                        : kind === 'b' ? `body.shape-dot [data-dot-b="${key}"]::before`
+                            : `body.shape-dot [data-dot-a="${key}"]::after`;
+                    try { sheet().insertRule(`${sel} { clip-path: ${clipFor(ps)}; }`, sheet().cssRules.length); } catch (e) { }
+                }
+
+                const RADII = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'];
+                const hasRadius = cs => RADII.some(k => parseFloat(cs[k]) > 0);
+
+                // 要素1つの角丸を読む(フォーカスの輪を四角にしているあいだは、前に読んだ値を使う)
+                function measure(el) {
+                    const cs = getComputedStyle(el);
+                    const rec = { radii: null, b: null, a: null };
+                    if (hasRadius(cs)) rec.radii = RADII.map(k => cs[k]);
+                    else if (el._dot && el._dot.radii && el.matches(':focus-visible')) rec.radii = el._dot.radii;
+                    for (const [ps, slot] of [['::before', 'b'], ['::after', 'a']]) {
+                        const pcs = getComputedStyle(el, ps);
+                        if (pcs.content === 'none' || pcs.content === 'normal') continue;
+                        if (hasRadius(pcs)) rec[slot] = { radii: RADII.map(k => pcs[k]), w: parseFloat(pcs.width), h: parseFloat(pcs.height) };
+                    }
+                    return rec;
+                }
+
+                function apply(el, rec) {
+                    el._dot = rec;
+                    let watchSize = false;
+                    if (rec.radii) {
+                        const ps = profilesFor(rec.radii, el.offsetWidth, el.offsetHeight);
+                        watchSize = true;
+                        if (ps) {
+                            const key = keyOf(ps);
+                            ensureShapeRule(key, ps, 'el');
+                            if (el.getAttribute('data-dot') !== key) el.setAttribute('data-dot', key);
+                            el._dotPs = ps;
+                            refreshBorder(el);
+                        } else {
+                            clearEl(el, true);
+                        }
+                    } else if (el.hasAttribute('data-dot')) clearEl(el, true);
+                    for (const slot of ['b', 'a']) {
+                        const attr = 'data-dot-' + slot;
+                        const pr = rec[slot];
+                        const ps = pr ? profilesFor(pr.radii, pr.w || 0, pr.h || 0) : null;
+                        if (ps) {
+                            const key = keyOf(ps);
+                            ensureShapeRule(key, ps, slot);
+                            if (el.getAttribute(attr) !== key) el.setAttribute(attr, key);
+                        } else if (el.hasAttribute(attr)) el.removeAttribute(attr);
+                        if (pr) watchSize = true;
+                    }
+                    if (watchSize && ro) ro.observe(el);
+                }
+
+                function clearEl(el, keepWatch) {
+                    el.removeAttribute('data-dot');
+                    el.removeAttribute('data-dot-bi');
+                    el.removeAttribute('data-dot-b');
+                    el.removeAttribute('data-dot-a');
+                    el._dotPs = null;
+                    el._dotBKey = null;
+                    borderEls.delete(el);
+                    if (!keepWatch && ro) ro.unobserve(el);
+                }
+
+                // 枠線: 4辺とも同じ太さ・実線・同じ色で、見える色のときだけ階段の枠を描く
+                function refreshBorder(el) {
+                    if (!el._dotPs) return;
+                    const cs = getComputedStyle(el);
+                    const w = parseFloat(cs.borderTopWidth) || 0;
+                    // 枠のある要素だけ、ホバー・フォーカスで色が変わらないか見張る
+                    if (w > 0 && cs.borderTopStyle !== 'none') borderEls.add(el); else borderEls.delete(el);
+                    const same = ['Right', 'Bottom', 'Left'].every(s => cs['border' + s + 'Width'] === cs.borderTopWidth && cs['border' + s + 'Style'] === cs.borderTopStyle && cs['border' + s + 'Color'] === cs.borderTopColor);
+                    const col = cs.borderTopColor;
+                    const bs = cs.borderTopStyle;
+                    const visible = w >= 0.5 && same && (bs === 'solid' || bs === 'dashed' || bs === 'dotted') && col !== 'transparent' && !/^rgba\(.*,\s*0\)$/.test(col);
+                    let key = null;
+                    if (visible) {
+                        const bw = Math.max(1, Math.round(w));
+                        key = keyOf(el._dotPs) + '~' + bw + '~' + col + '~' + bs;
+                    }
+                    if (key === el._dotBKey) return;
+                    el._dotBKey = key;
+                    if (!key) { el.removeAttribute('data-dot-bi'); return; }
+                    const hash = 'b' + hashStr(key);
+                    if (!made.has(hash)) {
+                        made.add(hash);
+                        try { sheet().insertRule(`body.shape-dot [data-dot-bi="${hash}"] { border-image: ${borderImageFor(el._dotPs, Math.max(1, Math.round(w)), col, bs)}; }`, sheet().cssRules.length); } catch (e) { }
+                    }
+                    el.setAttribute('data-dot-bi', hash);
+                }
+
+                function hashStr(s) {
+                    let h = 5381;
+                    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+                    return (h >>> 0).toString(36);
+                }
+
+                // まとめて測る: 角丸を一瞬元に戻して読み、まとめて印をつける
+                function scan(roots) {
+                    const els = [];
+                    for (const root of roots) {
+                        if (root.nodeType !== 1 || !root.isConnected) continue;
+                        if (root !== document.body) els.push(root);
+                        const all = root.getElementsByTagName('*');
+                        for (let i = 0; i < all.length; i++) els.push(all[i]);
+                    }
+                    if (!els.length) return;
+                    const recs = els.map(el => (el instanceof SVGElement && !(el instanceof SVGSVGElement)) ? null : measure(el));
+                    for (let i = 0; i < els.length; i++) {
+                        const rec = recs[i];
+                        if (!rec) continue;
+                        if (rec.radii || rec.b || rec.a) apply(els[i], rec);
+                        else if (els[i]._dot) { els[i]._dot = null; clearEl(els[i]); }
+                    }
+                }
+
+                function flush() {
+                    rafId = 0;
+                    if (!on) return;
+                    if (fullScan) { fullScan = false; pendingRoots.clear(); scan([document.body]); return; }
+                    const roots = [...pendingRoots];
+                    pendingRoots.clear();
+                    // 入れ子になっている根は外側だけ
+                    const top = roots.filter(r => !roots.some(o => o !== r && o.contains(r)));
+                    scan(top);
+                }
+
+                // 新しい要素・クラスの変わった要素は次の描画の前に。body のクラスの変化(タイマー開始など)で
+                // 全体を読み直すのは重いので、手のあいたときに(形がすぐ変わることはほとんどない)
+                let idleId = 0;
+                function schedule(root) {
+                    if (root === document.body) {
+                        fullScan = true;
+                        if (!idleId && !rafId) {
+                            const run = () => { idleId = 0; if (!rafId) flush(); };
+                            idleId = window.requestIdleCallback ? requestIdleCallback(run, { timeout: 400 }) : setTimeout(run, 120);
+                        }
+                        return;
+                    }
+                    pendingRoots.add(root);
+                    if (!rafId) rafId = requestAnimationFrame(flush);
+                }
+
+                const borderExtra = new Set();
+                function scheduleBorders(extra) {
+                    if (extra) borderExtra.add(extra);
+                    if (borderRaf) return;
+                    borderRaf = requestAnimationFrame(() => {
+                        borderRaf = 0;
+                        if (!on) return;
+                        for (const el of borderEls) { if (el.isConnected) refreshBorder(el); else borderEls.delete(el); }
+                        for (const el of borderExtra) if (el.isConnected && !borderEls.has(el)) refreshBorder(el);
+                        borderExtra.clear();
+                    });
+                }
+
+                function onMutations(list) {
+                    let changed = false;
+                    for (const m of list) {
+                        if (m.type === 'childList') {
+                            m.addedNodes.forEach(n => { if (n.nodeType === 1) { schedule(n); changed = true; } });
+                        } else if (m.type === 'attributes') {
+                            const t = m.target;
+                            // 同じクラスを付け直しただけ(タイマーが毎回書き直すものなど)は何もしない
+                            if ((m.oldValue || '') === (t.getAttribute('class') || '')) continue;
+                            changed = true;
+                            if (t === document.body) {
+                                // ドットの切り替えそのものの body の変化は無視
+                                const strip = s => (s || '').split(/\s+/).filter(c => c && c !== 'shape-dot').sort().join(' ');
+                                if (strip(m.oldValue) !== strip(t.className)) schedule(document.body);
+                            } else {
+                                schedule(t);
+                            }
+                        }
+                    }
+                    if (changed) scheduleBorders();
+                }
+
+                function onResize(entries) {
+                    for (const e of entries) {
+                        const el = e.target;
+                        if (!el._dot || !el.isConnected) continue;
+                        apply(el, el._dot);
+                    }
+                }
+
+                // ホバー・フォーカスで枠が出る部品のため、その要素と親もいっしょに読み直す
+                const onPointer = e => {
+                    const path = e && e.composedPath ? e.composedPath() : [];
+                    for (const n of path) if (n && n._dotPs) borderExtra.add(n);
+                    scheduleBorders();
+                };
+                // 枠の太さ・色が transition で変わる部品は、変わり終わった所でその要素を読み直す
+                const onTransitionEnd = e => { if (e.target && e.target._dotPs && /border|all/.test(e.propertyName || 'all')) scheduleBorders(e.target); };
+
+                function setOn(v) {
+                    v = !!v;
+                    if (v === on) return;
+                    on = v;
+                    if (on) {
+                        ro = window.ResizeObserver ? new ResizeObserver(onResize) : null;
+                        mo = new MutationObserver(onMutations);
+                        mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+                        document.addEventListener('pointerover', onPointer, true);
+                        document.addEventListener('pointerout', onPointer, true);
+                        document.addEventListener('focusin', onPointer, true);
+                        document.addEventListener('focusout', onPointer, true);
+                        document.addEventListener('transitionend', onTransitionEnd, true);
+                        scan([document.body]);
+                    } else {
+                        if (mo) mo.disconnect();
+                        if (ro) ro.disconnect();
+                        mo = ro = null;
+                        document.removeEventListener('pointerover', onPointer, true);
+                        document.removeEventListener('pointerout', onPointer, true);
+                        document.removeEventListener('focusin', onPointer, true);
+                        document.removeEventListener('focusout', onPointer, true);
+                        document.removeEventListener('transitionend', onTransitionEnd, true);
+                        document.querySelectorAll('[data-dot], [data-dot-b], [data-dot-a], [data-dot-bi]').forEach(el => { el._dot = null; clearEl(el); });
+                        borderEls.clear();
+                    }
+                }
+
+                // 目標のふちの線などで使う: その要素の角の階段の点(左上の角の座標、なければ null)
+                function profilesOf(el) {
+                    return on && el && el._dotPs ? el._dotPs : null;
+                }
+
+                return { setOn, profilesOf, cornerPts, isOn: () => on };
+            })();
+            if (document.body.classList.contains('shape-dot')) DotShape.setOn(true);
 
             function setShapeStyle(style) {
                 if (!SHAPE_STYLES.includes(style)) return;
