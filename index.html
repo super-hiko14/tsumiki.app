@@ -2433,6 +2433,11 @@
             height: 14px;
         }
 
+        /* 何も入っていないときは消すものがないので隠す(リストの検索欄と同じ)。場所は取ったままにして入力欄の幅を変えない */
+        input:placeholder-shown + .inline-clear-btn {
+            visibility: hidden;
+        }
+
         .settings-search-hidden {
             display: none !important;
         }
@@ -7107,6 +7112,12 @@
             justify-content: center;
             gap: 6px;
             cursor: pointer;
+        }
+
+        /* 日付の決め方は文字の長さがまちまちなので、長いものに幅をゆずる。ボタンの中で2行に割れないようにし、入らないときはボタンごと次の行へ */
+        .todo-date-modes .todo-seg-btn {
+            flex: 1 1 auto;
+            white-space: nowrap;
         }
 
         /* ダークで下地の色が決まっていない所でも、ライトの色のまま白く光らないように */
@@ -13046,7 +13057,8 @@
             opacity: 0.55;
         }
 
-        body:not(.timer-classic) .timer-stage-foot .session-info-wrap.editing {
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap.editing,
+        body:not(.timer-classic) .timer-stage-foot .session-info-wrap:has(.session-info br) {
             flex-basis: 100%;
         }
 
@@ -20346,7 +20358,6 @@
                     settingsSearchEmpty: 'No matching settings',
 
                     // ToDo List
-                    newTaskPlaceholder: 'Enter a new task',
                     addButton: 'Add',
                     repeat: 'Repeat',
                     repeatNone: 'None',
@@ -21171,10 +21182,6 @@
                     // ToDo List
                     todoPlaceholder: 'Enter a new task',
                     todoAddButton: 'Add',
-                    todoV2PopupTitle: 'Enable ToDo Ver.2?',
-                    todoV2PopupMessage: 'The new ToDo Ver.2 introduces advanced features such as incremental completion, period settings, and a calendar view.',
-                    todoV2ToggleLabel: 'Enable ToDo Ver.2',
-                    todoV2Confirm: 'Confirm',
                     calendarAddTodoTitle: 'Add New ToDo',
                     calendarAddTodoPlaceholder: 'Enter a task',
                     todoViewList: 'ToDo List',
@@ -21555,8 +21562,12 @@
             let confirmResolve = null;
 
 
+            let confirmReturnFocus = null;
+
             function customConfirm(message, title = null, iconSrc = 'warning.webp') {
                 return new Promise((resolve) => {
+                    // 前の確認が開いたままなら「キャンセル」で終わらせる(待っている処理が止まったままにならないように)
+                    if (confirmResolve) confirmResolve(false);
                     confirmResolve = resolve;
                     const overlay = document.getElementById('customConfirmOverlay');
                     const titleEl = document.getElementById('confirmTitle');
@@ -21575,38 +21586,46 @@
                     }
 
                     overlay.classList.add('show');
+                    // キーボードで開いたとき、Enter が裏のボタン(終了など)をもう一度押さないよう、ダイアログの中へ移す
+                    if (!overlay.contains(document.activeElement)) confirmReturnFocus = document.activeElement;
+                    const okBtn = document.getElementById('confirmOk');
+                    if (okBtn) okBtn.focus({ preventScroll: true });
                 });
             }
 
-            document.getElementById('confirmOk').addEventListener('click', () => {
+            function finishCustomConfirm(result) {
                 const overlay = document.getElementById('customConfirmOverlay');
                 overlay.classList.remove('show');
                 if (confirmResolve) {
-                    confirmResolve(true);
+                    confirmResolve(result);
                     confirmResolve = null;
                 }
-            });
+                // 開く前にフォーカスしていた所へ戻す
+                const back = confirmReturnFocus;
+                confirmReturnFocus = null;
+                const active = document.activeElement;
+                if (back && back.isConnected && typeof back.focus === 'function' && (!active || active === document.body || overlay.contains(active))) {
+                    back.focus({ preventScroll: true });
+                }
+            }
 
-            document.getElementById('confirmCancel').addEventListener('click', () => {
-                const overlay = document.getElementById('customConfirmOverlay');
-                overlay.classList.remove('show');
-                if (confirmResolve) {
-                    confirmResolve(false);
-                    confirmResolve = null;
-                }
-            });
+            document.getElementById('confirmOk').addEventListener('click', () => finishCustomConfirm(true));
+            document.getElementById('confirmCancel').addEventListener('click', () => finishCustomConfirm(false));
 
             // オーバーレイクリックで閉じる
             document.getElementById('customConfirmOverlay').addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) {
-                    const overlay = document.getElementById('customConfirmOverlay');
-                    overlay.classList.remove('show');
-                    if (confirmResolve) {
-                        confirmResolve(false);
-                        confirmResolve = null;
-                    }
-                }
+                if (e.target === e.currentTarget) finishCustomConfirm(false);
             });
+
+            // Esc は「キャンセル」(ほかのダイアログより先に受け取って、後ろのものは閉じない)
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                const overlay = document.getElementById('customConfirmOverlay');
+                if (!overlay || !overlay.classList.contains('show')) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                finishCustomConfirm(false);
+            }, true);
 
             // About モーダル(最終確認風ポップアップ)表示/非表示
             function showAboutModal() {
@@ -23436,7 +23455,7 @@
             const GOAL_RANGE = { min: 15, max: 720 };
             let goalLiveMs = 0;          // 計測中のセッションの学習時間
             let goalLastUpdateAt = 0;
-            let goalTodayCache = { key: '', ms: 0 };
+            let goalTodayCache = { day: 0, raw: null, ms: 0 };
 
             function isGoalEnabled() {
                 return getData('goal_enabled') === 'true';
@@ -23486,15 +23505,17 @@
                 const raw = getData('studyHistory') || '[]';
                 const now = new Date();
                 const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                const key = dayStart + ':' + raw.length;
-                if (goalTodayCache.key === key) return goalTodayCache.ms;
+                const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+                // 長さだけで見ると、記録の時間を直したとき(文字数が同じ)に古い合計のままになるので、中身ごと比べる
+                if (goalTodayCache.day === dayStart && goalTodayCache.raw === raw) return goalTodayCache.ms;
                 let ms = 0;
                 try {
                     JSON.parse(raw).forEach(it => {
-                        if (new Date(it.start).getTime() >= dayStart) ms += it.duration || 0;
+                        const t = new Date(it.start).getTime();
+                        if (t >= dayStart && t < dayEnd) ms += it.duration || 0;
                     });
                 } catch (e) { }
-                goalTodayCache = { key, ms };
+                goalTodayCache = { day: dayStart, raw, ms };
                 return ms;
             }
 
@@ -25214,12 +25235,13 @@
 
             }
 
-            function pauseStudy() {
+            // at: 一時停止した時刻(自動停止が遅れて動いたときに、予定の時刻を渡す)
+            function pauseStudy(at) {
                 if (!isPaused) {
                     // 一時停止
                     pausedTime += Date.now() - startTime;
                     isPaused = true;
-                    currentPauseStartIso = new Date().toISOString();
+                    currentPauseStartIso = (at instanceof Date && !isNaN(at.getTime()) ? at : new Date()).toISOString();
                     if (timerInterval) clearInterval(timerInterval);
                     document.getElementById('pauseBtn').textContent = getText('resumeButton');
                     saveData('studyPaused', 'true');
@@ -25243,7 +25265,8 @@
                 }
             }
 
-            function endStudy() {
+            // endAt: 終わった時刻(自動停止が遅れて動いたときに、予定の時刻を渡す)
+            function endStudy(endAt) {
                 if (timerInterval) clearInterval(timerInterval);
                 hideFocusProgressBar();
                 document.title = getText('studyTimeManagement');
@@ -25255,7 +25278,7 @@
                         updatePlayPauseUI(false);
                     }
                 }
-                const endTime = new Date();
+                const endTime = endAt instanceof Date && !isNaN(endAt.getTime()) ? endAt : new Date();
                 if (isPaused) {
                     addCurrentPauseRange(endTime);
                 }
@@ -28409,8 +28432,11 @@
                 const open = openItems.length;
                 const doneCount = total - open;
                 const en = currentLanguage === 'en';
+                // 祝日なら名前も添える(カレンダーの祝日の設定に合わせる)
+                let todayHoliday = '';
+                try { todayHoliday = getHolidayName(new Date()); } catch (e) { }
                 const dateText = new Date().toLocaleDateString(en ? 'en-US' : 'ja-JP',
-                    { month: en ? 'short' : 'long', day: 'numeric', weekday: 'short' });
+                    { month: en ? 'short' : 'long', day: 'numeric', weekday: 'short' }) + (todayHoliday ? ` ${todayHoliday}` : '');
                 const pct = total ? doneCount / total : 0;
                 const prevPct = Number(box.dataset.pct) || 0;
                 box.dataset.pct = pct.toFixed(3);
@@ -29155,6 +29181,8 @@
                 // 国民の休日: 祝日と祝日にはさまれた日(日曜をのぞく)
                 if (y >= 1986) {
                     for (const d of holidays) {
+                        // 日曜の祝日の翌日は振替休日になる(下で付ける)
+                        if (d.getDay() === 0) continue;
                         const mid = new Date(y, d.getMonth(), d.getDate() + 1);
                         const next = new Date(y, d.getMonth(), d.getDate() + 2);
                         if (next.getFullYear() === y && map.has(keyOf(next)) && !map.has(keyOf(mid)) && mid.getDay() !== 0) add(mid.getMonth() + 1, mid.getDate(), 'citizens');
@@ -29194,6 +29222,8 @@
                 saveData('calendar_holidays', next ? 'true' : 'false');
                 setToggleActive('toggleCalendarHolidays', next);
                 renderCalendar(calendarYear, calendarMonth);
+                // 「今日の残りのタスク」の日付に添える祝日名も合わせる
+                if (typeof loadTodos === 'function') loadTodos();
             }
 
             // 月の見出し(日本語: 2026年10月 / 英語: October 2026)
@@ -29221,7 +29251,7 @@
                 const titleParts = [];
                 if (holiday) titleParts.push(holiday);
                 if (dayStatus) titleParts.push(`${getText(CALENDAR_STATUS_LABEL_KEYS[dayStatus])}${dayTodos.length > 1 ? ` (${dayTodos.length})` : ''}`);
-                if (studyMs > 0) titleParts.push(`${getText('studyTime')}: ${formatTime(studyMs)}`);
+                if (studyMs > 0) titleParts.push(`${getText('studyTime')}: ${formatChartHours(studyMs / 3600000)}`);
                 const attrs = (intensity > 0 ? ` style="--cal-intensity: ${intensity}%;"` : '')
                     + (titleParts.length ? ` title="${escapeHtml(titleParts.join(' / '))}"` : '');
                 // 2件以上あるときは印のとなりに件数を小さく出す
@@ -29445,7 +29475,7 @@
                     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     const studyMs = getStudyMsByDate()[dateStr] || 0;
                     if (studyMs > 0) {
-                        studyTimeDiv.innerHTML = `<span class="calendar-day-study-time-icon">${MENU_ICONS.timer}</span>${getText('studyTime')}: ${formatTime(studyMs)}`;
+                        studyTimeDiv.innerHTML = `<span class="calendar-day-study-time-icon">${MENU_ICONS.timer}</span>${getText('studyTime')}: ${formatChartHours(studyMs / 3600000)}`;
                         studyTimeDiv.classList.add('show');
                     } else {
                         studyTimeDiv.textContent = '';
@@ -29509,6 +29539,36 @@
                 const next = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), currentCalendarDate.getDate() + delta);
                 openCalendarDayDialog(next);
             }
+
+            // キーボード: Esc で閉じる。入力欄の外なら ← → で前の日･次の日へ(画面の矢印と同じ)
+            // 日付を選ぶポップアップは、下の画面(手動の記録など)より先に Esc を受け取って、それだけ閉じる
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape' || e.isComposing) return;
+                const picker = document.getElementById('commonDatePicker');
+                if (!picker || !picker.classList.contains('show')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                closeAllDatePickers();
+            }, true);
+            document.addEventListener('keydown', (e) => {
+                if (e.isComposing) return;
+                const dialog = document.getElementById('calendarDayDialog');
+                if (!dialog || !dialog.classList.contains('show')) return;
+                // 上に確認やToDoの設定が開いているときは、そちらに任せる
+                if (document.querySelector('.custom-confirm-overlay.show, #todoEditOverlay.show, .text-prompt-overlay.show')) return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeCalendarDayDialog();
+                    return;
+                }
+                if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+                    const a = document.activeElement;
+                    if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+                    if (a && a.closest && a.closest('.time-drum, .wcal-scroll')) return;
+                    e.preventDefault();
+                    shiftCalendarDayDialog(e.key === 'ArrowLeft' ? -1 : 1);
+                }
+            });
 
             function closeCalendarDayDialog() {
                 const dialog = document.getElementById('calendarDayDialog');
@@ -32441,18 +32501,17 @@
                 let history = getData('studyHistory');
                 history = history ? JSON.parse(history) : [];
                 if (history.length === 0) return 0;
-                const dates = [...new Set(history.map(item => {
+                const days = new Set(history.map(item => {
                     const date = new Date(item.start);
-                    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                }))].sort().reverse();
+                    return isNaN(date.getTime()) ? '' : toLocalDateKey(date);
+                }));
+                // 今日まだ勉強していないときは、昨日までの連続を数える(その日のうちは途切れない)
+                const cursor = startOfLocalDay(new Date());
+                if (!days.has(toLocalDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
                 let streak = 0;
-                const today = new Date();
-                for (let i = 0; i < dates.length; i++) {
-                    const expectedDate = new Date(today);
-                    expectedDate.setDate(today.getDate() - i);
-                    const expectedStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')}`;
-                    if (dates[i] === expectedStr) streak++;
-                    else break;
+                while (days.has(toLocalDateKey(cursor))) {
+                    streak++;
+                    cursor.setDate(cursor.getDate() - 1);
                 }
                 return streak;
             }
@@ -33458,7 +33517,9 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `studytime_backup_${new Date().getTime()}.json`;
+                // ファイル名を見ただけで、いつのバックアップか分かるように(例: tsumiki_backup_2026-11-23_1830.json)
+                const now = new Date();
+                a.download = `tsumiki_backup_${toLocalDateKey(now)}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -36693,6 +36754,10 @@
                 document.addEventListener('keydown', (e) => {
                     // IME入力中は無視
                     if (e.isComposing) return;
+                    // Ctrl+R(再読み込み)や Cmd+S などブラウザのショートカットは横取りしない
+                    if (e.ctrlKey || e.metaKey || e.altKey) return;
+                    // 押しっぱなしで開始/終了や再生/停止が何度も切り替わらないように
+                    if (e.repeat) return;
                     if (shouldBlockShortcuts()) return;
 
                     const activePageId = Array.from(document.querySelectorAll('.page')).find(p => {
@@ -36730,7 +36795,8 @@
                             if (!startBtn.classList.contains('hidden')) {
                                 startStudy();
                             } else if (!endBtn.classList.contains('hidden')) {
-                                endStudy();
+                                // 終了ボタンと同じく、長いセッションなら確認を挟む
+                                confirmEndStudy();
                             }
                         } else if (e.code === 'Space') {
                             e.preventDefault();
@@ -37415,7 +37481,7 @@
                 if (startBtn && !startBtn.classList.contains('hidden')) {
                     startStudy();
                 } else if (endBtn && !endBtn.classList.contains('hidden')) {
-                    endStudy();
+                    confirmEndStudy();
                 }
             }
 
@@ -38385,14 +38451,18 @@
             const TSUMIKI_UNIT_MS = 30 * 60 * 1000;
             const TSUMIKI_MAX_RENDER = 2500; // 描画性能のための上限(表示カウントは実数のまま)
 
+            // 開いているときにもう一度呼ばれても(キーボードで裏のボタンを押したときなど)、スクロールの止めを重ねない
             function openTsumikiPage() {
-                document.getElementById('tsumikiOverlay').classList.add('show');
-                lockBodyScroll();
+                const overlay = document.getElementById('tsumikiOverlay');
+                if (!overlay.classList.contains('show')) lockBodyScroll();
+                overlay.classList.add('show');
                 renderTsumikiPage(true);
             }
 
             function closeTsumikiPage() {
-                document.getElementById('tsumikiOverlay').classList.remove('show');
+                const overlay = document.getElementById('tsumikiOverlay');
+                if (!overlay.classList.contains('show')) return;
+                overlay.classList.remove('show');
                 closeTsumikiShare();
                 unlockBodyScroll();
                 stopTsumikiStack(document.getElementById('tsumikiCanvas'));
@@ -38403,8 +38473,9 @@
 
             function openWeekPage() {
                 weekOffset = 0;
-                document.getElementById('weekOverlay').classList.add('show');
-                lockBodyScroll();
+                const overlay = document.getElementById('weekOverlay');
+                if (!overlay.classList.contains('show')) lockBodyScroll();
+                overlay.classList.add('show');
                 renderWeekPage(true);
             }
 
@@ -38489,7 +38560,11 @@
                     sub = `<div class="tsumiki-note">${getText('weekGoal').replace('{g}', hours(weekGoal))}${reached ? `<span class="week-badge">${getText('weekReached')}</span>` : ''}</div>`
                         + `<div class="week-goal"><div class="tsumiki-progress-track"><span style="width:${Math.min(100, week.total / weekGoal * 100).toFixed(1)}%"></span></div></div>`;
                 } else {
-                    const diff = week.total - prev.total;
+                    // 今週はまだ途中なので、先週も同じ曜日までで比べる(統計のグラフの「前の週より」と同じ)
+                    const todayIdx = week.days.findIndex(d => d.isToday);
+                    const prevTotal = todayIdx < 0 ? prev.total
+                        : prev.days.slice(0, todayIdx + 1).reduce((sum, d) => sum + d.ms, 0);
+                    const diff = week.total - prevTotal;
                     const text = Math.abs(diff) < 5 * 60000 ? getText('weekVsSame')
                         : getText(diff > 0 ? 'weekVsMore' : 'weekVsLess').replace('{t}', hours(Math.abs(diff)));
                     sub = `<div class="tsumiki-note">${text}</div>`;
@@ -39034,7 +39109,8 @@
                 function drawCube(cx, cy, tint, color, o) {
                     const c = color || base;
                     const hue = c.h + (tint - 0.5) * (color ? 8 : 16);
-                    const sat = Math.min(85, Math.max(color ? 10 : 20, c.s * 0.9 + (tint - 0.5) * 8));
+                    // ホワイトのように色みのない色は、灰色のまま(彩度の下限をかけると赤っぽくなり、凡例の丸とも色が変わる)
+                    const sat = c.s < 4 ? 0 : Math.min(85, Math.max(color ? 10 : 20, c.s * 0.9 + (tint - 0.5) * 8));
                     const lig = Math.min(78, Math.max(26, c.l + (tint - 0.5) * 10));
                     ctx.fillStyle = `hsl(${hue}, ${sat}%, ${Math.min(92, lig + 13)}%)`;
                     if (o.exact) {
@@ -39608,8 +39684,9 @@
             }
 
             function openBooksPage() {
-                document.getElementById('booksOverlay').classList.add('show');
-                lockBodyScroll();
+                const overlay = document.getElementById('booksOverlay');
+                if (!overlay.classList.contains('show')) lockBodyScroll();
+                overlay.classList.add('show');
                 renderBooksPage();
             }
 
@@ -39852,8 +39929,9 @@
                 loadFlashcardData();
                 fcEnsureData();
                 fcGoHome();
-                document.getElementById('flashcardOverlay').classList.add('show');
-                lockBodyScroll();
+                const overlay = document.getElementById('flashcardOverlay');
+                if (!overlay.classList.contains('show')) lockBodyScroll();
+                overlay.classList.add('show');
             }
 
             function closeFlashcardModal() {
@@ -42865,13 +42943,32 @@
                 updateTimerAutoStopDisplays();
             }
 
+            // 止める予定だった経過時間(フォーカスの「このサイクル終了後」はそのフェーズの終わり)
+            function getTimerAutoStopDueElapsed() {
+                if (timerAutoStopMode === 'time') return timerAutoStopBaseMs + timerAutoStopTargetMs;
+                if (timerAutoStopMode === 'cycle') {
+                    const p = timerAutoStopCyclePhase;
+                    const cycleDur = getFocusDurationMs() + getBreakDurationMs();
+                    return focusAnchorMs + (p % 2 === 0 ? (p / 2) * cycleDur + getFocusDurationMs() : ((p + 1) / 2) * cycleDur);
+                }
+                return null;
+            }
+
             function fireTimerAutoStop() {
                 const wasRunning = !!startTime && !isPaused;
                 const action = getAutoStopAction();
+                // スマホで裏に回っていたなどで判定が遅れたときは、予定の時刻で止めたことにする(過ぎた分は勉強時間に入れない)
+                const due = getTimerAutoStopDueElapsed();
+                const overshoot = wasRunning && due != null ? Math.min(Math.max(0, getCurrentWallElapsed() - due), Date.now() - startTime) : 0;
                 cancelTimerAutoStop();
                 if (!wasRunning) return;
-                if (action === 'end') endStudy();
-                else pauseStudy();
+                let stopAt = new Date();
+                if (overshoot > 1000) {
+                    startTime += overshoot;
+                    stopAt = new Date(Date.now() - overshoot);
+                }
+                if (action === 'end') endStudy(stopAt);
+                else pauseStudy(stopAt);
                 if (isAutoStopStopMusicEnabled()) {
                     stopMusicPlayback();
                     restoreMusicFadeVolume();

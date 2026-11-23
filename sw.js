@@ -90,7 +90,9 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(req.url);
 
     if (req.mode === 'navigate' && url.origin === location.origin) {
-        event.respondWith(networkFirst(req));
+        // アプリのページ(/ と /index.html)だけ。404 のページや llms.txt などを開いたときに、
+        // それをアプリとして保存し直してしまわないように、ほかのページには触らない
+        if (isAppPage(url)) event.respondWith(networkFirst(req));
         return;
     }
     if (url.origin === location.origin) {
@@ -103,6 +105,11 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(staleWhileRevalidate(req, FONT_CACHE));
     }
 });
+
+function isAppPage(url) {
+    const scope = new URL(self.registration.scope).pathname;
+    return url.pathname === scope || url.pathname === scope + 'index.html';
+}
 
 async function networkFirst(req) {
     const cache = await caches.open(CACHE);
