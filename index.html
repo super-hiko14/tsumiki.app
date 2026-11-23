@@ -3001,6 +3001,18 @@
             font-size: 0.8rem;
         }
 
+        /* 新しい音楽ページでは、となりの「追加」と同じ高さ･形にそろえる */
+        body:not(.music-classic) #musicPage .playlist-select-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            line-height: normal;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
         .playlist-batch-actions {
             display: flex;
             align-items: center;
@@ -6139,8 +6151,9 @@
             scroll-snap-type: y proximity;
             scrollbar-width: none;
             /* 上下の端をふわっと消して「続きがある」ことを見せる */
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+            /* 薄くするのは行のすきまの分だけにして、見えている週のマスはかすませない */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 9px, #000 calc(100% - 9px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 9px, #000 calc(100% - 9px), transparent 100%);
         }
 
         .wcal-scroll::-webkit-scrollbar {
@@ -6151,12 +6164,12 @@
             display: flex;
             flex-direction: column;
             gap: var(--wcal-gap);
-            padding: 4px 0;
+            padding: 7px 0;
         }
 
         .wcal-week {
             scroll-snap-align: start;
-            scroll-margin-top: 4px;
+            scroll-margin-top: 7px;
         }
 
         /* 見ている月以外の日は薄く */
@@ -6183,10 +6196,11 @@
         }
 
         .date-picker-day .wcal-month-tag {
-            top: -2px;
+            top: 3px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.55rem;
+            font-size: 0.5rem;
+            line-height: 1;
             white-space: nowrap;
         }
 
@@ -6269,13 +6283,11 @@
         }
 
         @media (max-width: 480px) {
+            /* スマホでも正方形のまま(角の丸めは下の max-width: 600px で小さくする) */
             .calendar-day {
                 padding: 1px;
-                min-height: auto;
-                aspect-ratio: auto;
-                height: 45px;
-                max-width: calc((100vw - 24px - 12px) / 7);
-                /* コンテナパディング + ギャップ分を差し引き */
+                min-height: 0;
+                aspect-ratio: 1;
             }
         }
 
@@ -6415,6 +6427,162 @@
             }
         }
 
+        /* ===== 日曜･祝日は赤、土曜は青(ToDoカレンダー･日付ピッカー･日付の詳しい画面で共通) ===== */
+        .light {
+            --cal-sun: #cf5653;
+            --cal-sat: #3d78c2;
+        }
+
+        .dark {
+            --cal-sun: #f09595;
+            --cal-sat: #8fb6ee;
+        }
+
+        .wcal-weekdays .wcal-sun,
+        .calendar-day.wcal-sun:not(.today) .calendar-day-number,
+        .calendar-day.wcal-holiday:not(.today) .calendar-day-number,
+        .date-picker-day.wcal-sun:not(.selected),
+        .date-picker-day.wcal-holiday:not(.selected),
+        .calendar-day-dialog-weekday.wcal-sun {
+            color: var(--cal-sun);
+        }
+
+        .wcal-weekdays .wcal-sat,
+        .calendar-day.wcal-sat:not(.wcal-holiday):not(.today) .calendar-day-number,
+        .date-picker-day.wcal-sat:not(.wcal-holiday):not(.selected),
+        .calendar-day-dialog-weekday.wcal-sat {
+            color: var(--cal-sat);
+        }
+
+        .wcal-weekdays .wcal-sun,
+        .wcal-weekdays .wcal-sat {
+            opacity: 0.9;
+        }
+
+        /* 祝日名(セルが小さいスマホでは出さず、色と日付の詳しい画面で分かるようにする) */
+        .calendar-day-holiday {
+            font-size: 0.6rem;
+            line-height: 1.2;
+            color: var(--cal-sun);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.02em;
+        }
+
+        @media (max-width: 480px) {
+            .calendar-day-holiday {
+                display: none;
+            }
+        }
+
+        /* 印は下のまん中に置く(マスの角は丸く、ドットの形では階段に削られるため、角に寄せると欠ける) */
+        .calendar-todo-indicators {
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 凡例の「勉強時間の濃さ」: 薄い→濃いの小さな見本 */
+        .calendar-legend-study {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color) 20%, var(--panel-light)), color-mix(in srgb, var(--primary-color) 85%, var(--panel-light)));
+        }
+
+        .dark .calendar-legend-study {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--primary-color-dark) 20%, var(--panel-dark)), color-mix(in srgb, var(--primary-color-dark) 85%, var(--panel-dark)));
+        }
+
+        .calendar-todo-count {
+            font-size: 0.68rem;
+            font-weight: 600;
+            line-height: 1;
+            opacity: 0.75;
+        }
+
+        /* 前の月･次の月(前の日･次の日)の矢印 */
+        .calendar-nav-btn,
+        .calendar-header .calendar-nav-btn {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: none;
+            color: inherit;
+            font-family: inherit;
+            opacity: 0.6;
+        }
+
+        .calendar-nav-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .calendar-nav-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark .calendar-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .calendar-header.calendar-header-scroll {
+            gap: 6px;
+        }
+
+        .date-picker-month-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .date-picker-month-selector .date-picker-month-year {
+            min-width: 8.5em;
+            text-align: center;
+        }
+
+        /* 日付の詳しい画面の見出し: ‹ 日付(曜日) › と、その下に祝日名 */
+        .calendar-day-dialog-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            margin-left: -8px;
+        }
+
+        .calendar-day-dialog-heading {
+            min-width: 0;
+            text-align: center;
+        }
+
+        .calendar-day-dialog-title {
+            white-space: nowrap;
+        }
+
+        .calendar-day-dialog-header .calendar-day-dialog-close {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .calendar-day-dialog-weekday {
+            font-size: 0.85em;
+            opacity: 0.85;
+        }
+
+        .calendar-day-dialog-holiday {
+            margin-top: 2px;
+            font-size: 0.8rem;
+            color: var(--cal-sun);
+        }
+
         /* ToDoビュー切り替えメニュー */
         .todo-view-menu {
             display: flex;
@@ -6454,57 +6622,10 @@
         }
 
         /* カスタム日付ピッカー */
-        .custom-date-picker {
-            position: relative;
-            width: 100%;
-        }
-
-        .custom-date-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid transparent;
-            border-radius: 24px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .light .custom-date-input {
-            background-color: var(--panel-light);
-            color: #323232;
-        }
-
-        .dark .custom-date-input {
-            background-color: var(--panel-dark);
-            color: #e8e8e8;
-        }
 
         /* ダイアログ背景も --panel-dark なので、ダイアログ内のボタンは一段明るくして埋もれないようにする */
         .dark .custom-confirm-dialog button.secondary {
             background-color: var(--panel-dark-2);
-        }
-
-        .light .custom-date-input::placeholder {
-            color: #8a8a8a;
-        }
-
-        .dark .custom-date-input::placeholder {
-            color: #a8a8a8;
-        }
-
-        .custom-date-input:hover {
-            opacity: 0.9;
-        }
-
-        .light .custom-date-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .dark .custom-date-input:focus {
-            outline: none;
-            border-color: var(--primary-color-dark);
         }
 
         .todo-period-modal-body {
@@ -6527,12 +6648,6 @@
 
         .todo-period-modal-row button {
             align-self: flex-start;
-        }
-
-        .todo-period-multi-preview {
-            font-size: 0.85rem;
-            opacity: 0.75;
-            word-break: break-word;
         }
 
         /* 設定の行にあるselectは、固定幅ではなく選択肢の長さに合わせて広がる(行の6割まで) */
@@ -6806,6 +6921,19 @@
             to { opacity: 0; }
         }
 
+        /* 中の箱は、薄くなりながら少しだけ下へ。
+           これがないと、閉じた瞬間に開くときの「下から上へ」がやり直されて、下にずれてから上がって見える */
+        .custom-confirm-overlay.is-closing .custom-confirm-dialog,
+        .about-overlay.is-closing .about-dialog,
+        .calendar-day-dialog-overlay.is-closing .calendar-day-dialog,
+        .priority-color-overlay.is-closing .priority-color-dialog {
+            animation: popupSinkOut 0.18s ease-in forwards;
+        }
+
+        @keyframes popupSinkOut {
+            to { transform: translateY(14px); }
+        }
+
         .todo-chip-panel {
             margin-top: 10px;
             padding: 16px 18px;
@@ -6836,29 +6964,122 @@
             margin-top: 12px;
         }
 
-        .todo-editor-sub-label,
-        .todo-editor-field > label {
+        .todo-editor-sub-label {
             font-size: 0.8rem;
             opacity: 0.7;
         }
 
-        .todo-editor-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .todo-editor-field + .todo-editor-field {
-            margin-top: 12px;
-        }
-
-        .todo-editor-fixed {
-            padding: 10px 15px;
-            font-size: 0.95rem;
-        }
-
         .todo-editor .repeat-schedule-note {
             margin-top: 8px;
+        }
+
+        /* ===== ToDoの日付パネル: 決め方 → (今日･明日･1週間後) → カレンダー → 決まった日付 ===== */
+        .todo-date-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .todo-date-hint {
+            font-size: 0.78rem;
+            opacity: 0.65;
+            line-height: 1.4;
+        }
+
+        .todo-date-quick {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .todo-date-quick-btn,
+        .calendar-day-add-form .todo-date-quick-btn {
+            height: auto;
+            padding: 5px 13px;
+            border-radius: 999px;
+            background: var(--ctl-bg, var(--panel-light));
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .todo-date-quick-btn,
+        .calendar-day-add-form .todo-date-quick-btn {
+            border: 1.5px solid transparent;
+        }
+
+        .light .todo-date-quick-btn.active {
+            border-color: var(--primary-color);
+        }
+
+        .dark .todo-date-quick-btn.active {
+            border-color: var(--primary-color-dark);
+        }
+
+        .todo-date-month-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: -4px;
+        }
+
+        .todo-date-month {
+            min-width: 8.5em;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .todo-date-month-row .calendar-nav-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+        }
+
+        /* 広い画面でもマスが大きくなりすぎないよう、カレンダーの幅に上限をつける */
+        .todo-date-month-row,
+        .todo-date-cal {
+            width: 100%;
+            max-width: 340px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .todo-date-cal .date-picker-day,
+        .light .todo-date-cal .date-picker-day,
+        .dark .todo-date-cal .date-picker-day {
+            background: var(--ctl-bg);
+        }
+
+        .light .todo-date-cal .date-picker-day.selected {
+            background: var(--primary-color);
+        }
+
+        .dark .todo-date-cal .date-picker-day.selected {
+            background: var(--primary-color-dark);
+        }
+
+        .todo-date-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+
+        .todo-date-summary-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .todo-date-summary .todo-editor-clear,
+        .calendar-day-add-form .todo-date-summary .todo-editor-clear {
+            margin-top: 0;
         }
 
         /* 選択肢が少ないものはselectではなく並べたボタンで一度に見せる */
@@ -6923,11 +7144,6 @@
         .todo-editor .custom-select select,
         .dark .todo-editor .custom-select select {
             background: var(--ctl-bg, var(--panel-light));
-        }
-
-        .light .todo-editor input.custom-date-input,
-        .dark .todo-editor input.custom-date-input {
-            background-color: var(--ctl-bg, var(--panel-light));
         }
 
         .todo-editor button.secondary,
@@ -7139,20 +7355,28 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        /* 今日は輪で、選んだ日は塗りで見せる(どちらも塗りだと見分けがつかないため) */
+        .date-picker-day.today {
+            font-weight: 600;
+        }
+
         .light .date-picker-day.today {
-            background-color: var(--primary-color);
-            color: white;
+            border: 2px solid var(--primary-color);
         }
 
         .dark .date-picker-day.today {
-            background-color: var(--primary-color-dark);
-            color: white;
+            border: 2px solid var(--primary-color-dark);
         }
 
-        .date-picker-day.range-selected {
-            outline: 2px dashed currentColor;
-            outline-offset: -3px;
-            opacity: 0.9;
+        /* 期間のあいだの日は、選んだ色を薄くして塗る */
+        .light .date-picker-day.range-selected,
+        .light .todo-date-cal .date-picker-day.range-selected {
+            background: color-mix(in srgb, var(--primary-color) 28%, transparent);
+        }
+
+        .dark .date-picker-day.range-selected,
+        .dark .todo-date-cal .date-picker-day.range-selected {
+            background: color-mix(in srgb, var(--primary-color-dark) 34%, transparent);
         }
 
         .light .date-picker-day.selected {
@@ -7193,6 +7417,8 @@
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
+            /* 中を端までスクロールしても、裏のページへ続けて動かさない */
+            overscroll-behavior: contain;
             animation: slideUp 0.3s ease-out;
         }
 
@@ -7485,10 +7711,11 @@
                 font-size: 1rem;
             }
 
+            /* マスが小さいので、角は丸めすぎない(24pxのままだと円になる) */
             .calendar-day {
                 padding: 4px;
-                min-height: 50px;
-                border-radius: 24px;
+                min-height: 0;
+                border-radius: 14px;
             }
 
             .calendar-day-number {
@@ -7513,7 +7740,16 @@
             }
 
             .calendar-day-dialog-title {
-                font-size: 1.1rem;
+                font-size: 1.05rem;
+            }
+
+            .calendar-day-dialog-nav .calendar-nav-btn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .calendar-day-dialog-close {
+                padding: 8px 12px;
             }
         }
 
@@ -12094,7 +12330,6 @@
         #groupAddInput,
         #textPromptInput,
         #calendarAddTodoInput,
-        .custom-date-input,
         .custom-confirm-dialog input[type="text"],
         .custom-confirm-dialog input[type="url"],
         .calendar-day-add-form input[type="text"],
@@ -14486,38 +14721,6 @@
             align-self: center;
         }
 
-        .todo-edit-dates {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .todo-edit-dates .custom-date-input {
-            flex: 1;
-            min-width: 0;
-            padding-left: 14px;
-            padding-right: 14px;
-            text-align: center;
-        }
-
-        .todo-edit-dates > span {
-            flex-shrink: 0;
-            font-size: 0.85rem;
-            opacity: 0.6;
-        }
-
-        .todo-edit-dates-foot {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px 12px;
-            margin-top: 8px;
-        }
-
-        .todo-edit-dates-foot .todo-editor-clear {
-            margin: 0 0 0 auto;
-        }
-
         /* ── 今日の残りのタスク: タイマーの下の1行と、そこから開く一覧 ── */
         .goal-line:not([hidden]) + .todo-line {
             margin-top: -12px;
@@ -16148,6 +16351,120 @@
             outline-offset: -5px;
         }
 
+        /* ═══ 大きい面の角丸 ═══
+           ダイアログや大きなパネルは、24px だと面の大きさに対して角が小さく見えるので 32px に(音楽プレイヤーの台と同じ)。
+           ボタン･行･小さなカードは 24px のまま */
+        .custom-confirm-dialog,
+        .about-dialog,
+        .calendar-day-dialog,
+        .priority-color-dialog,
+        .date-picker-dropdown,
+        .safety-banner-content,
+        #studyGraphContainer {
+            border-radius: 32px;
+        }
+
+        /* ═══ 指で操作する端末(スマホ･タブレット)だけ、押す所を大きく ═══
+           指の先でも押し外さないよう、押せる所はどれも 44px 以上にする(Apple の目安)。
+           マウスの PC(pointer: fine)では何も変わらない。
+           「ドット」の形は clip-path で切り抜くので、見えない当たり判定を外に広げる方法は使えない。だから見た目ごと大きくする */
+        @media (pointer: coarse) {
+
+            /* アイコンだけの丸いボタン: 縦横とも */
+            .todo-icon-btn,
+            .trash-btn,
+            .pl-more-btn,
+            .calendar-nav-btn,
+            .chart-nav-btn,
+            .daily-timeline-nav-btn,
+            .daily-timeline-cal-btn,
+            .inline-clear-btn,
+            .focus-stepper .stepper-btn,
+            #musicPage .control-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            /* 「週･月･年」のような短い文字のボタンも、幅を指1本ぶんは取る */
+            .chart-range-btn {
+                min-width: 44px;
+            }
+
+            /* 色を選ぶ丸は、まわりの行に合わせて少し小さめ */
+            .group-color-btn {
+                min-width: 36px;
+                min-height: 36px;
+            }
+
+            /* 文字のボタン･切り替え: 高さを */
+            .menu button,
+            button.secondary,
+            button.primary,
+            .todo-chip,
+            #todoPage .todo-filter-btn,
+            .todo-seg-btn,
+            .todo-date-quick-btn,
+            .todo-today-overdue,
+            .todo-editor-clear,
+            .todo-view-btn,
+            .chart-range-btn,
+            .auto-stop-pill,
+            .playlist-add-btn,
+            .playlist-select-toggle,
+            .playlist-batch-actions button,
+            .pl-tab,
+            .focus-preset,
+            .focus-segment-btn,
+            .about-button,
+            .calendar-month-today,
+            .daily-timeline-date,
+            .menu-setting-more > summary {
+                min-height: 44px;
+            }
+
+            /* 下のメニューは、決まった高さの帯に収めてあるので変えない */
+            body.menu-mode-bottom .menu button {
+                min-height: 0;
+            }
+
+            /* 設定の行の中の小さな入力欄･選ぶ欄(ふつうの入力欄は、もとから 48px) */
+            :root {
+                --field-h-sm: 44px;
+            }
+
+            /* 検索欄は、枠(48px)の中の入力できる所を枠いっぱいに */
+            .settings-search input {
+                min-height: 44px;
+            }
+
+            /* チェックの丸 */
+            input[type="checkbox"] {
+                min-width: 24px;
+                min-height: 24px;
+            }
+
+            .todo-checkbox {
+                min-width: 26px;
+                min-height: 26px;
+            }
+
+            /* オン･オフのスイッチ: 少し大きく(行のどこを押しても切り替わるのは JS 側) */
+            .toggle-switch {
+                width: 54px;
+                height: 30px;
+            }
+
+            .toggle-slider {
+                width: 24px;
+                height: 24px;
+            }
+
+            .toggle-item:has(> .toggle-switch),
+            .toggle-item:has(> .toggle-controls > .toggle-switch) {
+                cursor: pointer;
+            }
+        }
+
     </style>
 
 </head>
@@ -16637,7 +16954,17 @@
     <div class="calendar-day-dialog-overlay" id="calendarDayDialog">
         <div class="calendar-day-dialog">
             <div class="calendar-day-dialog-header">
-                <div class="calendar-day-dialog-title" id="calendarDayDialogTitle"></div>
+                <!-- 左右の矢印で前の日･次の日へ(閉じずに続けて見られる) -->
+                <div class="calendar-day-dialog-nav">
+                    <button type="button" class="calendar-nav-btn" onclick="shiftCalendarDayDialog(-1)" aria-label="前の日"
+                        data-i18n-aria="calendarPrevDay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+                    <div class="calendar-day-dialog-heading">
+                        <div class="calendar-day-dialog-title" id="calendarDayDialogTitle"></div>
+                        <div class="calendar-day-dialog-holiday" id="calendarDayDialogHoliday" hidden></div>
+                    </div>
+                    <button type="button" class="calendar-nav-btn" onclick="shiftCalendarDayDialog(1)" aria-label="次の日"
+                        data-i18n-aria="calendarNextDay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                </div>
                 <button class="secondary calendar-day-dialog-close" onclick="closeCalendarDayDialog()"
                     data-i18n="closeButton">閉じる</button>
             </div>
@@ -17385,10 +17712,14 @@
 
             <!-- カレンダービュー -->
             <div id="todoCalendarView" class="calendar-view" style="display: none;">
-                <!-- 月はスクロールで移動する。見出しを押すと今月に戻る -->
+                <!-- 月はスクロールか左右の矢印で移動する。見出しを押すと今月に戻る -->
                 <div class="calendar-header calendar-header-scroll">
+                    <button type="button" class="calendar-nav-btn" onclick="stepTodoCalendarMonth(-1)" aria-label="前の月"
+                        data-i18n-aria="calendarPrevMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
                     <button type="button" class="calendar-month-year calendar-month-today" id="calendarMonthYear"
                         onclick="scrollTodoCalendarToToday()" title="今月に戻る" data-i18n-title="calendarBackToToday"></button>
+                    <button type="button" class="calendar-nav-btn" onclick="stepTodoCalendarMonth(1)" aria-label="次の月"
+                        data-i18n-aria="calendarNextMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
                 </div>
                 <div class="calendar-scroll-host" id="calendarGrid"></div>
                 <div class="calendar-legend" id="calendarLegend"></div>
@@ -18102,6 +18433,12 @@
                     </div>
                 </div>
                 <div class="toggle-item">
+                    <span data-i18n="calendarHolidaysSetting">カレンダーに日本の祝日を表示</span>
+                    <div class="toggle-switch" id="toggleCalendarHolidays" onclick="toggleCalendarHolidays()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="toggle-item">
                     <span data-i18n="todoTimerLineSetting">タイマーの下に今日の残りのタスクを表示</span>
                     <div class="toggle-switch" id="toggleTodoTimerLine" onclick="toggleTodoTimerLine()">
                         <div class="toggle-slider"></div>
@@ -18803,6 +19140,10 @@
                     spotifyAlreadyAdded: 'それは、もう入っています。',
                     spotifyLoadFailed: 'Spotifyのプレイヤーを読み込めませんでした。通信の状態を確かめてください。',
                     calendarBackToToday: '今月に戻る',
+                    calendarPrevMonth: '前の月',
+                    calendarPrevDay: '前の日',
+                    calendarNextDay: '次の日',
+                    calendarNextMonth: '次の月',
                     playlistNameExists: '同じ名前のプレイリストがあります',
                     groupExistsSelect: 'すでにあるグループです。追加すると選択されます',
                     songNamePlaceholder: '曲名を入力',
@@ -18897,15 +19238,11 @@
                     okButton: 'OK',
                     // 追加訳: UIの汎用ラベル
                     menu: 'メニュー',
-                    startOptional: '開始日(任意)',
-                    endOptional: '終了日(任意)',
                     todoDateSettings: '日付設定',
                     todoDateSettingsPlaceholder: '日付を設定',
                     todoPeriodModalTitle: '日付設定',
                     multiSelectOptional: '複数選択(任意)',
-                    selectMultiDates: '日付を選択',
                     multiLabel: '複数',
-                    noMultiDates: '未選択',
                     clearButton: 'クリア',
                     doneButton: '完了',
                     playPause: '再生 / 一時停止',
@@ -19368,8 +19705,6 @@
                     periodLabel: '期間',
                     dateLabel: '日付',
                     rangeSeparator: '〜',
-                    selectStartDate: '開始日を選択',
-                    selectEndDate: '終了日を選択',
                     weekday_sun: '日',
                     weekday_mon: '月',
                     weekday_tue: '火',
@@ -19397,12 +19732,28 @@
                     todoDateFrom: '{d}から',
                     todoDateUntil: '{d}まで',
                     todoDateClear: '日付をクリア',
-                    todoDateStart: '開始日',
+                    todoDateModeDay: '1日',
+                    todoDateModeFrom: '開始日',
+                    todoDateModeRange: '期間',
+                    todoDateModeUntil: '締め切り',
+                    todoDateModeUntilRepeat: '終了日',
+                    todoDateModeMulti: '複数の日',
+                    todoDateHintDay: '押した日のタスクになります(もう一度押すと外れます)',
+                    todoDateHintFrom: '押した日から繰り返します',
+                    todoDateHintRange: 'はじめの日、終わりの日の順に押します',
+                    todoDateHintRangeCal: 'この日から続ける、終わりの日を押します',
+                    todoDateHintUntil: '締め切りの日を押します',
+                    todoDateHintUntilRepeat: '繰り返しを終える日を押します',
+                    todoDateHintMulti: '押した日をすべて選びます(もう一度押すと外れます)',
+                    todoDateHintThisDay: '開いている日だけのタスクになります',
+                    todoDateToday: '今日',
+                    todoDateTomorrow: '明日',
+                    todoDateNextWeek: '1週間後',
                     todoDateEnd: '終了日',
-                    todoDateMulti: '日付を個別に選ぶ',
                     calendarLegendPending: '予定あり',
                     calendarLegendDone: 'すべて完了',
                     calendarLegendMissed: '期限切れの未完了あり',
+                    calendarLegendStudy: '濃いほど長く勉強した日',
                     notifySettingsTitle: '通知',
                     settingsTabsAria: '設定のカテゴリ',
                     settingsTabGeneral: '基本',
@@ -19469,6 +19820,7 @@
                     repeatScheduleDayOfMonth: '{d}日',
                     repeatScheduleWeekdaySep: '･',
                     todoRepeatCalendarSetting: '繰り返しToDoをカレンダーに表示',
+                    calendarHolidaysSetting: 'カレンダーに日本の祝日を表示',
                     showDetails: '詳細を表示',
                     hideDetails: '詳細を隠す',
 
@@ -19910,6 +20262,10 @@
                     spotifyAlreadyAdded: 'That is already in the list.',
                     spotifyLoadFailed: 'Could not load the Spotify player. Check your connection.',
                     calendarBackToToday: 'Back to this month',
+                    calendarPrevMonth: 'Previous month',
+                    calendarPrevDay: 'Previous day',
+                    calendarNextDay: 'Next day',
+                    calendarNextMonth: 'Next month',
                     playlistNameExists: 'A playlist with this name already exists',
                     groupExistsSelect: 'This group already exists — it will be selected',
                     songNamePlaceholder: 'Enter song name',
@@ -20384,15 +20740,11 @@
                     periodLabel: 'Period',
                     dateLabel: 'Dates',
                     rangeSeparator: 'to',
-                    selectStartDate: 'Select start date',
-                    selectEndDate: 'Select end date',
                     todoDateSettings: 'Date settings',
                     todoDateSettingsPlaceholder: 'Set dates',
                     todoPeriodModalTitle: 'Date settings',
                     multiSelectOptional: 'Multiple (optional)',
-                    selectMultiDates: 'Select dates',
                     multiLabel: 'Multiple',
-                    noMultiDates: 'None',
                     clearButton: 'Clear',
                     doneButton: 'Done',
                     weekday_sun: 'Sun',
@@ -20422,12 +20774,28 @@
                     todoDateFrom: 'from {d}',
                     todoDateUntil: 'until {d}',
                     todoDateClear: 'Clear dates',
-                    todoDateStart: 'Start date',
+                    todoDateModeDay: 'One day',
+                    todoDateModeFrom: 'Start',
+                    todoDateModeRange: 'Range',
+                    todoDateModeUntil: 'Due',
+                    todoDateModeUntilRepeat: 'End',
+                    todoDateModeMulti: 'Dates',
+                    todoDateHintDay: 'Tap a day (tap again to clear)',
+                    todoDateHintFrom: 'Repeats from the day you tap',
+                    todoDateHintRange: 'Tap the first day, then the last day',
+                    todoDateHintRangeCal: 'Tap the last day to continue until',
+                    todoDateHintUntil: 'Tap the due date',
+                    todoDateHintUntilRepeat: 'Tap the day the repeat ends',
+                    todoDateHintMulti: 'Tap every day you want (tap again to remove)',
+                    todoDateHintThisDay: 'The task is for this day only',
+                    todoDateToday: 'Today',
+                    todoDateTomorrow: 'Tomorrow',
+                    todoDateNextWeek: 'In a week',
                     todoDateEnd: 'End date',
-                    todoDateMulti: 'Pick individual dates',
                     calendarLegendPending: 'Planned',
                     calendarLegendDone: 'All done',
                     calendarLegendMissed: 'Overdue',
+                    calendarLegendStudy: 'Darker = more study time',
                     notifySettingsTitle: 'Notifications',
                     settingsTabsAria: 'Settings categories',
                     settingsTabGeneral: 'General',
@@ -20494,12 +20862,11 @@
                     repeatScheduleDayOfMonth: 'Day {d}',
                     repeatScheduleWeekdaySep: '/',
                     todoRepeatCalendarSetting: 'Show repeating ToDos on calendar',
+                    calendarHolidaysSetting: 'Show Japanese holidays on calendar',
                     showDetails: 'Show details',
                     hideDetails: 'Hide details',
                     // Additional UI labels
                     menu: 'Menu',
-                    startOptional: 'Start date (optional)',
-                    endOptional: 'End date (optional)',
                     playPause: 'Play/Pause',
 
                     // Stats Page - Additional
@@ -27118,7 +27485,9 @@
                 if (!legend) return;
                 legend.innerHTML = ['pending', 'done', 'missed'].map(status =>
                     `<span class="calendar-legend-item">${getCalendarIndicatorHtml(status)}${getText(CALENDAR_STATUS_LABEL_KEYS[status])}</span>`
-                ).join('');
+                ).join('')
+                    // マスの濃さ = その日に勉強した時間
+                    + `<span class="calendar-legend-item"><span class="calendar-legend-study" aria-hidden="true"></span>${getText('calendarLegendStudy')}</span>`;
             }
 
             function formatRepeatTime(time) {
@@ -27210,7 +27579,8 @@
             // ctx: 'list' | 'calendar' | 'modal'
             function createTodoEditorState() {
                 // weekdays / monthDay が null のあいだは基準日(開始日･カレンダーで選んだ日)に合わせる
-                return { repeat: 'none', priority: 'normal', time: null, weekdays: null, monthDay: null, open: null };
+                // dateMode: 日付の決め方(null のあいだは選んである日から読み取る)
+                return { repeat: 'none', priority: 'normal', time: null, weekdays: null, monthDay: null, open: null, dateMode: null };
             }
 
             const todoEditors = { list: createTodoEditorState(), calendar: createTodoEditorState(), modal: null };
@@ -27286,43 +27656,269 @@
                 })), todoEditors[ctx].priority);
             }
 
-            function buildDateEditorHtml(ctx) {
-                const fmt = d => (d ? formatTodoDateShort(d, null, { hideYearIfCurrent: true }) : '');
+            // ===== 日付の指定(追加欄･カレンダーの追加欄･設定モーダルで共通) =====
+            // パネルの中のカレンダーを押して決める。押したときの意味は「決め方」で切りかえる:
+            //   day   … 押した日1日(繰り返しのときは、その日から)
+            //   range … はじめの日 → 終わりの日 の順に押す
+            //   until … 締め切りの日(繰り返しのときは、その日まで)
+            //   multi … 押した日をいくつでも(もう一度押すと外れる)
+            // カレンダーの追加欄は、はじめの日が開いている日で決まっているので day(この日だけ)･range･multi の3つ
+            const TODO_DATE_FIELDS = {
+                list: { start: 'start', end: 'end', multi: 'multi' },
+                modal: { start: 'editStart', end: 'editEnd', multi: 'editMulti' },
+                calendar: { start: null, end: 'calendarEnd', multi: 'calendarMulti' }
+            };
+            const TODO_DATE_QUICK = [{ offset: 0, key: 'todoDateToday' }, { offset: 1, key: 'todoDateTomorrow' }, { offset: 7, key: 'todoDateNextWeek' }];
+            const todoDateScrollers = {};
+
+            function getTodoDates(ctx) {
+                const f = TODO_DATE_FIELDS[ctx];
+                return {
+                    start: f.start ? (selectedDate[f.start] || null) : getCalendarStartDateStr(),
+                    end: selectedDate[f.end] || null,
+                    dates: Array.isArray(selectedDate[f.multi]) ? [...selectedDate[f.multi]] : []
+                };
+            }
+
+            function setTodoDates(ctx, d) {
+                const f = TODO_DATE_FIELDS[ctx];
+                if (f.start) selectedDate[f.start] = d.start || null;
+                selectedDate[f.end] = d.end || null;
+                selectedDate[f.multi] = [...new Set(d.dates || [])].sort();
+                if (ctx === 'list') {
+                    document.getElementById('todoPeriodStart').value = selectedDate.start || '';
+                    document.getElementById('todoPeriodEnd').value = selectedDate.end || '';
+                }
+            }
+
+            function getTodoDateModes(ctx) {
+                return ctx === 'calendar' ? ['day', 'range', 'multi'] : ['day', 'range', 'until', 'multi'];
+            }
+
+            // 決め方は、選んでいない間は今の日付から読み取る(設定モーダルを開いたときなど)
+            function getTodoDateMode(ctx) {
+                const st = todoEditors[ctx];
+                if (st && st.dateMode) return st.dateMode;
+                const d = getTodoDates(ctx);
+                if (d.dates.length) return 'multi';
+                if (ctx === 'calendar') return d.end && d.end !== d.start ? 'range' : 'day';
+                if (d.start && d.end && d.start !== d.end) return 'range';
+                if (d.end && !d.start) return 'until';
+                return 'day';
+            }
+
+            function isTodoEditorRepeat(ctx) {
+                const st = todoEditors[ctx];
+                return !!st && st.repeat !== 'none';
+            }
+
+            function getTodoDateModeLabel(ctx, mode) {
+                if (ctx === 'calendar' && mode === 'day') return getText('todoChipDateThisDay');
+                const repeat = isTodoEditorRepeat(ctx);
+                if (mode === 'day') return getText(repeat ? 'todoDateModeFrom' : 'todoDateModeDay');
+                if (mode === 'until') return getText(repeat ? 'todoDateModeUntilRepeat' : 'todoDateModeUntil');
+                return getText(mode === 'range' ? 'todoDateModeRange' : 'todoDateModeMulti');
+            }
+
+            function getTodoDateHint(ctx, mode) {
+                if (ctx === 'calendar') return getText(mode === 'day' ? 'todoDateHintThisDay' : mode === 'range' ? 'todoDateHintRangeCal' : 'todoDateHintMulti');
+                const repeat = isTodoEditorRepeat(ctx);
+                if (mode === 'day') return getText(repeat ? 'todoDateHintFrom' : 'todoDateHintDay');
+                if (mode === 'until') return getText(repeat ? 'todoDateHintUntilRepeat' : 'todoDateHintUntil');
+                return getText(mode === 'range' ? 'todoDateHintRange' : 'todoDateHintMulti');
+            }
+
+            // 決め方を変えるときは、いま選んでいる日をできるだけ引き継ぐ
+            function setTodoDateMode(ctx, mode) {
+                const st = todoEditors[ctx];
+                if (!st || getTodoDateMode(ctx) === mode) return;
+                const d = getTodoDates(ctx);
+                const fixed = ctx === 'calendar' ? d.start : null;
+                const all = new Set(d.dates);
+                if (d.start && d.end) {
+                    const [lo, hi] = d.start <= d.end ? [d.start, d.end] : [d.end, d.start];
+                    const range = getRangeDateSet(lo, hi);
+                    // 長い期間を「複数の日」にばらすと選びすぎになるので、3か月をこえるときは両端だけ残す
+                    (range.size <= 92 ? [...range] : [lo, hi]).forEach(x => all.add(x));
+                } else {
+                    if (d.start) all.add(d.start);
+                    if (d.end) all.add(d.end);
+                }
+                if (fixed) all.delete(fixed);
+                const sorted = [...all].sort();
+                const first = sorted[0] || null;
+                const last = sorted[sorted.length - 1] || null;
+                let next;
+                if (mode === 'day') next = { start: fixed || first, end: null, dates: [] };
+                else if (mode === 'range') next = fixed
+                    ? { start: fixed, end: last && last > fixed ? last : null, dates: [] }
+                    : { start: first, end: sorted.length > 1 ? last : null, dates: [] };
+                else if (mode === 'until') next = { start: null, end: last, dates: [] };
+                else next = { start: fixed, end: null, dates: sorted };
+                setTodoDates(ctx, next);
+                st.dateMode = mode;
+                renderTodoEditor(ctx);
+            }
+
+            // パネルのカレンダーで日を押したとき(fromQuick: 「今日」などのボタン。選び直しはしても外しはしない)
+            function pickTodoDate(ctx, dateStr, fromQuick) {
+                const mode = getTodoDateMode(ctx);
+                // 読み取った決め方はここで決めておく(期間の1回目ではじめの日だけになっても「1日」に変わらないように)
+                const st = todoEditors[ctx];
+                if (st && !st.dateMode) st.dateMode = mode;
+                const d = getTodoDates(ctx);
+                const toggle = (list, v) => {
+                    const i = list.indexOf(v);
+                    if (i < 0) list.push(v);
+                    else if (!fromQuick) list.splice(i, 1);
+                };
                 if (ctx === 'calendar') {
-                    const multi = Array.isArray(selectedDate.calendarMulti) ? selectedDate.calendarMulti : [];
-                    const hasAny = !!selectedDate.calendarEnd || multi.length > 0;
-                    return `<div class="todo-editor-field"><label>${getText('todoDateStart')}</label><div class="todo-editor-fixed">${fmt(getCalendarStartDateStr())}</div></div>
-                        <div class="todo-editor-field"><label>${getText('endOptional')}</label>
-                            <div class="custom-date-picker"><input type="text" id="calendarTodoEndDate" class="custom-date-input" placeholder="${getText('selectEndDate')}" readonly value="${fmt(selectedDate.calendarEnd)}" onclick="openDatePicker('calendarEnd')"></div></div>
-                        <div class="todo-editor-field"><label>${getText('todoDateMulti')}</label>
-                            <button class="secondary" type="button" onclick="openDatePicker('calendarMulti')">${getText('selectMultiDates')}</button>
-                            <div class="todo-period-multi-preview">${formatMultiDateSummary(multi)}</div></div>
-                        ${hasAny ? `<button type="button" class="todo-editor-clear" onclick="clearTodoEditorDates('calendar')">${getText('todoDateClear')}</button>` : ''}`;
+                    if (mode === 'range') d.end = (dateStr <= d.start || dateStr === d.end) ? null : dateStr;
+                    else if (mode === 'multi') { if (dateStr !== d.start) toggle(d.dates, dateStr); }
+                    else return;
+                } else if (mode === 'day') {
+                    d.start = (d.start === dateStr && !d.end && !fromQuick) ? null : dateStr;
+                    d.end = null;
+                    d.dates = [];
+                } else if (mode === 'range') {
+                    // 1回目ではじめの日、2回目で終わりの日(前の日を押したら入れかえる)。そろったあとに押すと選び直し
+                    if (!d.start || d.end) { d.start = dateStr; d.end = null; }
+                    else if (dateStr === d.start) { if (!fromQuick) d.start = null; }
+                    else if (dateStr < d.start) { d.end = d.start; d.start = dateStr; }
+                    else d.end = dateStr;
+                } else if (mode === 'until') {
+                    d.start = null;
+                    d.end = (d.end === dateStr && !fromQuick) ? null : dateStr;
+                    d.dates = [];
+                } else {
+                    toggle(d.dates, dateStr);
                 }
-                if (ctx === 'modal') {
-                    const multi = Array.isArray(selectedDate.editMulti) ? selectedDate.editMulti : [];
-                    const hasAny = !!selectedDate.editStart || !!selectedDate.editEnd || multi.length > 0;
-                    return `<div class="todo-edit-dates">
-                            <input type="text" class="custom-date-input" placeholder="${getText('startOptional')}" aria-label="${getText('startOptional')}" readonly value="${fmt(selectedDate.editStart)}" onclick="openDatePicker('editStart')">
-                            <span aria-hidden="true">${getText('rangeSeparator')}</span>
-                            <input type="text" class="custom-date-input" placeholder="${getText('endOptional')}" aria-label="${getText('endOptional')}" readonly value="${fmt(selectedDate.editEnd)}" onclick="openDatePicker('editEnd')">
-                        </div>
-                        <div class="todo-edit-dates-foot">
-                            <button class="secondary" type="button" onclick="openDatePicker('editMulti')">${getText('todoDateMulti')}</button>
-                            <span class="todo-period-multi-preview">${multi.length ? formatMultiDateSummary(multi) : ''}</span>
-                            ${hasAny ? `<button type="button" class="todo-editor-clear" onclick="clearTodoEditorDates('modal')">${getText('todoDateClear')}</button>` : ''}
-                        </div>`;
+                setTodoDates(ctx, d);
+                updateTodoDatePanel(ctx);
+            }
+
+            // 「今日」「明日」「1週間後」: 今の決め方のまま、その日を選ぶ(カレンダーもその月へ)
+            function quickPickTodoDate(ctx, offset) {
+                const now = new Date();
+                const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+                pickTodoDate(ctx, toLocalDateKey(date), true);
+                const sc = todoDateScrollers[ctx];
+                if (sc && sc.isAttached()) {
+                    const f = sc.getFocusDate();
+                    if (f.getFullYear() !== date.getFullYear() || f.getMonth() !== date.getMonth()) sc.scrollToMonth(date.getFullYear(), date.getMonth(), true);
                 }
-                const multi = Array.isArray(selectedDate.multi) ? selectedDate.multi : [];
-                const hasAny = !!selectedDate.start || !!selectedDate.end || multi.length > 0;
-                return `<div class="todo-editor-field"><label>${getText('startOptional')}</label>
-                        <div class="custom-date-picker"><input type="text" id="todoPeriodStartModal" class="custom-date-input" placeholder="${getText('selectStartDate')}" readonly value="${fmt(selectedDate.start)}" onclick="openDatePicker('start')"></div></div>
-                    <div class="todo-editor-field"><label>${getText('endOptional')}</label>
-                        <div class="custom-date-picker"><input type="text" id="todoPeriodEndModal" class="custom-date-input" placeholder="${getText('selectEndDate')}" readonly value="${fmt(selectedDate.end)}" onclick="openDatePicker('end')"></div></div>
-                    <div class="todo-editor-field"><label>${getText('todoDateMulti')}</label>
-                        <button class="secondary" type="button" onclick="openDatePicker('multi')">${getText('selectMultiDates')}</button>
-                        <div class="todo-period-multi-preview">${formatMultiDateSummary(multi)}</div></div>
-                    ${hasAny ? `<button type="button" class="todo-editor-clear" onclick="clearTodoEditorDates('list')">${getText('todoDateClear')}</button>` : ''}`;
+            }
+
+            function stepTodoDateMonth(ctx, delta) {
+                const sc = todoDateScrollers[ctx];
+                if (sc && sc.isAttached()) sc.stepMonth(delta);
+            }
+
+            function buildTodoDateSummaryHtml(ctx) {
+                const d = getTodoDates(ctx);
+                const mode = getTodoDateMode(ctx);
+                const fmt = v => formatTodoDateShort(v, null, { hideYearIfCurrent: true });
+                const has = ctx === 'calendar' ? (!!d.end || d.dates.length > 0) : (!!d.start || !!d.end || d.dates.length > 0);
+                let text;
+                if (mode === 'range' && d.start && !d.end) text = `${fmt(d.start)}${getText('rangeSeparator')}…`;
+                else text = formatTodoPeriodText(d, isTodoEditorRepeat(ctx)) || getText('todoChipDateNone');
+                return `<span class="todo-date-summary-text">${TODO_ICONS.calendar}<span>${escapeHtml(text)}</span></span>`
+                    + (has ? `<button type="button" class="todo-editor-clear" onclick="clearTodoEditorDates('${ctx}')">${getText('todoDateClear')}</button>` : '');
+            }
+
+            // 「今日」などのボタンは、その日が選ばれているあいだ押した見た目にする
+            function getTodoDateQuickActive(ctx, offset) {
+                const now = new Date();
+                const key = toLocalDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset));
+                const d = getTodoDates(ctx);
+                return d.start === key || d.end === key || d.dates.includes(key);
+            }
+
+            function buildDateEditorHtml(ctx) {
+                const mode = getTodoDateMode(ctx);
+                const modes = getTodoDateModes(ctx).map(m => {
+                    const active = m === mode;
+                    return `<button type="button" class="todo-seg-btn${active ? ' active' : ''}" role="radio" aria-checked="${active}" onclick="setTodoDateMode('${ctx}', '${m}')">${getTodoDateModeLabel(ctx, m)}</button>`;
+                }).join('');
+                const showCalendar = !(ctx === 'calendar' && mode === 'day');
+                const quick = ctx === 'calendar' ? '' : `<div class="todo-date-quick">${TODO_DATE_QUICK.map(q => {
+                    const active = getTodoDateQuickActive(ctx, q.offset);
+                    return `<button type="button" class="todo-date-quick-btn${active ? ' active' : ''}" data-offset="${q.offset}" aria-pressed="${active}" onclick="quickPickTodoDate('${ctx}', ${q.offset})">${getText(q.key)}</button>`;
+                }).join('')}</div>`;
+                const calendar = showCalendar ? `<div class="todo-date-month-row">
+                        <button type="button" class="calendar-nav-btn" onclick="stepTodoDateMonth('${ctx}', -1)" aria-label="${getText('calendarPrevMonth')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+                        <span class="todo-date-month"></span>
+                        <button type="button" class="calendar-nav-btn" onclick="stepTodoDateMonth('${ctx}', 1)" aria-label="${getText('calendarNextMonth')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    </div>
+                    <div class="todo-date-cal wcal-picker" data-todo-ctx="${ctx}"></div>` : '';
+                return `<div class="todo-date-panel" data-todo-ctx="${ctx}">
+                        <div class="todo-seg todo-date-modes" role="radiogroup" aria-label="${getText('todoDateSettings')}">${modes}</div>
+                        <div class="todo-date-hint">${getTodoDateHint(ctx, mode)}</div>
+                        ${quick}${calendar}
+                        <div class="todo-date-summary">${buildTodoDateSummaryHtml(ctx)}</div>
+                    </div>`;
+            }
+
+            // パネルの中のカレンダーを作る(描き直しのあとに呼ぶ)
+            function mountTodoDateCalendars(root) {
+                if (!root) return;
+                root.querySelectorAll('.todo-date-cal').forEach(host => {
+                    const ctx = host.dataset.todoCtx;
+                    const d = getTodoDates(ctx);
+                    const initial = parseLocalDate(d.start || d.end || d.dates[0]) || new Date();
+                    const today = toLocalDateKey(new Date());
+                    const label = host.parentElement.querySelector('.todo-date-month');
+                    if (label) label.textContent = formatCalendarMonthLabel(initial.getFullYear(), initial.getMonth());
+                    todoDateScrollers[ctx] = createWeekScroller({
+                        host,
+                        dayClass: 'date-picker-day',
+                        headerClass: 'date-picker-day-header',
+                        visibleRows: 5,
+                        initial,
+                        buildDay: (date) => {
+                            const cur = getTodoDates(ctx);
+                            const key = toLocalDateKey(date);
+                            const cls = [];
+                            if (key === today) cls.push('today');
+                            if (key === cur.start || key === cur.end || cur.dates.includes(key)) cls.push('selected');
+                            else if (cur.start && cur.end) {
+                                const [lo, hi] = cur.start <= cur.end ? [cur.start, cur.end] : [cur.end, cur.start];
+                                if (key > lo && key < hi) cls.push('range-selected');
+                            }
+                            return { cls, html: String(date.getDate()) };
+                        },
+                        onSelect: (date) => pickTodoDate(ctx, toLocalDateKey(date)),
+                        onMonthChange: (y, m) => { if (label) label.textContent = formatCalendarMonthLabel(y, m); }
+                    });
+                });
+            }
+
+            // 日を押したあとは、パネルを作り直さずに中身だけ合わせる(カレンダーのスクロール位置を保つため)
+            function updateTodoDatePanel(ctx) {
+                const root = ctx === 'modal'
+                    ? document.getElementById('todoEditBody')
+                    : document.getElementById(ctx === 'calendar' ? 'todoAddOptionsCalendar' : 'todoAddOptionsList');
+                const panel = root ? root.querySelector(`.todo-date-panel[data-todo-ctx="${ctx}"]`) : null;
+                if (!panel) { renderTodoEditor(ctx); return; }
+                const sc = todoDateScrollers[ctx];
+                if (sc && sc.isAttached()) sc.refresh();
+                const summary = panel.querySelector('.todo-date-summary');
+                if (summary) summary.innerHTML = buildTodoDateSummaryHtml(ctx);
+                panel.querySelectorAll('.todo-date-quick-btn').forEach(btn => {
+                    const active = getTodoDateQuickActive(ctx, Number(btn.dataset.offset));
+                    btn.classList.toggle('active', active);
+                    btn.setAttribute('aria-pressed', String(active));
+                });
+                if (ctx !== 'modal') {
+                    const chip = root.querySelector('.todo-chip[data-key="date"]');
+                    if (chip) {
+                        const c = getTodoEditorDateChip(ctx);
+                        chip.classList.toggle('is-set', c.set);
+                        const text = chip.querySelector('.todo-chip-text');
+                        if (text) text.textContent = c.text;
+                    }
+                }
+                if (ctx === 'list') updateTodoAddOptionsVisibility();
             }
 
             const TODO_EDITOR_PANELS = {
@@ -27379,6 +27975,7 @@
                     container.innerHTML = `<div class="todo-chips">${chipsHtml}</div>` +
                         (panel ? `<div class="todo-chip-panel todo-editor${entering ? ' panel-enter' : ''}"><div class="todo-editor-title">${getText(panel.titleKey)}</div>${panel.build(ctx)}</div>` : '');
                     mountTimeDrums(container);
+                    mountTodoDateCalendars(container);
                     const chip = focusKey ? container.querySelector(`.todo-chip[data-key="${focusKey}"]`) : null;
                     if (chip) chip.focus({ preventScroll: true });
                     if (ctx === 'list') updateTodoAddOptionsVisibility();
@@ -27530,6 +28127,7 @@
                         return `<div class="todo-period-modal-row"><label>${getText(panel.titleKey)}</label><div>${panel.build('modal')}</div></div>`;
                     }).join('');
                     mountTimeDrums(body);
+                    mountTodoDateCalendars(body);
                 });
             }
 
@@ -27545,7 +28143,8 @@
                     time: schedule.time,
                     weekdays: schedule.weekdays,
                     monthDay: schedule.monthDay,
-                    open: null
+                    open: null,
+                    dateMode: null
                 };
                 const period = todo.period || {};
                 selectedDate.editStart = period.start || null;
@@ -28298,7 +28897,7 @@
                     pendingDate: opts.initial || new Date()
                 };
 
-                const weekdays = REPEAT_WEEKDAY_KEYS.map(k => `<div class="${opts.headerClass}">${getText('weekday_' + k)}</div>`).join('');
+                const weekdays = REPEAT_WEEKDAY_KEYS.map(k => `<div class="${opts.headerClass}${k === 'sun' ? ' wcal-sun' : k === 'sat' ? ' wcal-sat' : ''}">${getText('weekday_' + k)}</div>`).join('');
                 host.innerHTML = `<div class="wcal"><div class="wcal-weekdays">${weekdays}</div><div class="wcal-scroll" tabindex="0"><div class="wcal-body"></div></div></div>`;
                 const scroll = host.querySelector('.wcal-scroll');
                 const body = host.querySelector('.wcal-body');
@@ -28306,13 +28905,20 @@
                 function dayHtml(date) {
                     const d = opts.buildDay(date) || {};
                     const cls = [opts.dayClass, 'wcal-day'].concat(d.cls || []);
+                    // 日曜･祝日は赤、土曜は青で見せる。祝日名は(ほかに説明がなければ)ツールチップにも出す
+                    const holiday = getHolidayName(date);
+                    if (holiday) cls.push('wcal-holiday');
+                    if (date.getDay() === 0) cls.push('wcal-sun');
+                    else if (date.getDay() === 6) cls.push('wcal-sat');
+                    let attrs = d.attrs || '';
+                    if (holiday && !/\stitle=/.test(attrs)) attrs += ` title="${escapeHtml(holiday)}"`;
                     let tag = '';
                     if (date.getDate() === 1) {
                         cls.push('wcal-month-start');
                         tag = `<span class="wcal-month-tag">${wcalMonthTag(date)}</span>`;
                     }
                     const ym = `${date.getFullYear()}-${date.getMonth()}`;
-                    return `<div class="${cls.join(' ')}" data-date="${toLocalDateKey(date)}" data-ym="${ym}"${d.attrs || ''}>${tag}${d.html || ''}</div>`;
+                    return `<div class="${cls.join(' ')}" data-date="${toLocalDateKey(date)}" data-ym="${ym}"${attrs}>${tag}${d.html || ''}</div>`;
                 }
 
                 function weekHtml(start) {
@@ -28347,7 +28953,7 @@
                     const rowH = row.getBoundingClientRect().height;
                     if (rowH < 2) return false;
                     const gap = parseFloat(getComputedStyle(body).rowGap) || 0;
-                    scroll.style.height = `${Math.round(rowH * visibleRows + gap * (visibleRows - 1) + 8)}px`;
+                    scroll.style.height = `${Math.round(rowH * visibleRows + gap * (visibleRows - 1) + 14)}px`;
                     sc.sized = true;
                     return true;
                 }
@@ -28453,6 +29059,16 @@
                     updateFocus();
                 };
                 sc.scrollToMonth = function (y, m, smooth) { scrollToDate(new Date(y, m, 1), smooth); };
+                // 矢印で1か月ずつ動かす。なめらかに動いている途中に続けて押されても、押した回数ぶん進める
+                let navTarget = null;
+                let navTimer = 0;
+                sc.stepMonth = function (delta) {
+                    const base = navTarget || getFocusDate();
+                    navTarget = new Date(base.getFullYear(), base.getMonth() + delta, 1);
+                    clearTimeout(navTimer);
+                    navTimer = setTimeout(() => { navTarget = null; }, 700);
+                    scrollToDate(navTarget, true);
+                };
                 sc.getFocusDate = getFocusDate;
                 sc.isAttached = () => host.contains(scroll);
 
@@ -28465,6 +29081,119 @@
                     }).observe(host);
                 }
                 return sc;
+            }
+
+            // ===== 日本の祝日(ネットにはつながず、祝日法のきまりから計算する) =====
+            // 2000年以降の移り変わり(ハッピーマンデー･2019年の即位･2020/21年のオリンピックの移動など)も反映。
+            // 春分･秋分の日は近似式(1980〜2099年で使える)。この範囲の外の年は祝日なしとして扱う
+            const JP_HOLIDAY_NAMES = {
+                newYear: ['元日', "New Year's Day"],
+                comingOfAge: ['成人の日', 'Coming of Age Day'],
+                foundation: ['建国記念の日', 'National Foundation Day'],
+                emperor: ['天皇誕生日', "Emperor's Birthday"],
+                vernal: ['春分の日', 'Vernal Equinox Day'],
+                showa: ['昭和の日', 'Showa Day'],
+                constitution: ['憲法記念日', 'Constitution Day'],
+                greenery: ['みどりの日', 'Greenery Day'],
+                children: ['こどもの日', "Children's Day"],
+                marine: ['海の日', 'Marine Day'],
+                mountain: ['山の日', 'Mountain Day'],
+                aged: ['敬老の日', 'Respect for the Aged Day'],
+                autumnal: ['秋分の日', 'Autumnal Equinox Day'],
+                sports: ['スポーツの日', 'Sports Day'],
+                health: ['体育の日', 'Health and Sports Day'],
+                culture: ['文化の日', 'Culture Day'],
+                labor: ['勤労感謝の日', 'Labor Thanksgiving Day'],
+                enthronement: ['即位の日', 'Enthronement Day'],
+                enthronementCeremony: ['即位礼正殿の儀', 'Enthronement Ceremony'],
+                substitute: ['振替休日', 'Substitute Holiday'],
+                citizens: ['国民の休日', "Citizens' Holiday"]
+            };
+            const jpHolidayCache = new Map();
+
+            // その月の第n月曜日(month は 0〜11)
+            function nthMondayOfMonth(year, month, n) {
+                return 1 + (8 - new Date(year, month, 1).getDay()) % 7 + (n - 1) * 7;
+            }
+
+            // その年の祝日を { 月*100+日: 種類 } にまとめる
+            function buildJpHolidays(y) {
+                const map = new Map();
+                if (y < 1980 || y > 2099) return map;
+                const add = (m, d, key) => map.set(m * 100 + d, key);
+                const k = y - 1980;
+                const leap = Math.floor(k / 4);
+                add(1, 1, 'newYear');
+                add(1, y >= 2000 ? nthMondayOfMonth(y, 0, 2) : 15, 'comingOfAge');
+                add(2, 11, 'foundation');
+                if (y >= 2020) add(2, 23, 'emperor');
+                add(3, Math.floor(20.8431 + 0.242194 * k - leap), 'vernal');
+                add(4, 29, y >= 2007 ? 'showa' : y >= 1989 ? 'greenery' : 'emperor');
+                add(5, 3, 'constitution');
+                if (y >= 2007) add(5, 4, 'greenery');
+                add(5, 5, 'children');
+                if (y === 2020) add(7, 23, 'marine');
+                else if (y === 2021) add(7, 22, 'marine');
+                else if (y >= 2003) add(7, nthMondayOfMonth(y, 6, 3), 'marine');
+                else if (y >= 1996) add(7, 20, 'marine');
+                if (y === 2020) add(8, 10, 'mountain');
+                else if (y === 2021) add(8, 8, 'mountain');
+                else if (y >= 2016) add(8, 11, 'mountain');
+                add(9, y >= 2003 ? nthMondayOfMonth(y, 8, 3) : 15, 'aged');
+                add(9, Math.floor(23.2488 + 0.242194 * k - leap), 'autumnal');
+                if (y === 2020) add(7, 24, 'sports');
+                else if (y === 2021) add(7, 23, 'sports');
+                else if (y >= 2022) add(10, nthMondayOfMonth(y, 9, 2), 'sports');
+                else add(10, y >= 2000 ? nthMondayOfMonth(y, 9, 2) : 10, 'health');
+                add(11, 3, 'culture');
+                add(11, 23, 'labor');
+                if (y >= 1989 && y <= 2018) add(12, 23, 'emperor');
+                if (y === 2019) { add(5, 1, 'enthronement'); add(10, 22, 'enthronementCeremony'); }
+
+                const keyOf = d => (d.getMonth() + 1) * 100 + d.getDate();
+                const holidays = [...map.keys()].map(v => new Date(y, Math.floor(v / 100) - 1, v % 100));
+                // 国民の休日: 祝日と祝日にはさまれた日(日曜をのぞく)
+                if (y >= 1986) {
+                    for (const d of holidays) {
+                        const mid = new Date(y, d.getMonth(), d.getDate() + 1);
+                        const next = new Date(y, d.getMonth(), d.getDate() + 2);
+                        if (next.getFullYear() === y && map.has(keyOf(next)) && !map.has(keyOf(mid)) && mid.getDay() !== 0) add(mid.getMonth() + 1, mid.getDate(), 'citizens');
+                    }
+                }
+                // 振替休日: 祝日が日曜なら、そのあとの最初の祝日でない日(2006年までは翌月曜だけ)
+                for (const d of holidays) {
+                    if (d.getDay() !== 0) continue;
+                    const sub = new Date(y, d.getMonth(), d.getDate() + 1);
+                    if (y >= 2007) while (map.has(keyOf(sub))) sub.setDate(sub.getDate() + 1);
+                    else if (map.has(keyOf(sub))) continue;
+                    if (sub.getFullYear() === y) add(sub.getMonth() + 1, sub.getDate(), 'substitute');
+                }
+                return map;
+            }
+
+            function getJpHolidayKey(date) {
+                const y = date.getFullYear();
+                if (!jpHolidayCache.has(y)) jpHolidayCache.set(y, buildJpHolidays(y));
+                return jpHolidayCache.get(y).get((date.getMonth() + 1) * 100 + date.getDate()) || null;
+            }
+
+            function isCalendarHolidaysEnabled() {
+                return getData('calendar_holidays') !== 'false';
+            }
+
+            // カレンダーに出す祝日名(設定で切っているときと祝日でない日は空)
+            function getHolidayName(date) {
+                if (!isCalendarHolidaysEnabled()) return '';
+                const key = getJpHolidayKey(date);
+                if (!key) return '';
+                return JP_HOLIDAY_NAMES[key][currentLanguage === 'ja' ? 0 : 1];
+            }
+
+            function toggleCalendarHolidays() {
+                const next = !isCalendarHolidaysEnabled();
+                saveData('calendar_holidays', next ? 'true' : 'false');
+                setToggleActive('toggleCalendarHolidays', next);
+                renderCalendar(calendarYear, calendarMonth);
             }
 
             // 月の見出し(日本語: 2026年10月 / 英語: October 2026)
@@ -28488,15 +29217,21 @@
                 const studyMs = data.studyMsByDate[dateStr] || 0;
                 const studyHours = studyMs / (1000 * 60 * 60);
                 const intensity = studyMs > 0 ? Math.min(20 + studyHours * 15, 85) : 0;
+                const holiday = getHolidayName(date);
                 const titleParts = [];
-                if (dayStatus) titleParts.push(getText(CALENDAR_STATUS_LABEL_KEYS[dayStatus]));
+                if (holiday) titleParts.push(holiday);
+                if (dayStatus) titleParts.push(`${getText(CALENDAR_STATUS_LABEL_KEYS[dayStatus])}${dayTodos.length > 1 ? ` (${dayTodos.length})` : ''}`);
                 if (studyMs > 0) titleParts.push(`${getText('studyTime')}: ${formatTime(studyMs)}`);
                 const attrs = (intensity > 0 ? ` style="--cal-intensity: ${intensity}%;"` : '')
-                    + (titleParts.length ? ` title="${titleParts.join(' / ')}"` : '');
+                    + (titleParts.length ? ` title="${escapeHtml(titleParts.join(' / '))}"` : '');
+                // 2件以上あるときは印のとなりに件数を小さく出す
+                const count = dayTodos.length > 1 ? `<span class="calendar-todo-count">${dayTodos.length}</span>` : '';
                 return {
                     cls,
                     attrs,
-                    html: `<div class="calendar-day-number">${date.getDate()}</div><div class="calendar-todo-indicators">${dayStatus ? getCalendarIndicatorHtml(dayStatus) : ''}</div>`
+                    html: `<div class="calendar-day-number">${date.getDate()}</div>`
+                        + (holiday ? `<div class="calendar-day-holiday">${escapeHtml(holiday)}</div>` : '')
+                        + `<div class="calendar-todo-indicators">${dayStatus ? getCalendarIndicatorHtml(dayStatus) + count : ''}</div>`
                 };
             }
 
@@ -28532,30 +29267,19 @@
                 renderCalendarLegend();
             }
 
+            function stepTodoCalendarMonth(delta) {
+                if (todoCalendarScroller) todoCalendarScroller.stepMonth(delta);
+            }
+
             function scrollTodoCalendarToToday() {
                 const now = new Date();
                 if (todoCalendarScroller) todoCalendarScroller.scrollToMonth(now.getFullYear(), now.getMonth(), true);
             }
 
-            // カスタム日付ピッカー
-            let currentDatePicker = null;  // 'start' | 'end' | 'multi' | 'calendarEnd' | 'calendarMulti'
+            // 1日を選ぶ日付ピッカー(1日の記録･試験日･手動の記録･本の期限)。
+            // ToDoの日付は、日付パネル(buildDateEditorHtml)の中のカレンダーで選ぶ。選んだ日はどちらも selectedDate に入れておく
+            let currentDatePicker = null;  // 'dailyTimeline' | 'exam' | 'manual' | 'bookDeadline'
             let selectedDate = { start: null, end: null, calendarEnd: null, multi: [], calendarMulti: [], editStart: null, editEnd: null, editMulti: [] };
-
-            // 日付をいくつも選ぶピッカー(追加欄･カレンダーの追加欄･ToDoの設定)と、その選択を入れておく場所
-            function getMultiPickerKey(type) {
-                return (type === 'calendarMulti' || type === 'editMulti') ? type : 'multi';
-            }
-
-            function isMultiPickerType(type) {
-                return type === 'multi' || type === 'calendarMulti' || type === 'editMulti';
-            }
-
-            // いっしょに色を付けて見せる「開始〜終了」の範囲
-            function getMultiPickerRange(type) {
-                if (type === 'calendarMulti') return [getCalendarStartDateStr(), selectedDate.calendarEnd];
-                if (type === 'editMulti') return [selectedDate.editStart, selectedDate.editEnd];
-                return [selectedDate.start, selectedDate.end];
-            }
 
             function openDatePicker(type) {
                 currentDatePicker = type;
@@ -28591,41 +29315,30 @@
                     datePickerScroller.refresh();
                     return;
                 }
-                const isMulti = isMultiPickerType(type);
-                const headingKey = (type === 'start' || type === 'editStart') ? 'selectStartDate'
-                    : type === 'end' ? 'selectEndDate'
-                        : type === 'dailyTimeline' ? 'dailyTimelinePickerTitle'
-                        : type === 'exam' ? 'examPickerTitle'
+                const headingKey = type === 'dailyTimeline' ? 'dailyTimelinePickerTitle'
+                    : type === 'exam' ? 'examPickerTitle'
                         : type === 'manual' ? 'manualPickerTitle'
-                        : type === 'bookDeadline' ? 'bookDeadlinePickerTitle'
-                            : isMulti ? 'selectMultiDates'
-                                : 'selectEndDate';
+                            : 'bookDeadlinePickerTitle';
 
-                // 1つだけ選ぶピッカーは、選んである日の月から始める
+                // 選んである日の月から始める
                 let initial = date;
-                if (!isMulti && selectedDate[type]) {
+                if (selectedDate[type]) {
                     const sel = parseLocalDate(selectedDate[type]);
                     if (sel) initial = sel;
                 }
 
-                let html = `
+                const html = `
                         <div class="date-picker-header">
                             <h3 style="margin: 0; font-size: 1rem;">${getText(headingKey)}</h3>
                             <button type="button" class="secondary" onclick="closeAllDatePickers()" style="padding: 4px 10px; font-size: 0.8rem;">${getText('closeButton')}</button>
                         </div>
-                        <div class="date-picker-month-selector" style="display: flex; justify-content: center; align-items: center; margin-bottom: 12px;">
-                            <div class="date-picker-month-year" id="datePickerMonthLabel" style="font-weight: 500;">${formatCalendarMonthLabel(initial.getFullYear(), initial.getMonth())}</div>
+                        <div class="date-picker-month-selector">
+                            <button type="button" class="calendar-nav-btn" onclick="datePickerScroller && datePickerScroller.stepMonth(-1)" aria-label="${getText('calendarPrevMonth')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+                            <div class="date-picker-month-year" id="datePickerMonthLabel">${formatCalendarMonthLabel(initial.getFullYear(), initial.getMonth())}</div>
+                            <button type="button" class="calendar-nav-btn" onclick="datePickerScroller && datePickerScroller.stepMonth(1)" aria-label="${getText('calendarNextMonth')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
                         </div>
                         <div class="wcal-picker" id="datePickerScrollHost"></div>
                     `;
-                if (isMulti) {
-                    html += `
-                            <div style="display:flex; justify-content: space-between; align-items:center; margin-top: 14px;">
-                                <button type="button" class="secondary" onclick="clearMultiDates('${type}')" data-i18n="clearButton">${getText('clearButton')}</button>
-                                <button type="button" class="primary" onclick="applyMultiDates('${type}')" data-i18n="doneButton">${getText('doneButton')}</button>
-                            </div>
-                        `;
-                }
                 dropdown.innerHTML = html;
 
                 const today = new Date();
@@ -28637,24 +29350,12 @@
                     visibleRows: 6,
                     initial,
                     buildDay: (d) => {
-                        const dateStr = toLocalDateKey(d);
-                        const multiSource = selectedDate[getMultiPickerKey(type)];
-                        const multiSelected = new Set(Array.isArray(multiSource) ? multiSource : []);
-                        const rangeSelected = isMulti ? getRangeDateSet(...getMultiPickerRange(type)) : new Set();
-                        const isSelected = isMulti
-                            ? (multiSelected.has(dateStr) || rangeSelected.has(dateStr))
-                            : selectedDate[type] === dateStr;
                         const cls = [];
                         if (d.toDateString() === today.toDateString()) cls.push('today');
-                        if (isSelected) cls.push('selected');
-                        if (isMulti && !multiSelected.has(dateStr) && rangeSelected.has(dateStr)) cls.push('range-selected');
+                        if (selectedDate[type] === toLocalDateKey(d)) cls.push('selected');
                         return { cls, html: String(d.getDate()) };
                     },
-                    onSelect: (d) => {
-                        const dateStr = toLocalDateKey(d);
-                        if (isMulti) toggleMultiDate(type, dateStr);
-                        else selectDate(type, dateStr);
-                    },
+                    onSelect: (d) => selectDate(type, toLocalDateKey(d)),
                     onMonthChange: (y, m) => {
                         datePickerCurrentDate[type] = new Date(y, m, 1);
                         const label = document.getElementById('datePickerMonthLabel');
@@ -28663,7 +29364,7 @@
                 });
             }
 
-            let datePickerCurrentDate = { start: new Date(), end: new Date(), calendarEnd: new Date(), multi: new Date(), calendarMulti: new Date(), dailyTimeline: new Date(), exam: new Date() };
+            let datePickerCurrentDate = { dailyTimeline: new Date(), exam: new Date() };
 
             // 文字列からローカル日付を復元するヘルパー('YYYY-MM-DD' または ISO 全体を扱う)
             function parseLocalDate(dateStr) {
@@ -28706,53 +29407,7 @@
                     return;
                 }
 
-                const inputIdMap = {
-                    start: 'todoPeriodStart',
-                    end: 'todoPeriodEnd',
-                    calendarEnd: 'calendarTodoEndDate'
-                };
-                const inputId = inputIdMap[type];
-                const inputEl = inputId ? document.getElementById(inputId) : null;
-                if (inputEl) inputEl.value = dateStr;
-
-                if (type === 'start') {
-                    const startModal = document.getElementById('todoPeriodStartModal');
-                    if (startModal) startModal.value = dateStr;
-                }
-                if (type === 'end') {
-                    const endModal = document.getElementById('todoPeriodEndModal');
-                    if (endModal) endModal.value = dateStr;
-                }
-
-                // ピッカーを閉じる
                 closeAllDatePickers();
-                refreshTodoAddOptions();
-            }
-
-            function toggleMultiDate(type, dateStr) {
-                const key = getMultiPickerKey(type);
-                if (!Array.isArray(selectedDate[key])) selectedDate[key] = [];
-                const index = selectedDate[key].indexOf(dateStr);
-                if (index >= 0) {
-                    selectedDate[key].splice(index, 1);
-                } else {
-                    selectedDate[key].push(dateStr);
-                }
-                selectedDate[key].sort();
-                renderDatePicker(type, datePickerCurrentDate[type] || new Date());
-                refreshTodoAddOptions();
-            }
-
-            function clearMultiDates(type) {
-                const key = getMultiPickerKey(type);
-                selectedDate[key] = [];
-                renderDatePicker(type, datePickerCurrentDate[type] || new Date());
-                refreshTodoAddOptions();
-            }
-
-            function applyMultiDates(type) {
-                closeAllDatePickers();
-                refreshTodoAddOptions();
             }
 
             // 外部クリックでピッカーを閉じる (現在はoverlayのonclickで対応しているが念のため)
@@ -28769,15 +29424,20 @@
                 currentCalendarDate = date;
                 const dialog = document.getElementById('calendarDayDialog');
                 const titleDiv = document.getElementById('calendarDayDialogTitle');
-                const calendarEndInput = document.getElementById('calendarTodoEndDate');
-                if (calendarEndInput) calendarEndInput.value = '';
                 selectedDate.calendarEnd = null;
                 selectedDate.calendarMulti = [];
-                updateCalendarMultiPreview();
                 resetCalendarAddOptions();
 
-                // 日付フォーマット(言語対応)
-                titleDiv.textContent = `${date.getFullYear()}${getText('year')}${date.getMonth() + 1}${getText('month')}${date.getDate()}${getText('day')}`;
+                // 日付フォーマット(言語対応)。曜日を添え、日曜･土曜･祝日は色でも分かるようにする
+                const holiday = getHolidayName(date);
+                const weekdayCls = (date.getDay() === 0 || holiday) ? ' wcal-sun' : date.getDay() === 6 ? ' wcal-sat' : '';
+                titleDiv.innerHTML = `${date.getFullYear()}${getText('year')}${date.getMonth() + 1}${getText('month')}${date.getDate()}${getText('day')}`
+                    + `<span class="calendar-day-dialog-weekday${weekdayCls}">${currentLanguage === 'ja' ? '' : ' '}(${getText('weekday_' + REPEAT_WEEKDAY_KEYS[date.getDay()])})</span>`;
+                const holidayDiv = document.getElementById('calendarDayDialogHoliday');
+                if (holidayDiv) {
+                    holidayDiv.textContent = holiday;
+                    holidayDiv.hidden = !holiday;
+                }
 
                 // その日の勉強時間を表示
                 const studyTimeDiv = document.getElementById('calendarDayStudyTime');
@@ -28796,6 +29456,8 @@
                 // その日のToDoを表示
                 renderCalendarDayTodos(date);
 
+                // 開いている間は、裏のページが指で動かないようにする(前後の日へ移るときは、もう止めてある)
+                if (!dialog.classList.contains('show')) lockBodyScroll();
                 dialog.classList.add('show');
             }
 
@@ -28841,25 +29503,20 @@
                 return showYear ? parts.join('/') : parts.join('/');
             }
 
-            function formatMultiDateSummary(dates) {
-                if (!Array.isArray(dates) || dates.length === 0) return getText('noMultiDates');
-                const sorted = [...dates].sort();
-                const context = { year: null, month: null };
-                const formatted = sorted.map((dateStr) => formatTodoDateShort(dateStr, context, { hideYearIfCurrent: true }));
-                const head = formatted.slice(0, 3).join(', ');
-                if (formatted.length <= 3) return head;
-                return `${head} +${formatted.length - 3}`;
+            // 開いたまま前の日･次の日へ。入力中のタスク名はそのまま残す
+            function shiftCalendarDayDialog(delta) {
+                if (!currentCalendarDate) return;
+                const next = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), currentCalendarDate.getDate() + delta);
+                openCalendarDayDialog(next);
             }
 
             function closeCalendarDayDialog() {
                 const dialog = document.getElementById('calendarDayDialog');
+                if (dialog.classList.contains('show')) unlockBodyScroll();
                 dialog.classList.remove('show');
                 document.getElementById('calendarAddTodoInput').value = '';
-                const calendarEndInput = document.getElementById('calendarTodoEndDate');
-                if (calendarEndInput) calendarEndInput.value = '';
                 selectedDate.calendarEnd = null;
                 selectedDate.calendarMulti = [];
-                updateCalendarMultiPreview();
                 resetCalendarAddOptions();
             }
 
@@ -28884,12 +29541,6 @@
                     cursor.setDate(cursor.getDate() + 1);
                 }
                 return dates;
-            }
-
-            function updateCalendarMultiPreview() {
-                const preview = document.getElementById('calendarMultiPreview');
-                if (!preview) return;
-                preview.textContent = formatMultiDateSummary(selectedDate.calendarMulti);
             }
 
             function renderCalendarDayTodos(date) {
@@ -31154,13 +31805,14 @@
                         const bw = Math.max(1, Math.round(w));
                         key = keyOf(el._dotPs) + '~' + bw + '~' + col + '~' + bs;
                     }
+                    // 描き直した枠は !important にする(あとから border の一括指定が当たると border-image が初期値に戻って消えるため)
                     if (key === el._dotBKey) return;
                     el._dotBKey = key;
                     if (!key) { el.removeAttribute('data-dot-bi'); return; }
                     const hash = 'b' + hashStr(key);
                     if (!made.has(hash)) {
                         made.add(hash);
-                        try { sheet().insertRule(`body.shape-dot [data-dot-bi="${hash}"] { border-image: ${borderImageFor(el._dotPs, Math.max(1, Math.round(w)), col, bs)}; }`, sheet().cssRules.length); } catch (e) { }
+                        try { sheet().insertRule(`body.shape-dot [data-dot-bi="${hash}"] { border-image: ${borderImageFor(el._dotPs, Math.max(1, Math.round(w)), col, bs)} !important; }`, sheet().cssRules.length); } catch (e) { }
                     }
                     el.setAttribute('data-dot-bi', hash);
                 }
@@ -32426,6 +33078,7 @@
                 'todo_v2_prompt_shown',
                 'todo_priority_colors',
                 'feature_todo_repeat_calendar',
+                'calendar_holidays',
                 'tsumiki_group_colors',
                 'tsumiki_drop_card',
                 'group_colors',
@@ -32458,6 +33111,7 @@
                 'feature_music',
                 'feature_todo',
                 'feature_todo_repeat_calendar',
+                'calendar_holidays',
                 'tsumiki_group_colors',
                 'tsumiki_drop_card',
                 'notify_master',
@@ -35814,6 +36468,7 @@
                     const toggle = document.getElementById('toggleTodoRepeatCalendar');
                     if (toggle) toggle.classList.add('active');
                 }
+                setToggleActive('toggleCalendarHolidays', isCalendarHolidaysEnabled()); // デフォルトON
                 if (isTodoTimerLineEnabled()) { // デフォルトON
                     const toggle = document.getElementById('toggleTodoTimerLine');
                     if (toggle) toggle.classList.add('active');
@@ -37711,6 +38366,20 @@
                     window.scrollTo(0, scrollLockY);
                 }
             }
+
+            // 指で操作する端末では、設定の行(.toggle-item)のどこを押しても、その行のスイッチが切り替わるように。
+            // 行の中のボタンや入力欄を押したとき･スイッチが1つでない行･編集モードの間は、何もしない
+            document.addEventListener('click', (e) => {
+                if (editorModeActive || !window.matchMedia || !matchMedia('(pointer: coarse)').matches) return;
+                const row = e.target.closest && e.target.closest('.toggle-item');
+                if (!row || row.hasAttribute('onclick')) return;
+                for (let el = e.target; el && el !== row; el = el.parentElement) {
+                    if (el.matches('.toggle-switch, button, a, input, select, textarea, label, summary, [onclick], [contenteditable], [role="button"]')) return;
+                }
+                const switches = row.querySelectorAll(':scope > .toggle-switch, :scope > .toggle-controls > .toggle-switch');
+                if (switches.length !== 1 || !switches[0].offsetParent) return;
+                switches[0].click();
+            });
 
             // ── 積み木ページ: 総勉強時間30分ごとに1個の積み木を2.5Dドット絵で積み上げる ──
             const TSUMIKI_UNIT_MS = 30 * 60 * 1000;
@@ -40614,35 +41283,76 @@
                 repositionYtPlayer();
             }
 
-            // YouTube / ローカル動画のオーバーレイをゾーン位置に合わせて配置する
+            // YouTube / ローカル動画のオーバーレイをゾーン位置に合わせて配置する。
+            // スクロールのたびと見張りの間隔ごとに呼ばれるので、位置が変わっていなければスタイルには触らない(書くだけで描き直しが起きるため)
+            const ytPlaceApplied = new WeakMap();
+            function placeYtContainer(container, css) {
+                const prev = ytPlaceApplied.get(container);
+                // ほかの所で display などを直接変えられていたら、同じ値でも書き直す
+                if (prev && prev.css === css && prev.applied === container.style.cssText) return;
+                container.style.cssText = css;
+                ytPlaceApplied.set(container, { css, applied: container.style.cssText });
+            }
+
+            function hideYtContainer(container) {
+                if (container && container.style.display !== 'none') container.style.display = 'none';
+            }
+
+            function placeYtContainerOnZone(container, zoneId, radius, zIndex) {
+                const zone = document.getElementById(zoneId);
+                if (!zone || zone.style.display === 'none') { hideYtContainer(container); return; }
+                const rect = zone.getBoundingClientRect();
+                if (rect.width < 2 || rect.height < 2) { hideYtContainer(container); return; }
+                placeYtContainer(container, `display:block; position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; border-radius:${radius}px; z-index:${zIndex}; background:#000; overflow:hidden; pointer-events:auto;`);
+            }
+
             function repositionYtPlayer() {
                 const ytContainer = document.getElementById('ytPlayerContainer');
                 const videoContainer = document.getElementById('videoPlayerContainer');
                 const isYt = isCurrentTrackYoutube();
                 const isVideo = isCurrentTrackVideo();
                 const container = isYt ? ytContainer : (isVideo ? videoContainer : null);
-                if (ytContainer && ytContainer !== container) ytContainer.style.display = 'none';
-                if (videoContainer && videoContainer !== container) videoContainer.style.display = 'none';
+                if (ytContainer !== container) hideYtContainer(ytContainer);
+                if (videoContainer !== container) hideYtContainer(videoContainer);
+                // 動画の曲を選んでいるあいだだけ、位置の見張りを動かす
+                watchYtPlacement(!!container);
                 if (!container) return;
-                const isMusic = isOnMusicPage();
                 const miniPopup = document.getElementById('miniPlayerPopup');
-                const miniVisible = miniPopup && miniPopup.classList.contains('visible');
-                if (isMusic) {
-                    const zone = document.getElementById('ytMusicZone');
-                    if (!zone || zone.style.display === 'none') { container.style.display = 'none'; return; }
-                    const rect = zone.getBoundingClientRect();
-                    if (rect.width < 2 || rect.height < 2) { container.style.display = 'none'; return; }
-                    container.style.cssText = `display:block; position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; border-radius:${document.body.classList.contains('music-classic') ? 8 : 24}px; z-index:100; background:#000; overflow:hidden; pointer-events:auto;`;
-                } else if (miniVisible) {
-                    const zone = document.getElementById('ytMiniZone');
-                    if (!zone || zone.style.display === 'none') { container.style.display = 'none'; return; }
-                    const rect = zone.getBoundingClientRect();
-                    if (rect.width < 2 || rect.height < 2) { container.style.display = 'none'; return; }
-                    container.style.cssText = `display:block; position:fixed; top:${rect.top}px; left:${rect.left}px; width:${rect.width}px; height:${rect.height}px; border-radius:6px; z-index:100001; background:#000; overflow:hidden; pointer-events:auto;`;
+                if (isOnMusicPage()) {
+                    placeYtContainerOnZone(container, 'ytMusicZone', document.body.classList.contains('music-classic') ? 8 : 24, 100);
+                } else if (miniPopup && miniPopup.classList.contains('visible')) {
+                    placeYtContainerOnZone(container, 'ytMiniZone', 6, 100001);
                 } else {
-                    container.style.display = 'none';
+                    hideYtContainer(container);
                 }
             }
+
+            // 置き場所(ゾーン)の大きさが変わったらすぐ合わせ、ほかのずれ(上の要素の伸び縮みなど)は0.5秒ごとに拾う。
+            // 動画の曲でないときと、アプリが裏にあるときは何もしない
+            let ytPlaceTimer = 0;
+            let ytPlaceFrame = 0;
+            let ytZoneObserver = null;
+            function requestYtReposition() {
+                if (ytPlaceFrame) return;
+                ytPlaceFrame = requestAnimationFrame(() => { ytPlaceFrame = 0; repositionYtPlayer(); });
+            }
+
+            function watchYtPlacement(on) {
+                if (on === !!ytPlaceTimer) return;
+                if (on) {
+                    ytPlaceTimer = setInterval(() => { if (!document.hidden) repositionYtPlayer(); }, 500);
+                    if (window.ResizeObserver) {
+                        if (!ytZoneObserver) ytZoneObserver = new ResizeObserver(requestYtReposition);
+                        ['ytMusicZone', 'ytMiniZone'].forEach(id => { const el = document.getElementById(id); if (el) ytZoneObserver.observe(el); });
+                    }
+                } else {
+                    clearInterval(ytPlaceTimer);
+                    ytPlaceTimer = 0;
+                    if (ytZoneObserver) ytZoneObserver.disconnect();
+                }
+            }
+
+            document.addEventListener('visibilitychange', () => { if (!document.hidden && ytPlaceTimer) repositionYtPlayer(); });
 
             // YouTube動画の追加(名前の入力と同じポップアップ。URLが正しいかはその場で確かめる)
             async function openYoutubeDialog() {
@@ -41203,7 +41913,6 @@
 
             window.addEventListener('scroll', updateMiniPlayerScroll, { passive: true });
             window.addEventListener('scroll', repositionYtPlayer, { passive: true });
-            setInterval(repositionYtPlayer, 500);
             window.addEventListener('resize', function () {
                 if (isMiniPlayerFreePlace()) {
                     applyMiniPlayerFreePosition();
