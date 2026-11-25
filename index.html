@@ -6880,7 +6880,6 @@
             flex-shrink: 0;
         }
 
-        /* パネルを開いたときに中身がふわっと出る(高さの伸び縮みは animateHeightChange で行う) */
         .panel-enter {
             animation: panelEnter 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
@@ -10700,6 +10699,8 @@
             background: transparent;
             color: inherit;
             font-size: 0.9rem;
+            line-height: 1.2;
+            min-height: 0;
             cursor: pointer;
             opacity: 0.55;
             transition: color 0.25s, opacity 0.25s;
@@ -13084,8 +13085,10 @@
 
         body:not(.timer-classic) .timer-tray .focus-segment-btn {
             height: 100%;
+            min-height: 0;
             padding: 0 8px;
             white-space: nowrap;
+            line-height: 1.2;
         }
 
         body:not(.timer-classic) .timer-tray .timer-options-row {
@@ -16426,7 +16429,6 @@
             .playlist-batch-actions button,
             .pl-tab,
             .focus-preset,
-            .focus-segment-btn,
             .about-button,
             .calendar-month-today,
             .daily-timeline-date,
@@ -28001,7 +28003,10 @@
                     mountTodoDateCalendars(container);
                     const chip = focusKey ? container.querySelector(`.todo-chip[data-key="${focusKey}"]`) : null;
                     if (chip) chip.focus({ preventScroll: true });
-                    if (ctx === 'list') updateTodoAddOptionsVisibility();
+                    if (ctx === 'list') {
+                        const options = document.getElementById('todoAddOptionsList');
+                        if (options) options.classList.remove('is-hidden');
+                    }
                 });
             }
 
@@ -28029,15 +28034,18 @@
                 const wrap = document.getElementById('todoAdd');
                 const options = document.getElementById('todoAddOptionsList');
                 if (!wrap || !options) return;
-                if (options.classList.contains('is-hidden') === !shouldShowTodoAddOptions()) return;
-                animateHeightChange(wrap, updateTodoAddOptionsVisibility);
+                if (todoEditors.list && todoEditors.list.open) return;
+                const shouldShow = shouldShowTodoAddOptions();
+                if (options.classList.contains('is-hidden') === !shouldShow) return;
+                animateHeightChange(options, () => {
+                    options.classList.toggle('is-hidden', !shouldShow);
+                });
             }
 
             (function () {
                 const wrap = document.getElementById('todoAdd');
                 if (!wrap) return;
                 wrap.addEventListener('focusin', refreshTodoAddOptionsVisibility);
-                // 追加欄の中の別のボタンへ移るだけのときに閉じないよう、移り終わってから確かめる
                 wrap.addEventListener('focusout', () => setTimeout(refreshTodoAddOptionsVisibility, 0));
                 wrap.addEventListener('input', refreshTodoAddOptionsVisibility);
             })();
